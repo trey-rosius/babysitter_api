@@ -1,0 +1,341 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  graphql_api
+
+  SAM Template for graphql_api
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Tracing: Active
+    Timeout: 3
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref DynamoDBBabySitterTable
+        LOG_LEVEL: DEBUG
+        POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
+        POWERTOOLS_LOGGER_LOG_EVENT: true
+        POWERTOOLS_SERVICE_NAME: "babysitter_api_service"
+        POWERTOOLS_METRICS_NAMESPACE: "babysitter_api"
+
+
+
+Resources:
+  ###################
+  # COGNITO POOLS
+  ##################
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${AWS::StackName}-UserPool
+      AutoVerifiedAttributes:
+        - email
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: babysitter_api
+      GenerateSecret: false
+      UserPoolId: !Ref CognitoUserPool
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+  ###################
+  # FUNCTIONS
+  ##################
+  BabySitterFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    DependsOn:
+      - LambdaLoggingPolicy
+    Properties:
+      CodeUri: babysitter/
+      Handler: app.lambda_handler
+      Role: !GetAtt AddUserJobRole.Arn
+      Runtime: python3.8
+      Description: Sample Lambda Powertools Direct Lambda Resolver
+      Tags:
+        SOLUTION: LambdaPowertoolsPython
+
+  ###################
+  # IAM PERMISSIONS AND ROLES
+  ##################
+
+  AppSyncServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      ManagedPolicyArns:
+        - !Ref DynamoDBPolicy
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "appsync.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  InvokeLambdaResolverPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "DirectAppSyncLambda"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "lambda:invokeFunction"
+            Resource:
+              - !GetAtt BabySitterFunction.Arn
+      Roles:
+        - !Ref AppSyncServiceRole
+  LambdaLoggingPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: LambdaXRayPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "xray:PutTraceSegments",
+              "xray:PutTelemetryRecords",
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+              ]
+            Resource: "*"
+      Roles:
+        - !Ref AddUserJobRole
+
+  DynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /service-role/
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: [
+              "dynamodb:Query",
+              "dynamodb:GetItem",
+              "dynamodb:UpdateItem",
+              "dynamodb:PutItem",
+              "dynamodb:DeleteItem",
+
+              ]
+
+            Resource:
+              - !GetAtt DynamoDBBabySitterTable.Arn
+              - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
+      Roles:
+        - !Ref AddUserJobRole
+
+
+  AddUserJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+            - "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+
+  RoleAppSyncCloudWatch:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+  ###################
+  # GRAPHQL API
+  ##################
+
+  BabySitterApi:
+    Type: "AWS::AppSync::GraphQLApi"
+    Properties:
+      Name: BabySitterApi
+      AuthenticationType: "API_KEY"
+      AdditionalAuthenticationProviders:
+        - AuthenticationType: AMAZON_COGNITO_USER_POOLS
+          UserPoolConfig:
+            AwsRegion: !Ref AWS::Region
+            UserPoolId: !Ref CognitoUserPool
+      XrayEnabled: true
+      LogConfig:
+        CloudWatchLogsRoleArn: !GetAtt RoleAppSyncCloudWatch.Arn
+        ExcludeVerboseContent: FALSE
+        FieldLogLevel: ALL
+
+  BabySitterApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+
+  BabySitterApiSchema:
+    Type: "AWS::AppSync::GraphQLSchema"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      DefinitionS3Location: 'schema/schema.graphql'
+
+  ###################
+  # Lambda Direct Data Source and Resolver
+  ##################
+  BabySitterFunctionDataSource:
+    Type: "AWS::AppSync::DataSource"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      Name: "BabySitterLambdaDirectResolver"
+      Type: "AWS_LAMBDA"
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt BabySitterFunction.Arn
+
+
+
+  CreateUserResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createUser"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  GetUserResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "getUser"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  UpdateUserStatusResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updateUserStatus"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  CreeateJobResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "createJob"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+
+  ApplyToJobResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "applyToJob"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  bookNannyResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "bookNanny"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  ListAllJobsResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "listAllJobs"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  ListApplicationsPerJobResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "listApplicationsPerJob"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  ListJobsPerParentResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "listJobsPerParent"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  ListJobsAppliedToResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "listJobsAppliedTo"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  ###################
+  # TABLE
+  ##################
+
+  DynamoDBBabySitterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+        - AttributeName: jobStatus
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: jobApplications
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: jobsAppliedTo
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: getJobsByStatus
+          KeySchema:
+            - AttributeName: jobStatus
+              KeyType: HASH
+            - AttributeName: SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+
+  ###################
+  # OUTPUTS
+  ##################
+Outputs:
+  BabySitterFunction:
+    Description: "Baby Sitter Lambda Function ARN"
+    Value: !GetAtt BabySitterFunction.Arn
+
+  BabySitterAPI:
+    Value: !GetAtt BabySitterApi.Arn

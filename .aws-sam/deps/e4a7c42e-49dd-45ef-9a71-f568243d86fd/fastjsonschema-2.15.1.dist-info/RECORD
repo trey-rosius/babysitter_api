@@ -1,0 +1,16 @@
+fastjsonschema/__init__.py,sha256=Z86Cf_J1D9q6PtTFf-5XoFvHm5Jg-JC6XVziTvAScT4,8606
+fastjsonschema/__main__.py,sha256=4hfd23przxmQc8VjL0fUsbsrvvA73gJ2HDNPgLLFdAI,312
+fastjsonschema/draft04.py,sha256=zjc_mrpXOm70saAkF-SgUSbtqn4-PPlrQ0MH5FXxmek,28428
+fastjsonschema/draft06.py,sha256=5PaM94KjjqqS2McDgOsgf4kXh4mBf0qho5zvo5rzQN4,7661
+fastjsonschema/draft07.py,sha256=ag-Y8G9L-Ig2VnQtv7C79J3ewwEoh6ezhCs5gSPg9r8,4206
+fastjsonschema/exceptions.py,sha256=wJAM7Xp3oLpnt_IbnXPog0_f0dIOXMoJHVxFEK2-QyI,1610
+fastjsonschema/generator.py,sha256=MxAx4Mz8YC2xGiItpOF5B091x26awaIPShEwVLMJDXY,10697
+fastjsonschema/indent.py,sha256=juZFW9LSvmDJbPFIUm3GPqdPqJoUnqvM8neHN5rkvzU,920
+fastjsonschema/ref_resolver.py,sha256=xm2Gzr6E5izn3xEh5MVnwC66ccxNUtXrTEmqWvvP1rM,5191
+fastjsonschema/version.py,sha256=2X9LjlXZOfM_5lt8T46P6n5O_6rCBIBc2hiuPePHaVc,19
+fastjsonschema-2.15.1.dist-info/AUTHORS,sha256=DLGgN1TEmM2VoBM4cRn-gklc4HA8jLLPDDCeBD1kGhU,350
+fastjsonschema-2.15.1.dist-info/LICENSE,sha256=nM3faes5mKYBSN6-hblMWv7VNpG2R0aS54q8wKDlRPE,1518
+fastjsonschema-2.15.1.dist-info/METADATA,sha256=Do94nxWiBQXshUoyAKpj-rfOwMcFWkOM_pr6vzhiu7I,1877
+fastjsonschema-2.15.1.dist-info/WHEEL,sha256=p46_5Uhzqz6AzeSosiOnxK-zmFja1i22CrQCjmYe8ec,92
+fastjsonschema-2.15.1.dist-info/top_level.txt,sha256=8RQcPDFXXHZKduTjgzugpPNW3zIjxFT0axTh4UsT6gE,15
+fastjsonschema-2.15.1.dist-info/RECORD,,

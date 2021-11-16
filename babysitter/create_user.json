@@ -1,0 +1,33 @@
+{
+    "logType": "RequestMapping",
+    "path": [
+        "createUser"
+    ],
+    "fieldName": "createUser",
+    "resolverArn": "arn:aws:appsync:us-east-2:132260253285:apis/paxfg37mnbb7zkdoexrnepiq5y/types/Mutation/resolvers/createUser",
+    "requestId": "fc15c673-92b8-4fa3-bf0a-5bf709837f45",
+    "context": {
+        "arguments": {
+            "user": {
+                "id": "242423424234",
+                "username": "cwhitlock0",
+                "email": "cwhitlock0@state.tx.us",
+                "type": "NANNY",
+                "firstName": "Christopher",
+                "lastName": "Whitlock",
+                "address": "2905 Ridgeview Point",
+                "about": "2905 Ridgeview Point",
+                "longitude": 10,
+                "latitude": 6,
+                "status": "VERIFIED",
+                "createdOn": -123123
+            }
+        },
+        "stash": {},
+        "outErrors": []
+    },
+    "fieldInError": false,
+    "errors": [],
+    "parentType": "Mutation",
+    "graphQLAPIId": "paxfg37mnbb7zkdoexrnepiq5y"
+}
