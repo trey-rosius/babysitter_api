@@ -54,7 +54,7 @@ This REPO would contain all the code for the babysitter serverless GraphQL API.
 - [x] Application
 - [ ] Ratings 
 
-####User
+#### User
 
 - Starting off with a simple structure, i'll assume there are only 3 types of users
 
@@ -62,7 +62,7 @@ This REPO would contain all the code for the babysitter serverless GraphQL API.
 - Parent(Single or Couple)
 - Nanny
 
-####JOB
+#### Job
 
 - Parents can put up a job posting like(We need somebody, aged between 21 and 40 to look after our son everyday from 8AM to 6PM.
 - Job Type
@@ -72,11 +72,11 @@ This REPO would contain all the code for the babysitter serverless GraphQL API.
 - Cost
 - etc 
 
-####Applications
+#### Applications
  - Somebody offering Nanny duties should be able to apply 
  to a job posted by a Parent.
  
-####Rate/Feedback 
+#### Rate/Feedback 
  - Rate/Leave feedback on a nanny after job completion by a parent.
  - Rate/Leave Feedback on a parent after a job completion by a nanny.
  
@@ -154,3 +154,5 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 - 
 
 #### Solutions Architecture
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_api_arch.png)
