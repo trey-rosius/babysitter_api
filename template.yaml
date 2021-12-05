@@ -62,8 +62,6 @@ Resources:
   AppSyncServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
-      ManagedPolicyArns:
-        - !Ref DynamoDBPolicy
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -105,29 +103,50 @@ Resources:
             Resource: "*"
       Roles:
         - !Ref AddUserJobRole
-
-  DynamoDBPolicy:
-    Type: AWS::IAM::ManagedPolicy
+  DynamoDBReadPolicy:
+    Type: "AWS::IAM::Policy"
     Properties:
-      Path: /service-role/
+      PolicyName: DynamoDBReadPolicy
       PolicyDocument:
-        Version: 2012-10-17
+        Version: "2012-10-17"
         Statement:
-          - Effect: Allow
+          -
+            Effect: "Allow"
             Action: [
-              "dynamodb:Query",
               "dynamodb:GetItem",
-              "dynamodb:UpdateItem",
-              "dynamodb:PutItem",
-              "dynamodb:DeleteItem",
-
+              "dynamodb:Scan",
+              "dynamodb:Query",
+              "dynamodb:BatchGetItem",
+              "dynamodb:DescribeTable"
               ]
-
             Resource:
               - !GetAtt DynamoDBBabySitterTable.Arn
               - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
       Roles:
         - !Ref AddUserJobRole
+
+  DynamoDBWritePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DynamoDBWritePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem",
+              "dynamodb:ConditionCheckItem",
+              "dynamodb:DeleteItem",
+              "dynamodb:BatchWriteItem"
+            ]
+            Resource:
+              - !GetAtt DynamoDBBabySitterTable.Arn
+              - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
+      Roles:
+        - !Ref AddUserJobRole
+
 
 
   AddUserJobRole:
@@ -327,7 +346,6 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-
 
   ###################
   # OUTPUTS

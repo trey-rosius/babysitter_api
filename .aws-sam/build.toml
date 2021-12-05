@@ -5,7 +5,7 @@
 codeuri = "/Users/imac/Documents/graphql_api/babysitter"
 runtime = "python3.8"
 architecture = "x86_64"
-manifest_hash = "9b49c5fa4f16a5d2239d0404dcbd7c80"
+manifest_hash = "5f1684f0d3691e310cff0d15b26d3cd2"
 packagetype = "Zip"
 functions = ["BabySitterFunction"]
 
