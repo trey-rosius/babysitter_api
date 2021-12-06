@@ -190,4 +190,20 @@ relationship between entities.
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_entity.png)
 
-There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple job.
+- There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple job.
+- There's also a one to many relationship between a Job and Application
+
+#### Primary Key Design
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/primary_key_design.png)
+
+The User entity is actually unique on 2 attributes( username + email address)
+<br />
+
+That's why we have 2 PK and SK for User entity in the above table. 
+<br>
+
+From this current design, here are the access patterns available
+- Create/Read/Update/Delete User (`PK=USER#<Username>`, `SK=USER#<Username>`  and `PK=USEREMAIL#<Email>`, `SK=USEREMAIL#<Email>`)
+- Create/Update/Read/Delete Jobs (`PK=USER#<Username>` and `SK=JOB#<JobId>`)
+- Create Application/Up
+
