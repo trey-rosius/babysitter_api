@@ -2,7 +2,7 @@
 
 ## The Problem
 
-So COVID came along and made Remote work possible. Yay!!!. Now it's possible to work in our pyjamas from our bedrooms,sipping coffee from that large Mug we've always dreamt of. 
+So COVID came along and made Remote work possible. Yay!!!. Now we can work in our pyjamas, our bedrooms,sipping coffee from that large Mug we've always dreamt of. 
 I don't know about you, but to me, working like this is a dream come true.
 <br />
 <br />
@@ -156,3 +156,38 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 #### Solutions Architecture
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_api_arch.png)
+
+### INTRODUCTION
+We'll be using [AWS AppSync](https://aws.amazon.com/appsync/) to build out our api. AWS AppSync is a fully managed service allowing developers to deploy scalable GraphQL backends on AWS.
+<br />
+It's flexibility lets you utilize new or existing tables, using either a single-table design or a multi-table approach.
+<br />
+This api uses the single table design approach.In a single table design, all our entities would be stored
+in the same DynamoDB table. This let's us perform multiple queries on different entities in 
+the same requests,that leads to a high efficiency as your app grows bigger.
+<br />
+<br />
+This design approach has it's pros and cons, with one major con of being the steep learning curve of modelling the 
+single table. It requires you to know and understand your access patterns properly.
+<br />
+<br />
+Here are the concepts we'll be covering in this article.
+<br />
+- We'll use Appsync to improve security and incorporate different access patterns
+- We'll Implement Single Table Design. 
+- We'll be using [aws lambda powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/) routing feature to properly 
+route all Graphql endpoints.
+- Build faster with the new SAM Cli (`sam sync --stack-name`)
+
+We already highlighted our use case above. Now, let's dive into our dynamodb table.
+#### DynamoDb Table
+Our dynamodb table stores all data related to the application.It stores data on Users,
+Jobs, applications, ratings etc. Those are the different entities we need to model.
+<br />
+<br />
+Since we already understand our access patterns, let's dive right into the 
+relationship between entities.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_entity.png)
+
+There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple job.
