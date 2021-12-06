@@ -203,7 +203,20 @@ That's why we have 2 PK and SK for User entity in the above table.
 <br>
 
 From this current design, here are the access patterns available
-- Create/Read/Update/Delete User (`PK=USER#<Username>`, `SK=USER#<Username>`  and `PK=USEREMAIL#<Email>`, `SK=USEREMAIL#<Email>`)
+- Create/Read/Update/Delete User (Transaction Process) (`PK=USER#<Username>`, `SK=USER#<Username>`  and `PK=USEREMAIL#<Email>`, `SK=USEREMAIL#<Email>`)
 - Create/Update/Read/Delete Jobs (`PK=USER#<Username>` and `SK=JOB#<JobId>`)
-- Create Application/Up
+- Create/Update Application (`PK=JOB#<JobId>#APPLICATION#<ApplicationId>` and `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`)
+- List all jobs per User( `PK=USER#<Username>` and `SK= BEGINS_WITH('JOB#')` )
+- Book a Nanny (Transaction Process) (`PK=USER#<Username>` and `SK=JOB#<JobId>`) (`PK=JOB#<JobId>#APPLICATION#<ApplicationId>` and `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`)
+<br>
+
+Booking a nanny means, changing the status of an application from `PENDING`  to `ACCEPTED` , while changing the 
+job status from `OPEN` to `CLOSED`
+<br>
+<br>
+Based on our current design, it's not possible to get all jobs a parent has posted.We need a Global Secondary index(GSI) for that. 
+<br>
+For this application, we'll create 3 GSI's for additional access patterns.
+#### Global Secondary Indexes
+1) List Jobs Per User
 
