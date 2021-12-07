@@ -214,9 +214,116 @@ Booking a nanny means, changing the status of an application from `PENDING`  to 
 job status from `OPEN` to `CLOSED`
 <br>
 <br>
-Based on our current design, it's not possible to get all jobs a parent has posted.We need a Global Secondary index(GSI) for that. 
+The current design has limitations, There are a couple of access patterns it doesn't support yet.
+For example, currently, we can't get all applications for a particular job.We need a Global Secondary index(GSI) for that. 
 <br>
 For this application, we'll create 3 GSI's for additional access patterns.
 #### Global Secondary Indexes
-1) List Jobs Per User
+1) `jobApplications`: Get applications for a job. Parents have to see all applications for the job
+they posted, in-order to book who they intend to work with.
+- `PK = GS1PK AND SK=GSI1SK`
+2) `jobsAppliedTo`: A Nanny would definitely love to see all the jobs they applied to
+- `PK = GSI2PK AND SK=GSI2SK`
+3) `jobsByStatus`: It's essential to display OPEN jobs to job seekers. The system admin would also love
+to see open /closed jobs.
+- `PK = jobStatus AND SK=GSI1SK`
 
+These are the few access patterns we'll cover in this tutorial.There's still a lot to add. You can take up the challenge and push forward.
+
+#### GraphQL Schema
+I won't paste the complete GraphQl schema here, just the relevant parts that need attention.
+<br>
+#### Mutations
+```
+        type Mutation {
+            createUser(user:CreateUserInput!):User!
+            @aws_cognito_user_pools
+
+            updateUserStatus(username:String!,status:UserAccountStatus!):User
+            @aws_cognito_user_pools(cognito_groups: ["admin"])
+
+            updateUser(user:UpdateUserInput!):User!
+            @aws_cognito_user_pools
+
+            deleteUser(username:String!):Boolean
+            @aws_cognito_user_pools
+
+
+            createJob(job:CreateJobInput!):Job!
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+
+            applyToJob(application:CreateJobApplicationInput!):JobApplication!
+            @aws_cognito_user_pools(cognito_groups: ["nanny"])
+
+            bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+        }
+
+```
+A user has to be authenticated before carrying out any `Mutation`.
+<br />
+Users are seperated into 3 user groups
+- Admin
+- Parent
+- Nanny
+Some Mutations can only be executed by Users of a particular group, while other
+Mutations can be executed by Users of any group. 
+<br />
+<br />
+For example, in the Mutation below, only an admin can change a User's account
+status. Maybe from `UNVERIFIED` TO `VERIFIED` or vice versa
+<br />
+Here's the account status enum
+```
+        enum UserAccountStatus {
+            VERIFIED
+            UNVERIFIED
+            DEACTIVATED
+        }
+```
+```
+updateUserStatus(username:String!,status:UserAccountStatus!):User
+@aws_cognito_user_pools(cognito_groups: ["admin"])
+```
+Creating a job is reserved for Parent's only
+
+```
+  createJob(job:CreateJobInput!):Job!
+  @aws_cognito_user_pools(cognito_groups: ["parent"])
+
+```
+
+Only Nanny's can apply to a job
+
+```
+ applyToJob(application:CreateJobApplicationInput!):JobApplication!
+ @aws_cognito_user_pools(cognito_groups: ["nanny"])
+```
+
+Any User group can create an account
+```
+ createUser(user:CreateUserInput!):User!
+ @aws_cognito_user_pools
+```
+
+#### Queries
+Same User Group concept apply to queries.
+```
+        type Query {
+            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
+
+            listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
+
+            listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
+
+            listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+
+            listApplicationsPerJob(jobId:String!):Job!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+
+            listJobsAppliedTo(username:String!):User!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+
+        }
+```
+Here's the [complete schema](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/schema/schema.graphql)
