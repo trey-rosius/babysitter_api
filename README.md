@@ -281,6 +281,7 @@ Here's the account status enum
             DEACTIVATED
         }
 ```
+.
 ```
 updateUserStatus(username:String!,status:UserAccountStatus!):User
 @aws_cognito_user_pools(cognito_groups: ["admin"])
@@ -327,3 +328,17 @@ Same User Group concept apply to queries.
         }
 ```
 Here's the [complete schema](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/schema/schema.graphql)
+
+#### AWS IAM (Identity and Access Management)
+AWS services are born with zero permissions. It's your role as a developer to assign permissions and policies
+to the services you intend to use.
+<br />
+<br />
+With IAM, you can specify who can access which services and resources, and under which conditions
+<br />
+<br />
+With IAM policies, you manage permissions to your workforce and systems to ensure least-privilege permissions.
+<br />
+<br />
+Here's a list of all policies and permissions we'll use in this application
+
