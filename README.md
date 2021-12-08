@@ -155,7 +155,7 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 
 #### Solutions Architecture
 
-![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_api_arch.png)
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_arch_2.png)
 
 ### INTRODUCTION
 We'll be using [AWS AppSync](https://aws.amazon.com/appsync/) to build out our api. AWS AppSync is a fully managed service allowing developers to deploy scalable GraphQL backends on AWS.
@@ -341,4 +341,5 @@ With IAM policies, you manage permissions to your workforce and systems to ensur
 <br />
 <br />
 Here's a list of all policies and permissions we'll use in this application
+
 
