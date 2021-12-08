@@ -167,22 +167,21 @@ in the same DynamoDB table. This let's us perform multiple queries on different 
 the same requests,that leads to a high efficiency as your app grows bigger.
 <br />
 <br />
-This design approach has it's pros and cons, with one major con of being the steep learning curve of modelling the 
-single table. It requires you to know and understand your access patterns properly.
+This design approach has it's pros and cons, with one major con being the steep learning curve of modelling the 
+single table. It requires you to know and understand your access patterns properly beforehand.
 <br />
 <br />
 Here are the concepts we'll be covering in this article.
 <br />
 - We'll use Appsync to improve security and incorporate different access patterns
 - We'll Implement Single Table Design. 
-- We'll be using [aws lambda powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/) routing feature to properly 
+- We'll be using [aws lambda powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/) for tracing, structured logging, custom metrics and routing to properly 
 route all Graphql endpoints.
 - Build faster with the new SAM Cli (`sam sync --stack-name`)
 
-We already highlighted our use case above. Now, let's dive into our dynamodb table.
-#### DynamoDb Table
-Our dynamodb table stores all data related to the application.It stores data on Users,
-Jobs, applications, ratings etc. Those are the different entities we need to model.
+We already highlighted our use case above. Now, let's dive into our DynamoDB table.
+#### DynamoDB Table
+Our dynamodb table stores all data related to the application.
 <br />
 <br />
 Since we already understand our access patterns, let's dive right into the 
@@ -203,11 +202,25 @@ That's why we have 2 PK and SK for User entity in the above table.
 <br>
 
 From this current design, here are the access patterns available
-- Create/Read/Update/Delete User (Transaction Process) (`PK=USER#<Username>`, `SK=USER#<Username>`  and `PK=USEREMAIL#<Email>`, `SK=USEREMAIL#<Email>`)
-- Create/Update/Read/Delete Jobs (`PK=USER#<Username>` and `SK=JOB#<JobId>`)
-- Create/Update Application (`PK=JOB#<JobId>#APPLICATION#<ApplicationId>` and `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`)
-- List all jobs per User( `PK=USER#<Username>` and `SK= BEGINS_WITH('JOB#')` )
-- Book a Nanny (Transaction Process) (`PK=USER#<Username>` and `SK=JOB#<JobId>`) (`PK=JOB#<JobId>#APPLICATION#<ApplicationId>` and `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`)
+1) Create/Read/Update/Delete User (Transaction Process) 
+- `PK=USER#<Username>`
+- `SK=USER#<Username>` 
+- `PK=USEREMAIL#<Email>`
+- `SK=USEREMAIL#<Email>`
+2) Create/Update/Read/Delete Jobs 
+- `PK=USER#<Username>` 
+- `SK=JOB#<JobId>`
+3) Create/Update Application 
+- `PK=JOB#<JobId>#APPLICATION#<ApplicationId>` 
+- `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`
+4) List all jobs per User
+- `PK=USER#<Username>` 
+- `SK= BEGINS_WITH('JOB#')` 
+5) Book a Nanny (Transaction Process) 
+- `PK=USER#<Username>` 
+- `SK=JOB#<JobId>`
+- `PK=JOB#<JobId>#APPLICATION#<ApplicationId>` 
+- `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`
 <br>
 
 Booking a nanny means, changing the status of an application from `PENDING`  to `ACCEPTED` , while changing the 
