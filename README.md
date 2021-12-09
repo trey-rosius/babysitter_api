@@ -342,17 +342,83 @@ Same User Group concept apply to queries.
 ```
 Here's the [complete schema](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/schema/schema.graphql)
 
-#### AWS IAM (Identity and Access Management)
-AWS services are born with zero permissions. It's your role as a developer to assign permissions and policies
-to the services you intend to use.
+#### AWS IAM (Identity and Access Management) Policies
+When i started learning how to build serverless applications. I almost went nuts wrapping my head 
+head around AWS IAM.
+<br />
+A ton of serverless tutorials out there rarely talk about IAM and just dive into creating API's.
+<br />
+I think we should make a difference. 
+<br />
+#### What are IAM Policies
+AWS services are born with zero permissions. You manage access in AWS by creating policies and attaching them to IAM identities (users, groups of users, or roles) or AWS resources. 
 <br />
 <br />
-With IAM, you can specify who can access which services and resources, and under which conditions
+A policy is an object in AWS that, when associated with an identity or resource, defines their permissions.
+AWS evaluates these policies when an IAM principal (user or role) makes a request.
 <br />
+In simple terms,policies define authorizations to AWS services and resources.
 <br />
-With IAM policies, you manage permissions to your workforce and systems to ensure least-privilege permissions.
-<br />
-<br />
-Here's a list of all policies and permissions we'll use in this application
+There are different types of Policies.
+Let's take a look at an identity-based policy(IAM Policy) from the api we are about to build. 
 
+```
+  DynamoDBReadPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DynamoDBReadPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "dynamodb:GetItem",
+              "dynamodb:Scan",
+              "dynamodb:Query",
+              "dynamodb:BatchGetItem",
+              "dynamodb:DescribeTable"
+              ]
+            Resource:
+              - !GetAtt DynamoDBHelloWorldTable.Arn
+              - !Join [ '/',[!GetAtt DynamoDBHelloWorldTable.Arn,"index/*"]]
+      Roles:
+        - !Ref AddUserJobRole
+
+
+```
+This policy grants specific permissions to an AWS identity, thus giving them access to perform operations on 
+ an Amazon DynamoDB. Policies have a specific formatwhich they follow. 
+<br />
+
+Here's what you should take note of in the above policy
+- Type `AWS::IAM::Policy`
+- PolicyName `DynamoDBReadPolicy`
+- Statement Effect `Allow` explicitly allows the role access to the resource.
+- Action represent  a set of functions a role can have on the resource.
+- Resource represents the aws resource the above actions would be performed on. 
+In this case, it's our DynamoDB table and all it's respective Global Secondary Indexes.
+- Roles: Attaching the above policy to a role, gives that role permissions to carryout the 
+policy actions on the said Resource(DynamoDB)
+<br />
+Roles also have their own schema or template on how they are defined. 
+<br />
+Here's how we defined the `AddUserJobRole`
+
+```
+  AddUserJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+            - "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+
+```
+This role gives lambda permissions, based on attached policies.
 
