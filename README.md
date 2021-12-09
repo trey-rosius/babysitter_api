@@ -133,7 +133,7 @@ Reviews/Ratings will be publicly visible on each users profile.
 
 
 
-##Overview
+## Overview
 This api is built as a serverless graphql api, using [Serverless Application
 Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code, [AWS AppSync](https://aws.amazon.com/appsync/) for the serverless GraphQL, [AWS Cognito](https://aws.amazon.com/cognito/) for authentication,python 3.8 as the runtime language, [AWS Lambda](https://aws.amazon.com/lambda/) for direct lambda resolvers,
 [Simple Queue Service(SQS)](https://aws.amazon.com/sqs/) for executing requests asynchronously, [AWS DynamoDB](https://aws.amazon.com/dynamodb/) for storing data.
@@ -342,7 +342,7 @@ Same User Group concept apply to queries.
 ```
 Here's the [complete schema](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/schema/schema.graphql)
 
-#### AWS IAM (Identity and Access Management) Policies
+## AWS IAM (Identity and Access Management) Policies
 When i started learning how to build serverless applications. I almost went nuts wrapping my head 
 head around AWS IAM.
 <br />
@@ -357,10 +357,13 @@ AWS services are born with zero permissions. You manage access in AWS by creatin
 A policy is an object in AWS that, when associated with an identity or resource, defines their permissions.
 AWS evaluates these policies when an IAM principal (user or role) makes a request.
 <br />
-In simple terms,policies define authorizations to AWS services and resources.
+In simple terms,
+> policies define authorizations to AWS services and resources.
+
 <br />
 There are different types of Policies.
-Let's take a look at an identity-based policy(IAM Policy) from the api we are about to build. 
+
+Let's take a look at an **identity-based policy(IAM Policy)** from the api we are about to build. 
 
 ```
   DynamoDBReadPolicy:
@@ -388,22 +391,27 @@ Let's take a look at an identity-based policy(IAM Policy) from the api we are ab
 
 ```
 This policy grants specific permissions to an AWS identity, thus giving them access to perform operations on 
- an Amazon DynamoDB. Policies have a specific formatwhich they follow. 
+ an Amazon DynamoDB. Policies have a specific format.
 <br />
 
-Here's what you should take note of in the above policy
+Here's what you should take note of, in the above policy
 - Type `AWS::IAM::Policy`
 - PolicyName `DynamoDBReadPolicy`
 - Statement Effect `Allow` explicitly allows the role access to the resource.
 - Action represent  a set of functions a role can have on the resource.
 - Resource represents the aws resource the above actions would be performed on. 
 In this case, it's our DynamoDB table and all it's respective Global Secondary Indexes.
-- Roles: Attaching the above policy to a role, gives that role permissions to carryout the 
-policy actions on the said Resource(DynamoDB)
+- Roles: Attaching the above policy to a role(AWS Identity), grants them access to perform operations on 
+ said Resource(DynamoDB)
 <br />
-Roles also have their own schema or template on how they are defined. 
+
+We create an `AssumeRolePolicyDocument` and attach it to our lambda function that'll define all the permissions
+it requires for it's execution.
+Remember that, it's the same role we've attached the DynamoDB policy to.
 <br />
-Here's how we defined the `AddUserJobRole`
+
+Therefore once this role is attached to a lambda function, that function would have permissions to write to the 
+dynamoDB table.
 
 ```
   AddUserJobRole:
@@ -420,5 +428,5 @@ Here's how we defined the `AddUserJobRole`
                 - "lambda.amazonaws.com"
 
 ```
-This role gives lambda permissions, based on attached policies.
+
 
