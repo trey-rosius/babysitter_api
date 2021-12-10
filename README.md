@@ -446,14 +446,288 @@ From your favorite IDE, open up the app you just created and let's get started.
 
 You'll probably have a folder structure looking like this. Delete the events folder and rename the hello_world folder to 
 babysitter.
+<br />
+
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/s4.png)
 <br /> 
 
-We'll start by installing and  configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/).
+We'll start by installing and configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/) and the boto3 library.
+<br />
+AWS Lambda Powertools is a suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.
 <br />
 
-Open up `templates.yaml` file and we'll start by defining global variables under `Globals`.
+Open up the `requirements.txt` file located at `babysitter_api/babysitter/` and paste these in it
+<br />
 
+```
+aws-lambda-powertools==1.22.0
+boto3
+```
+Open up your terminal from that directory and run the below command to install the libraries
+<br />
+
+`pip install -r requirements.txt`
+<br />
+#### GraphQL Schema
+Create a file called `schema.graphql` inside a folder called `schema`, located in the root directory of your application,and 
+paste in this graphql schema.
+<br />
+
+```
+schema {
+            query:Query
+            mutation: Mutation
+        }
+
+        type Query {
+            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
+            listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
+            listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
+            listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+            listApplicationsPerJob(jobId:String!):Job!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+            listJobsAppliedTo(username:String!):User!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+
+        }
+
+        type Mutation {
+            createUser(user:CreateUserInput!):User!
+            @aws_cognito_user_pools
+            updateUserStatus(username:String!,status:UserAccountStatus!):User
+            @aws_cognito_user_pools(cognito_groups: ["admin"])
+            updateUser(user:UpdateUserInput!):User!
+            @aws_cognito_user_pools
+            deleteUser(username:String!):Boolean
+            createJob(job:CreateJobInput!):Job!
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+            applyToJob(application:CreateJobApplicationInput!):JobApplication!
+            @aws_cognito_user_pools(cognito_groups: ["nanny"])
+            bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+        }
+
+        type User @aws_cognito_user_pools {
+            id: ID!
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            postedJobs:[Job]
+            createdOn:AWSTimestamp
+
+
+
+        }
+       type Job @aws_cognito_user_pools{
+            id:ID!
+            jobType:JobType!
+            username:String!
+            startDate:AWSDate!
+            endDate:AWSDate!
+            startTime:AWSTime!
+            endTime:AWSTime!
+            longitude:Float!
+            latitude:Float!
+            address:String!
+            city:String!
+            cost:Int!
+            jobStatus:JobStatus!
+            applications:[JobApplication]
+
+       }
+       type JobApplication @aws_cognito_user_pools{
+           id:ID!
+           username:String!
+           jobId:String!
+           jobApplicationStatus:JobApplicationStatus!
+           createdOn:AWSTimestamp!
+       }
+
+        input CreateJobApplicationInput{
+            id:ID!
+           username:String!
+           jobId:String!
+           jobApplicationStatus:JobApplicationStatus!
+           createdOn:AWSTimestamp
+        }
+
+        input CreateJobInput{
+            id:ID!
+            jobType:JobType!
+            startDate:AWSDate!
+            endDate:AWSDate!
+            startTime:AWSTime!
+            endTime:AWSTime!
+            longitude:Float!
+            latitude:Float!
+            jobStatus:JobStatus!
+            address:String!
+            city:String!
+            cost:Int!
+            username:String!
+
+        }
+
+        input CreateUserInput {
+            id: ID!
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            createdOn:AWSTimestamp
+
+
+
+        }
+        input UpdateUserInput {
+            id: ID!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Int!
+            latitude:Int!
+            status:UserAccountStatus!
+
+
+
+        }
+
+        enum UserAccountStatus {
+            VERIFIED
+            UNVERIFIED
+            DEACTIVATED
+        }
+        enum UserType{
+            NANNY
+            PARENT
+        }
+        enum JobType{
+            BABYSITTING
+            CLEANING
+            RUNNING_ERRANDS
+
+        }
+        enum JobStatus{
+            OPEN
+            CLOSED
+        }
+        enum JobApplicationStatus{
+            PENDING
+            DECLINED
+            ACCEPTED
+
+        }
+
+```
+Next,open up `templates.yaml` file and enable Tracer and Logger utilities.
+<br />
+Tracer is an opinionated thin wrapper for AWS X-Ray Python SDK.
+<br />
+Logger provides an opinionated logger with output structured as JSON
+
+**BEFORE**
+
+```
+Globals:
+  Function:
+    Timeout: 3
+```
+**AFTER**
+
+```
+Globals:
+  Function:
+    Tracing: Active
+    Timeout: 3
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref DynamoDBBabySitterTable
+        LOG_LEVEL: DEBUG
+        POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
+        POWERTOOLS_LOGGER_LOG_EVENT: true
+        POWERTOOLS_SERVICE_NAME: "babysitter_api_service"
+        POWERTOOLS_METRICS_NAMESPACE: "babysitter_api"
+
+```
+Under Resources, let's create our cognito user pool and user pool client. Cognito is used for 
+authenticating and securing our endpoints
+
+```
+  ###################
+  # COGNITO POOLS
+  ##################
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${AWS::StackName}-UserPool
+      AutoVerifiedAttributes:
+        - email
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: babysitter_api
+      GenerateSecret: false
+      UserPoolId: !Ref CognitoUserPool
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+
+```
+Next, add the GraphQL API, API_KEY and GraphQl Schema
+
+```
+  ###################
+  # GRAPHQL API
+  ##################
+
+  BabySitterApi:
+    Type: "AWS::AppSync::GraphQLApi"
+    Properties:
+      Name: BabySitterApi
+      AuthenticationType: "API_KEY"
+      AdditionalAuthenticationProviders:
+        - AuthenticationType: AMAZON_COGNITO_USER_POOLS
+          UserPoolConfig:
+            AwsRegion: !Ref AWS::Region
+            UserPoolId: !Ref CognitoUserPool
+      XrayEnabled: true
+      LogConfig:
+        CloudWatchLogsRoleArn: !GetAtt RoleAppSyncCloudWatch.Arn
+        ExcludeVerboseContent: FALSE
+        FieldLogLevel: ALL
+
+  BabySitterApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+
+  BabySitterApiSchema:
+    Type: "AWS::AppSync::GraphQLSchema"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      DefinitionS3Location: 'schema/schema.graphql'
+
+```
+We've set the default authentication type for our api to `API_KEY`. In our application, we have
+one public endpoint(list ) and we definitely have to control throttling for that endpoint.
+<br />
+This `API_KEY` is valid for 7 days after which it has to be regenerated again.
+<br />
+The next authentication type is `AMAZON_COGNITO_USER_POOLS` which requires a user to be authenticated before accessing the endpoint.
+<br />
 
 
 
