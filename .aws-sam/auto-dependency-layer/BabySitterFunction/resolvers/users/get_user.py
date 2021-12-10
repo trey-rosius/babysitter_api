@@ -1,9 +1,7 @@
 from aws_lambda_powertools import Logger, Tracer
 import boto3
 import os
-import json
 
-from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
 from botocore.exceptions import ClientError
 from entities.User import User
 
@@ -25,9 +23,18 @@ def getUser(username: str = ""):
                 'SK': f'USER#{username}'
             }
         )
-        user = User(response['Item'])
-        logger.info("users dict {}".format(response['Item']))
-        return user.user_dict()
+        logger.debug("users dict {}".format(response))
+        if response['Item'] is None:
+            logger.debug("response is null")
+            return {}
+        else:
+            logger.debug("response is not null")
+            user = User(response['Item'])
+
+            return user.user_dict()
+
+
+
 
 
 

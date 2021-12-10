@@ -6,8 +6,8 @@ from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_ut
 from botocore.exceptions import ClientError
 
 
-tracer = Tracer(service="sample_resolver")
-logger = Logger(service="sample_resolver")
+tracer = Tracer(service="create_user_resolver")
+logger = Logger(service="create_user_resolver")
 
 client = boto3.client('dynamodb')
 

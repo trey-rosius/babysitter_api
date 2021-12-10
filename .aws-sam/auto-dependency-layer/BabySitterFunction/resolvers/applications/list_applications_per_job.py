@@ -16,7 +16,7 @@ logger = Logger(service="sample_resolver")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 
-def listApplicationsPerJob(jobId: str = "")->List:
+def listApplicationsPerJob(jobId: str = ""):
     logger.debug(f'jobId is:{jobId}')
 
     try:

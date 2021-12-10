@@ -49,16 +49,63 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: app.lambda_handler
-      Role: !GetAtt AddUserJobRole.Arn
+      Role: !GetAtt AddBabysitterRole.Arn
+      Environment:
+        Variables:
+          UPDATE_JOB_APPLICATIONS_SQS_QUEUE: !Ref UpdateJobApplicationsSQSQueue
       Runtime: python3.8
       Description: Sample Lambda Powertools Direct Lambda Resolver
       Tags:
         SOLUTION: LambdaPowertoolsPython
+  UpdateJobApplicationsFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - LambdaLoggingPolicy
+    Properties:
+      CodeUri: babysitter/
+      Handler: update_job_application.lambda_handler
+      Runtime: python3.8
+      Description:  Lambda Powertools Direct Lambda Resolver
+      Policies:
+
+        - SQSPollerPolicy:
+            QueueName:
+              !GetAtt UpdateJobApplicationsSQSQueue.QueueName
+        - Statement:
+
+            - Effect: Allow
+              Action:
+                - "dynamodb:UpdateItem"
+              Resource:
+
+                - !GetAtt DynamoDBBabySitterTable.Arn
+
+      Events:
+        RetrieveFromSQS:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UpdateJobApplicationsSQSQueue.Arn
+            BatchSize: 5
+
 
   ###################
   # IAM PERMISSIONS AND ROLES
   ##################
-
+  SQSSendMessagePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: SQSSendMessagePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "sqs:SendMessage*"
+            ]
+            Resource: !GetAtt UpdateJobApplicationsSQSQueue.Arn
+      Roles:
+        - !Ref AddBabysitterRole
   AppSyncServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -102,7 +149,7 @@ Resources:
               ]
             Resource: "*"
       Roles:
-        - !Ref AddUserJobRole
+        - !Ref AddBabysitterRole
   DynamoDBReadPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -123,7 +170,7 @@ Resources:
               - !GetAtt DynamoDBBabySitterTable.Arn
               - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
       Roles:
-        - !Ref AddUserJobRole
+        - !Ref AddBabysitterRole
 
   DynamoDBWritePolicy:
     Type: "AWS::IAM::Policy"
@@ -145,11 +192,11 @@ Resources:
               - !GetAtt DynamoDBBabySitterTable.Arn
               - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
       Roles:
-        - !Ref AddUserJobRole
+        - !Ref AddBabysitterRole
 
 
 
-  AddUserJobRole:
+  AddBabysitterRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -293,6 +340,20 @@ Resources:
       TypeName: "Query"
       FieldName: "listJobsAppliedTo"
       DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+
+  ###################
+   #   SQS
+  ###################
+  UpdateJobApplicationsSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 20
+      RedrivePolicy:
+        deadLetterTargetArn:
+          !GetAtt UpdateJobApplicationsSQSDLQ.Arn
+        maxReceiveCount: 5
+  UpdateJobApplicationsSQSDLQ:
+    Type: AWS::SQS::Queue
   ###################
   # TABLE
   ##################
@@ -346,7 +407,6 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-
   ###################
   # OUTPUTS
   ##################
@@ -354,6 +414,8 @@ Outputs:
   BabySitterFunction:
     Description: "Baby Sitter Lambda Function ARN"
     Value: !GetAtt BabySitterFunction.Arn
-
+  UpdateJobApplicationsFunction:
+    Description: "Baby Sitter Lambda Function ARN"
+    Value: !GetAtt UpdateJobApplicationsFunction.Arn
   BabySitterAPI:
     Value: !GetAtt BabySitterApi.Arn

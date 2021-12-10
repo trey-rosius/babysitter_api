@@ -1,12 +1,10 @@
 from aws_lambda_powertools import Logger, Tracer
 import boto3
 import os
-import json
-import decimal
+
 from entities.User import User
 from entities.Job import Job
-from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
-from boto3.dynamodb.conditions import Key
+
 
 from botocore.exceptions import ClientError
 

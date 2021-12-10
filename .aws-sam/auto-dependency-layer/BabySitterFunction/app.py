@@ -4,8 +4,6 @@ from aws_lambda_powertools.event_handler import AppSyncResolver
 
 from resolvers import job, user, application
 
-from aws_lambda_powertools.utilities.typing import LambdaContext
-
 tracer = Tracer(service="lambda_function")
 logger = Logger(service="lambda_function")
 
