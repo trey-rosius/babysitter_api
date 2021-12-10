@@ -161,10 +161,8 @@ Resources:
             Effect: "Allow"
             Action: [
               "dynamodb:GetItem",
-              "dynamodb:Scan",
               "dynamodb:Query",
-              "dynamodb:BatchGetItem",
-              "dynamodb:DescribeTable"
+
               ]
             Resource:
               - !GetAtt DynamoDBBabySitterTable.Arn
@@ -186,7 +184,6 @@ Resources:
               "dynamodb:UpdateItem",
               "dynamodb:ConditionCheckItem",
               "dynamodb:DeleteItem",
-              "dynamodb:BatchWriteItem"
             ]
             Resource:
               - !GetAtt DynamoDBBabySitterTable.Arn
