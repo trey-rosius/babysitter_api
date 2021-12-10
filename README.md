@@ -443,7 +443,13 @@ Take a look at the screenshots below
 <br />
 From your favorite IDE, open up the app you just created and let's get started.
 <br />
-We'll start by configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/).
+
+You'll probably have a folder structure looking like this. Delete the events folder and rename the hello_world folder to 
+babysitter.
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/s4.png)
+<br /> 
+
+We'll start by installing and  configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/).
 <br />
 
 Open up `templates.yaml` file and we'll start by defining global variables under `Globals`.
