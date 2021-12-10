@@ -155,7 +155,7 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 
 #### Solutions Architecture
 
-![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_arch_2.png)
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_arch_api.png)
 
 ### INTRODUCTION
 We'll be using [AWS AppSync](https://aws.amazon.com/appsync/) to build out our api. AWS AppSync is a fully managed service allowing developers to deploy scalable GraphQL backends on AWS.
@@ -403,6 +403,8 @@ Here's what you should take note of, in the above policy
 In this case, it's our DynamoDB table and all it's respective Global Secondary Indexes.
 - Roles: Attaching the above policy to a role(AWS Identity), grants them access to perform operations on 
  said Resource(DynamoDB)
+<br />
+`!Ref` is a cloud formation intrinsic function that returns the value of the specified resource.
 <br />
 
 We create an `AssumeRolePolicyDocument` and attach it to our lambda function that'll define all the permissions
