@@ -441,8 +441,9 @@ Take a look at the screenshots below
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/s2.png)
 
 <br />
-From your favorite IDE, open up the app you just created and let's get started.We'll start by 
-configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/).
+From your favorite IDE, open up the app you just created and let's get started.
+<br />
+We'll start by configuring [AWS Lambda Powertools](https://awslabs.github.io/aws-lambda-powertools-python/latest/).
 <br />
 
 Open up `templates.yaml` file and we'll start by defining global variables under `Globals`.
