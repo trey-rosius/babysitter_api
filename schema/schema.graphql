@@ -116,16 +116,14 @@ schema {
 
         }
         input UpdateUserInput {
-            id: ID!
+            username: String!
+            email: AWSEmail!
             firstName:String!
             lastName:String!
             address:String!
             about:String!
-            longitude:Int!
-            latitude:Int!
-            status:UserAccountStatus!
-
-
+           longitude:Float!
+            latitude:Float!
 
         }
 

@@ -273,6 +273,13 @@ Resources:
       TypeName: "Mutation"
       FieldName: "createUser"
       DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+  UpdateUserResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Mutation"
+      FieldName: "updateUser"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
   GetUserResolver:
     Type: "AWS::AppSync::Resolver"
     Properties:

@@ -4,6 +4,7 @@ from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler.appsync import Router
 from resolvers.users.create import createUser
 from resolvers.users.get_user import getUser
+from resolvers.users.update_user import updateUser
 from resolvers.users.update_user_status import updateUserStatus
 
 logger = Logger(child=True)
@@ -15,6 +16,13 @@ def create_user(user=None):
     if user is None:
         user = {}
     return createUser(user)
+
+
+@router.resolver(type_name="Mutation", field_name="updateUser")
+def update_user_status(user=None):
+    if user is None:
+        user = {}
+    return updateUser(user)
 
 
 @router.resolver(type_name="Mutation", field_name="updateUserStatus")
