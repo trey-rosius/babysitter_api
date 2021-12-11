@@ -1175,3 +1175,32 @@ Click and open up your api.
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/g.png)
 
+Click on `queries` on the left hand side menu, make sure API key is selected as the authorization provider,
+fill in the `createUser` mutation and run it.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/h.png)
+
+Because we restricted our endpoint to authenticated users only(by adding the ` @aws_cognito_user_pools` decorator to the endpoint), you'll get an `Unauthorized` errorType when 
+you access the endpoint as an unauthenticated user.
+
+Click on API key and select your cognito user pools ID.
+<br />
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/i.png)
+
+Sign in using the user credentials you created in the cognito screen above.
+<br />
+
+Now Run the Mutation again.
+<br />
+If everything goes successfully, you should see output similar to this.
+<br />
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/e.png)
+
+If you run the Mutation again, you should see this output
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/f.png)
+
+<br />
+Please checkout the code in the repo, if you are facing any issues.
+
