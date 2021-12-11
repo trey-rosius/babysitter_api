@@ -448,6 +448,12 @@ You'll probably have a folder structure looking like this. Delete the events fol
 babysitter.
 <br />
 
+Add another folder called `schema`. This folder would contain our graphql schema.
+<br />
+
+Inside the babysitter folder, create 2 folders called entities and resolvers.
+<br />
+
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/s4.png)
 <br /> 
 
@@ -468,171 +474,7 @@ Open up your terminal from that directory and run the below command to install t
 
 `pip install -r requirements.txt`
 <br />
-#### GraphQL Schema
-Create a file called `schema.graphql` inside a folder called `schema`, located in the root directory of your application,and 
-paste in this graphql schema.
-<br />
 
-```
-schema {
-            query:Query
-            mutation: Mutation
-        }
-
-        type Query {
-            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
-            listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
-            listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
-            listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-            listApplicationsPerJob(jobId:String!):Job!
-            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-            listJobsAppliedTo(username:String!):User!
-            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-
-        }
-
-        type Mutation {
-            createUser(user:CreateUserInput!):User!
-            @aws_cognito_user_pools
-            updateUserStatus(username:String!,status:UserAccountStatus!):User
-            @aws_cognito_user_pools(cognito_groups: ["admin"])
-            updateUser(user:UpdateUserInput!):User!
-            @aws_cognito_user_pools
-            deleteUser(username:String!):Boolean
-            createJob(job:CreateJobInput!):Job!
-            @aws_cognito_user_pools(cognito_groups: ["parent"])
-            applyToJob(application:CreateJobApplicationInput!):JobApplication!
-            @aws_cognito_user_pools(cognito_groups: ["nanny"])
-            bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
-            @aws_cognito_user_pools(cognito_groups: ["parent"])
-        }
-
-        type User @aws_cognito_user_pools {
-            id: ID!
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            postedJobs:[Job]
-            createdOn:AWSTimestamp
-
-
-
-        }
-       type Job @aws_cognito_user_pools{
-            id:ID!
-            jobType:JobType!
-            username:String!
-            startDate:AWSDate!
-            endDate:AWSDate!
-            startTime:AWSTime!
-            endTime:AWSTime!
-            longitude:Float!
-            latitude:Float!
-            address:String!
-            city:String!
-            cost:Int!
-            jobStatus:JobStatus!
-            applications:[JobApplication]
-
-       }
-       type JobApplication @aws_cognito_user_pools{
-           id:ID!
-           username:String!
-           jobId:String!
-           jobApplicationStatus:JobApplicationStatus!
-           createdOn:AWSTimestamp!
-       }
-
-        input CreateJobApplicationInput{
-            id:ID!
-           username:String!
-           jobId:String!
-           jobApplicationStatus:JobApplicationStatus!
-           createdOn:AWSTimestamp
-        }
-
-        input CreateJobInput{
-            id:ID!
-            jobType:JobType!
-            startDate:AWSDate!
-            endDate:AWSDate!
-            startTime:AWSTime!
-            endTime:AWSTime!
-            longitude:Float!
-            latitude:Float!
-            jobStatus:JobStatus!
-            address:String!
-            city:String!
-            cost:Int!
-            username:String!
-
-        }
-
-        input CreateUserInput {
-            id: ID!
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            createdOn:AWSTimestamp
-
-
-
-        }
-        input UpdateUserInput {
-            id: ID!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Int!
-            latitude:Int!
-            status:UserAccountStatus!
-
-
-
-        }
-
-        enum UserAccountStatus {
-            VERIFIED
-            UNVERIFIED
-            DEACTIVATED
-        }
-        enum UserType{
-            NANNY
-            PARENT
-        }
-        enum JobType{
-            BABYSITTING
-            CLEANING
-            RUNNING_ERRANDS
-
-        }
-        enum JobStatus{
-            OPEN
-            CLOSED
-        }
-        enum JobApplicationStatus{
-            PENDING
-            DECLINED
-            ACCEPTED
-
-        }
-
-```
 Next,open up `templates.yaml` file and enable Tracer and Logger utilities.
 <br />
 Tracer is an opinionated thin wrapper for AWS X-Ray Python SDK.
@@ -663,8 +505,8 @@ Globals:
         POWERTOOLS_METRICS_NAMESPACE: "babysitter_api"
 
 ```
-Under Resources, let's create our cognito user pool and user pool client. Cognito is used for 
-authenticating and securing our endpoints
+Under Resources, let's create our cognito user pool and user pool client. We'll use AWS Cognito to
+authenticate and secure our endpoints
 
 ```
   ###################
@@ -726,9 +568,331 @@ one public endpoint(list ) and we definitely have to control throttling for that
 <br />
 This `API_KEY` is valid for 7 days after which it has to be regenerated again.
 <br />
+
 The next authentication type is `AMAZON_COGNITO_USER_POOLS` which requires a user to be authenticated before accessing the endpoint.
 <br />
 
+Then we have our graphQL schema in a file called `schema.graphql` located in the `schema` folder.
+Here's the content of the file. 
+```
+schema {
+            query:Query
+            mutation: Mutation
+        }
+
+        type Query {
+            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
+          
+
+        }
+
+        type Mutation {
+            createUser(user:CreateUserInput!):User!
+            @aws_cognito_user_pools
+            updateUserStatus(username:String!,status:UserAccountStatus!):User
+            @aws_cognito_user_pools(cognito_groups: ["admin"])
+            updateUser(user:UpdateUserInput!):User!
+            @aws_cognito_user_pools
+            deleteUser(username:String!):Boolean
+            
+        }
+
+        type User @aws_cognito_user_pools {
+            id: ID!
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            postedJobs:[Job]
+            createdOn:AWSTimestamp
+
+
+
+        }
+     
+
+        input CreateUserInput {
+            id: ID!
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            createdOn:AWSTimestamp
+
+
+
+        }
+        input UpdateUserInput {
+            id: ID!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Int!
+            latitude:Int!
+            status:UserAccountStatus!
+
+
+
+        }
+
+        enum UserAccountStatus {
+            VERIFIED
+            UNVERIFIED
+            DEACTIVATED
+        }
+        enum UserType{
+            NANNY
+            PARENT
+        }
+        
+```
+
+Delete the hello world function and type in this one
+
+```
+  BabySitterFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    DependsOn:
+      - LambdaLoggingPolicy
+    Properties:
+      CodeUri: babysitter/
+      Handler: app.lambda_handler
+      Role: !GetAtt AddBabysitterRole.Arn
+      Runtime: python3.8
+      Description: Sample Lambda Powertools Direct Lambda Resolver
+      Tags:
+        SOLUTION: LambdaPowertoolsPython
+
+```
+This function is our direct lambda resolver. It'll serve a the gateway to all the endpoints of our app.
+We need permissions in-order to get tracer and logger functioning properly. That's why there's a 
+```
+    DependsOn:
+      - LambdaLoggingPolicy
+```
+Don't worry, we'll define the `LambdaLoggingPolicy` below.
+<br />
+This lambda function is called `app.py` and it's located in a folder called babysitter.
+<br />
+
+We also assign a role to the function, and this role has a set of policies attached to it. 
+This gives our lambda function permission to carryout a set of actions.
+
+#### Roles and Policies.
+Still under `Resource`, add these roles and policies.
+
+```
+  ###################
+  # IAM PERMISSIONS AND ROLES
+  ##################
+  AppSyncServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "appsync.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  InvokeLambdaResolverPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "DirectAppSyncLambda"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "lambda:invokeFunction"
+            Resource:
+              - !GetAtt BabySitterFunction.Arn
+      Roles:
+        - !Ref AppSyncServiceRole
+  LambdaLoggingPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: LambdaXRayPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "xray:PutTraceSegments",
+              "xray:PutTelemetryRecords",
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+              ]
+            Resource: "*"
+      Roles:
+        - !Ref AddBabysitterRole
+  DynamoDBReadPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DynamoDBReadPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "dynamodb:GetItem",
+              "dynamodb:Query",
+
+              ]
+            Resource:
+              - !GetAtt DynamoDBBabySitterTable.Arn
+              - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
+      Roles:
+        - !Ref AddBabysitterRole
+
+  DynamoDBWritePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DynamoDBWritePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action: [
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem",
+              "dynamodb:ConditionCheckItem",
+              "dynamodb:DeleteItem",
+            ]
+            Resource:
+              - !GetAtt DynamoDBBabySitterTable.Arn
+              - !Join [ '/',[!GetAtt DynamoDBBabySitterTable.Arn,"index/*"]]
+      Roles:
+        - !Ref AddBabysitterRole
+
+
+
+  AddBabysitterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+            - "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+
+  RoleAppSyncCloudWatch:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+
+```
+
+#### Datasource
+
+The lambda function we created above would be used as our Datasource.Here's how we define it other `Resources` 
+```
+  ###################
+  # Lambda Direct Data Source and Resolver
+  ##################
+  BabySitterFunctionDataSource:
+    Type: "AWS::AppSync::DataSource"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      Name: "BabySitterLambdaDirectResolver"
+      Type: "AWS_LAMBDA"
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt BabySitterFunction.Arn
+
+
+```
+The `ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn` sets up a trust relationship between this datasource and appsync.
+<br />
+`LambdaFunctionArn: !GetAtt BabySitterFunction.Arn` points this datasource to the Lambda function we wish to use.
+<br />
+Before we begin creating our resolvers, let's create our DynamoDb table.Still under `Resources`
+```
+ DynamoDBBabySitterTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+        - AttributeName: jobStatus
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: jobApplications
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: jobsAppliedTo
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: getJobsByStatus
+          KeySchema:
+            - AttributeName: jobStatus
+              KeyType: HASH
+            - AttributeName: SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+```
+I already explained why we need Glabal Secondary Indexes, and why our table is structured this way. Short answer is,
+`access patterns`
 
 
 
