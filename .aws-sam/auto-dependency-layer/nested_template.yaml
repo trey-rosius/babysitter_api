@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS SAM CLI Nested Stack for Auto Dependency Layer Creation
+Metadata:
+  SamCliInfo: 1.35.0
+  key: AWS SAM CLI sync command
+Outputs:
+  BabySitterFunctiond87509c6DepLayer:
+    Value:
+      Ref: BabySitterFunctiond87509c6DepLayer
+  UpdateJobApplicationsFunctiond5f947c6DepLayer:
+    Value:
+      Ref: UpdateJobApplicationsFunctiond5f947c6DepLayer
+Resources:
+  BabySitterFunctiond87509c6DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - python3.8
+      ContentUri: /Users/imac/Documents/graphql_api/.aws-sam/auto-dependency-layer/BabySitterFunctiond87509c6DepLayer
+      Description: Auto created layer for dependencies of function BabySitterFunction
+      LayerName: babysitterc0f49b96-BabySitterFunctiond87509c6-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+  UpdateJobApplicationsFunctiond5f947c6DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - python3.8
+      ContentUri: /Users/imac/Documents/graphql_api/.aws-sam/auto-dependency-layer/UpdateJobApplicationsFunctiond5f947c6DepLayer
+      Description: Auto created layer for dependencies of function UpdateJobApplicationsFunction
+      LayerName: babysitterc0f49b96-UpdateJobApplicationsFd5f947c6-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+Transform: AWS::Serverless-2016-10-31

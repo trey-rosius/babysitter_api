@@ -100,7 +100,6 @@ schema {
         }
 
         input CreateUserInput {
-            id: ID!
             username: String!
             email: AWSEmail!
             type:UserType!

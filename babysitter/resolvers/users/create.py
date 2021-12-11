@@ -5,7 +5,6 @@ import os
 from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
 from botocore.exceptions import ClientError
 
-
 tracer = Tracer(service="create_user_resolver")
 logger = Logger(service="create_user_resolver")
 
@@ -126,6 +125,7 @@ def createUser(user=None):
                 }
             ]
         )
+        tracer.put_annotation("CREATE_USER_TRANSACTION", "SUCCESS")
         logger.debug(f'transaction response is {response}')
         return item
     except ClientError as err:
