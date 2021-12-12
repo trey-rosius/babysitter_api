@@ -26,10 +26,10 @@ def listAllJobs(jobStatus: str = ""):
         logger.info(f'response is {response["Items"]}')
         jobs = [Job(item).job_dict() for item in response['Items']]
 
-        logger.debug({"job_functions list is": jobs})
+        logger.debug({"jobs list is": jobs})
         return jobs
 
 
     except ClientError as err:
-        logger.debug(f"Error occured when getting applications per job_functions{err.response['Error']}")
+        logger.debug(f"Error occured when getting applications per jobs{err.response['Error']}")
         raise err

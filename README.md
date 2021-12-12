@@ -1489,18 +1489,186 @@ Go ahead and test to make sure it works well.
 #### Update User Status
 While building this api, i assumed the system admin would at some point need a level of control over normal users(PARENT and NANNY) of the system.
 <br />
-So admins have the possibility to set a users account to `VERIFIED`, `UNVERIFIED` OR `DEACTIVATED`.
+So admins have the possibility to change a users account status to `VERIFIED`, `UNVERIFIED` OR `DEACTIVATED`.
 <br />
 
-If you plan on expanding this application to something really serious, you can restrict a users access to the system,
+If you plan on expanding this application, you can restrict a users access to the system,
 based on the status of their account.That might be a good challenge for you.
 <br />
+
 As another challenge, try implementing this endpoint. I don't mean to disrespect a boss like you with this joke of a challenge.
 I know you'll crush it with your left hand. 😤
-with your left hand.
 <br />
 
 Remember the solution is in the repo.
+
+#### Update graphql schema
+```
+schema {
+            query:Query
+            mutation: Mutation
+        }
+
+        type Query {
+            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
+            listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
+            listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
+            listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+            listApplicationsPerJob(jobId:String!):Job!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+            listJobsAppliedTo(username:String!):User!
+            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
+
+        }
+
+        type Mutation {
+            createUser(user:CreateUserInput!):User!
+            @aws_cognito_user_pools
+            updateUserStatus(username:String!,status:UserAccountStatus!):User
+            @aws_cognito_user_pools(cognito_groups: ["admin"])
+            updateUser(user:UpdateUserInput!):User!
+            @aws_cognito_user_pools
+            deleteUser(username:String!):Boolean
+            createJob(job:CreateJobInput!):Job!
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+            applyToJob(application:CreateJobApplicationInput!):JobApplication!
+            @aws_cognito_user_pools(cognito_groups: ["nanny"])
+            bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+        }
+
+        type User @aws_cognito_user_pools {
+            id: ID!
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            postedJobs:[Job]
+            createdOn:AWSTimestamp
+
+
+
+        }
+       type Job @aws_cognito_user_pools{
+            id:ID!
+            jobType:JobType!
+            username:String!
+            startDate:AWSDate!
+            endDate:AWSDate!
+            startTime:AWSTime!
+            endTime:AWSTime!
+            longitude:Float!
+            latitude:Float!
+            address:String!
+            city:String!
+            cost:Int!
+            jobStatus:JobStatus!
+            applications:[JobApplication]
+
+       }
+       type JobApplication @aws_cognito_user_pools{
+           id:ID!
+           username:String!
+           jobId:String!
+           jobApplicationStatus:JobApplicationStatus!
+           createdOn:AWSTimestamp!
+       }
+
+        input CreateJobApplicationInput{
+            id:ID!
+           username:String!
+           jobId:String!
+           jobApplicationStatus:JobApplicationStatus!
+           createdOn:AWSTimestamp
+        }
+
+        input CreateJobInput{
+            id:ID!
+            jobType:JobType!
+            startDate:AWSDate!
+            endDate:AWSDate!
+            startTime:AWSTime!
+            endTime:AWSTime!
+            longitude:Float!
+            latitude:Float!
+            jobStatus:JobStatus!
+            address:String!
+            city:String!
+            cost:Int!
+            username:String!
+
+        }
+
+        input CreateUserInput {
+            username: String!
+            email: AWSEmail!
+            type:UserType!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+            longitude:Float!
+            latitude:Float!
+            status:UserAccountStatus!
+            createdOn:AWSTimestamp
+
+
+
+        }
+        input UpdateUserInput {
+            username: String!
+            email: AWSEmail!
+            firstName:String!
+            lastName:String!
+            address:String!
+            about:String!
+           longitude:Float!
+            latitude:Float!
+
+        }
+
+        enum UserAccountStatus {
+            VERIFIED
+            UNVERIFIED
+            DEACTIVATED
+        }
+        enum UserType{
+            NANNY
+            PARENT
+        }
+        enum JobType{
+            BABYSITTING
+            CLEANING
+            RUNNING_ERRANDS
+
+        }
+        enum JobStatus{
+            OPEN
+            CLOSED
+        }
+        enum JobApplicationStatus{
+            PENDING
+            DECLINED
+            ACCEPTED
+
+        }
+
+```
+
+#### Create Job Endpoint
+This endpoint is reserved for PARENTS only.
+```
+
+            createJob(job:CreateJobInput!):Job!
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
+
+```
 
 
 
