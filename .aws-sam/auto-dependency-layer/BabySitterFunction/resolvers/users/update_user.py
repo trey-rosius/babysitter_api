@@ -26,8 +26,8 @@ def updateUser(user=None):
         "lastName": user["lastName"],
         "address": user["address"],
         "about": user["about"],
-        "longitude": Decimal(f"{user['longitude']}"),
-        "latitude": Decimal(f"{user['latitude']}"),
+        "longitude": user['longitude'],
+        "latitude": user['latitude'],
 
     }
     logger.debug(f'items:{item}')

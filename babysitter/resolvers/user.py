@@ -19,7 +19,7 @@ def create_user(user=None):
 
 
 @router.resolver(type_name="Mutation", field_name="updateUser")
-def update_user_status(user=None):
+def update_user(user=None):
     if user is None:
         user = {}
     return updateUser(user)
