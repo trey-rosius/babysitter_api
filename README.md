@@ -1206,6 +1206,10 @@ If you run into any issues, don't forget to open up cloudwatch and checkout the 
 are using logger and tracer to debug our endpoints. Be sure to make good use of them.
 
 ### Update User
+- PK= `USER#<Username>`
+- SK= `USER#<Username`
+<br />
+
 One of the access patterns of our application, is to give the user the possibility to update their accounts.
 <br />
 There's just a couple of attributes they are allowed to update though.
@@ -1403,15 +1407,102 @@ If the changes are code only, then AWS SAM synchronizes the code with the equiva
 
 The first time you run the `sam sync` command with the `--watch flag`, AWS SAM ensures that the latest code and infrastructure are in the cloud. It then monitors for file changes until you quit the command:
 
-`sam sync --stack-name --watch`
+`sam sync --stack-name babysitter --watch`
 <br />
 
 After syncing your app, go ahead and test out the `updateUser` mutation once more and confirm that it works as expect.
 
-#### Moving Forward
+### Moving Forward
 From this point on, we'll be looking at the code only and you'll be doing the testing in appsync and making sure everything works well.
 <br />
 
 Remember that the repo has code, which you can always jump back to, incase you missed something.
 <br />
+
+#### Get User Endpoint.
+- PK= `USER#<Username>`
+- SK= `USER#<Username`
+
+1) Create a file called `get_user.py` inside `resolver/users` and type in the following code.
+```
+from aws_lambda_powertools import Logger, Tracer
+import boto3
+import os
+
+from botocore.exceptions import ClientError
+from entities.User import User
+
+dynamodb = boto3.resource("dynamodb")
+tracer = Tracer(service="get_user")
+logger = Logger(service="get_user")
+
+table = dynamodb.Table(os.environ["TABLE_NAME"])
+
+
+@tracer.capture_method
+def getUser(username: str = ""):
+    logger.debug(f'username is:{username}')
+
+    try:
+        response = table.get_item(
+            Key={
+                'PK': f'USER#{username}',
+                'SK': f'USER#{username}'
+            }
+        )
+        logger.debug("users dict {}".format(response))
+        if response['Item'] is None:
+            logger.debug("response is null")
+            return {}
+        else:
+            logger.debug("response is not null")
+            user = User(response['Item'])
+
+            return user.user_dict()
+
+```
+We use DynamoDb's `get_item` function to get a particular user with identical PK and SK.
+2) Add the endpoint to `user.py` file located at `resolver/user.py`
+
+```
+@router.resolver(type_name="Query", field_name="getUser")
+def get_user(username: str = ""):
+    return getUser(username)
+
+```
+3) Add Resolver to Resources in `template.yml`
+```
+  GetUserResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt BabySitterApi.ApiId
+      TypeName: "Query"
+      FieldName: "getUser"
+      DataSourceName: !GetAtt BabySitterFunctionDataSource.Name
+
+```
+Go ahead and deploy your app.
+<br />
+If you had `sam sync --stack-name babysitter --watch` running, once you hit save, the application synchronizes with the cloud. 
+Go ahead and test to make sure it works well.
+
+#### Update User Status
+While building this api, i assumed the system admin would at some point need a level of control over normal users(PARENT and NANNY) of the system.
+<br />
+So admins have the possibility to set a users account to `VERIFIED`, `UNVERIFIED` OR `DEACTIVATED`.
+<br />
+
+If you plan on expanding this application to something really serious, you can restrict a users access to the system,
+based on the status of their account.That might be a good challenge for you.
+<br />
+As another challenge, try implementing this endpoint. I don't mean to disrespect a boss like you with this joke of a challenge.
+I know you'll crush it with your left hand. 😤
+with your left hand.
+<br />
+
+Remember the solution is in the repo.
+
+
+
+
 
