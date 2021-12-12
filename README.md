@@ -1383,16 +1383,21 @@ in about 7 seconds.
 Please go ahead the try it out.
 <br />
 
-The SAM team went wild with this one.😁 
+>The SAM team went wild with this one.😁 
+
 <br />
 So you can build and test out new features of your app real quick. 
 <br />
+
 Another sweet command is Sam sync watch.
 <br />
+
 The `sam sync --watch` option tells AWS SAM to monitor for file changes and automatically synchronize when changes are detected.
 <br />
+
 If the changes include configuration changes, AWS SAM performs a standard synchronization equivalent to the `sam sync` command. 
 <br />
+
 If the changes are code only, then AWS SAM synchronizes the code with the equivalent of the `sam sync --code` command.
 <br />
 
@@ -1400,11 +1405,13 @@ The first time you run the `sam sync` command with the `--watch flag`, AWS SAM e
 
 `sam sync --stack-name --watch`
 <br />
+
 After syncing your app, go ahead and test out the `updateUser` mutation once more and confirm that it works as expect.
 
 #### Moving Forward
 From this point on, we'll be looking at the code only and you'll be doing the testing in appsync and making sure everything works well.
 <br />
+
 Remember that the repo has code, which you can always jump back to, incase you missed something.
 <br />
 
