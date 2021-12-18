@@ -87,6 +87,26 @@ Resources:
             Queue: !GetAtt UpdateJobApplicationsSQSQueue.Arn
             BatchSize: 5
 
+  AddUserToGroupFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - LambdaLoggingPolicy
+    Properties:
+      CodeUri: babysitter/
+      Handler: add_user_to_group.lambda_handler
+      Runtime: python3.8
+      Description:  Lambda Powertools Direct Lambda Resolver
+      Policies:
+
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "cognito-idp:AdminAddUserToGroup"
+              Resource:
+                - !GetAtt CognitoUserPool.Arn
+
+
+
 
   ###################
   # IAM PERMISSIONS AND ROLES

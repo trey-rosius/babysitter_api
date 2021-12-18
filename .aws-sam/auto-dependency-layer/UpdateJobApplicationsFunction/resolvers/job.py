@@ -1,13 +1,13 @@
 from decimal import Decimal
-from typing import Dict, List
+from typing import Dict
 
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler.appsync import Router
-from resolvers.job_functions.create import createJob
-from resolvers.job_functions.book_nanny import bookNanny
-from resolvers.job_functions.list_all_jobs import listAllJobs
-from resolvers.job_functions.list_all_jobs_per_parent import listAllJobsPerParent
-from resolvers.job_functions.jobs_applied_to import jobsAppliedTo
+from resolvers.jobs.create import createJob
+from resolvers.jobs.book_nanny import bookNanny
+from resolvers.jobs.list_all_jobs import listAllJobs
+from resolvers.jobs.list_all_jobs_per_parent import listAllJobsPerParent
+from resolvers.jobs.jobs_applied_to import jobsAppliedTo
 
 logger = Logger(child=True)
 router = Router()
