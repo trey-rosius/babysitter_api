@@ -25,6 +25,7 @@ def updateUser(user=None):
         "firstName": user["firstName"],
         "lastName": user["lastName"],
         "address": user["address"],
+        "profilePicUrl": user['profilePicUrl'],
         "about": user["about"],
         "longitude": Decimal(f"{user['longitude']}"),
         "latitude": Decimal(f"{user['latitude']}"),
@@ -39,7 +40,7 @@ def updateUser(user=None):
                 'SK': f'USER#{item["username"]}'
             },
             ConditionExpression="attribute_exists(PK)",
-            UpdateExpression="set firstName= :firstName,lastName= :lastName,address= :address,about= :about,"
+            UpdateExpression="set firstName= :firstName,lastName= :lastName, profilePicUrl=:profilePicUrl,address= :address,about= :about,"
                              "longitude= :longitude,latitude= :latitude",
 
             ExpressionAttributeValues={

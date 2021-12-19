@@ -6,6 +6,7 @@ class User:
         self.username = item['username']
         self.email = item['email']
         self.type = item['type']
+        self.profilePicUrl = item['profilePicUrl']
         self.firstName = item['firstName']
         self.lastName = item['lastName']
         self.address = item['address']
@@ -22,6 +23,7 @@ class User:
             "email": self.email,
             "firstName": self.firstName,
             "lastName": self.lastName,
+            "profilePicUrl": self.profilePicUrl,
             "address": self.address,
             "about": self.about,
             "longitude": self.longitude,
@@ -38,6 +40,7 @@ class User:
             "email": self.email,
             "firstName": self.firstName,
             "lastName": self.lastName,
+            "profilePicUrl": self.profilePicUrl,
             "address": self.address,
             "about": self.about,
             "longitude": self.longitude,
