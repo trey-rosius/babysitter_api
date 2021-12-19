@@ -1806,6 +1806,180 @@ with their location at that exact point in time.
 <br />
 
 We created a GSI called `getJobByStatus` to retrieve jobs based on it's status.
+<br />
+
+Here's how the code looks like 
+```
+        response = table.query(
+            IndexName="getJobsByStatus",
+            KeyConditionExpression=Key('jobStatus').eq(jobStatus),
+            ScanIndexForward=False
+
+        )
+
+        logger.info(f'response is {response["Items"]}')
+        jobs = [Job(item).job_dict() for item in response['Items']]
+
+        logger.debug({"jobs list is": jobs})
+        return jobs
+
+
+```
+We've created a `job entity` class which maps the attributes from dynamodb to a dictionary in the class. 
+
+```
+class Job:
+    def __init__(self, item=None):
+        if item is None:
+            item = {}
+        self.id = item["id"]
+        self.jobType = item['jobType']
+        self.username = item['username']
+        self.startDate = item['startDate']
+        self.endDate = item['endDate']
+        self.startTime = item['startTime']
+        self.endTime = item['endTime']
+        self.longitude = item['longitude']
+        self.latitude = item['longitude']
+        self.address = item['address']
+        self.city = item['city']
+        self.cost = item['cost']
+        self.jobStatus = item['jobStatus']
+
+    def job_dict(self):
+        return {
+            "id": self.id,
+            "jobType": self.jobType,
+            "username": self.username,
+            "startDate": self.startDate,
+            "endDate": self.endDate,
+            "startTime": self.startTime,
+            "endTime": self.endTime,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
+            "address": self.address,
+            "city": self.city,
+            "cost": self.cost,
+            "jobStatus": self.jobStatus
+
+        }
+
+    def all_jobs(self, jobs=None):
+        if jobs is None:
+            jobs = []
+        return {
+            "jobs": jobs
+        }
+
+    def job_application_dict(self, applications=None):
+        if applications is None:
+            applications = []
+        return {
+            "id": self.id,
+            "jobType": self.jobType,
+            "username": self.username,
+            "startDate": self.startDate,
+            "endDate": self.endDate,
+            "startTime": self.startTime,
+            "endTime": self.endTime,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
+            "address": self.address,
+            "city": self.city,
+            "cost": self.cost,
+            "jobStatus": self.jobStatus,
+            "applications": applications
+
+        }
+
+
+
+```
+Please go ahead to add the `list_job_by_status` endpoint and test to see how it all comes together.
+<br />
+
+As always, the code is available for reference.
+
+#### Apply to Job
+After viewing a list of available jobs, the next step is applying to that job.This endpoint is 
+reserved for nannies only.
+```
+applyToJob(application:CreateJobApplicationInput!):JobApplication!
+@aws_cognito_user_pools(cognito_groups: ["nanny"])
+
+
+```
+
+The PK and SK for this endpoint are
+```
+PK= JOB#<JobId>#APPLICATION#<applicationId>
+SK = JOB#<JobId>#APPLICATION#<applicationId>
+
+```
+
+Here's the complete code 
+```
+from aws_lambda_powertools import Logger,Tracer
+import boto3
+import os
+from decimal import *
+from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
+from botocore.exceptions import ClientError
+
+dynamodb = boto3.resource("dynamodb")
+
+logger = Logger(service="apply_to_job")
+tracer = Tracer()
+
+table = dynamodb.Table(os.environ["TABLE_NAME"])
+
+
+# https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
+@tracer.capture_method
+def applyToJob(application: dict = {}):
+    item = {
+        "id": scalar_types_utils.make_id(),
+        "jobId": application['jobId'],
+        "username": application['username'],
+        "jobApplicationStatus":application['jobApplicationStatus'],
+        "createdOn":scalar_types_utils.aws_timestamp()
+
+    }
+
+    logger.debug(f'job application input :{item}')
+
+    try:
+
+        table.put_item(
+            Item={
+                "PK": f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
+                "SK": f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
+                "GSI1PK": f"JOB#{item['jobId']}",
+                "GSI1SK": f"APPLICATION#{item['id']}",
+                "GSI2PK": f"USER#{item['username']}",
+                "GSI2SK": f"JOB#{item['jobId']}",
+                **item
+            }
+        )
+
+        return item
+
+
+
+    except ClientError as err:
+        logger.debug(f"Error occured during job creation {err.response['Error']}")
+        raise err
+
+
+```
+<br />
+
+At this point, we are simply repeating steps over and over and over again and i know it's getting boring.
+<br />
+Let's look at one of the most important features of the app and close this series.
+
+#### Booking a nanny
+
 
 
 
