@@ -1979,6 +1979,26 @@ At this point, we are simply repeating steps over and over and over again and i 
 Let's look at one of the most important features of the app and close this series.
 
 #### Booking a nanny
+When a parent create a job, nannies can apply to that job. The parent would then be able to 
+choose whoever they see fit for their job. 
+<br />
+
+Booking a nanny entails, firstly, accepting the nanny's job application, declining all other job applications, so that 
+they know they weren't selected, and then closing the job, so that it won't be available anymore for applying to.
+<br />
+
+Here's a breakdown of how we'll approach this problem
+- Get all applications for a job.
+- Update Job Status from OPEN to CLOSED and application status for accepted applicant from PENDING to ACCEPTED
+- Put the rest of the applications into an SQS queue, which would update the application status from 
+PENDING to DECLINED asynchronously. 
+<br />
+
+For added functionality, it'll be good to send a push notification and an email to the applicant whose application was
+`accepted`.
+<br />
+
+
 
 
 
