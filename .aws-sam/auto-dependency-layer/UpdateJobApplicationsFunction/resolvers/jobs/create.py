@@ -57,5 +57,5 @@ def createJob(job=None):
 
 
     except ClientError as err:
-        logger.debug(f"Error occured during job creation {err.response['Error']}")
+        logger.debug(f"Error occurred during job creation {err.response['Error']}")
         raise err

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: aws-lambda-powertools
-Version: 1.22.0
+Version: 1.23.0
 Summary: A suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, batching, idempotency, feature flags, and more.
 Home-page: https://github.com/awslabs/aws-lambda-powertools-python
 License: MIT-0
@@ -77,7 +77,7 @@ With [pip](https://pip.pypa.io/en/latest/index.html) installed, run: ``pip insta
 
 ## Connect
 
-* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-gu30gquv-EhwIYq3kHhhysaZ2aIX7ew)**
+* **AWS Developers Slack**: `#lambda-powertools`** - **[Invite, if you don't have an account](https://join.slack.com/t/awsdevelopers/shared_invite/zt-yryddays-C9fkWrmguDv0h2EEDzCqvw)**
 * **Email**: aws-lambda-powertools-feedback@amazon.com
 
 ## License

@@ -86,6 +86,8 @@ Resources:
           Properties:
             Queue: !GetAtt UpdateJobApplicationsSQSQueue.Arn
             BatchSize: 5
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
 
   AddUserToGroupFunction:
     Type: AWS::Serverless::Function

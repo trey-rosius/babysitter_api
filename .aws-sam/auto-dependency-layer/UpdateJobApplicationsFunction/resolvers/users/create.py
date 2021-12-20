@@ -22,6 +22,7 @@ def createUser(user=None):
         "type": user['type'],
         "email": user['email'],
         "firstName": user["firstName"],
+        "profilePicUrl":user['profilePicUrl'],
         "lastName": user["lastName"],
         "address": user["address"],
         "about": user["about"],
@@ -69,6 +70,9 @@ def createUser(user=None):
                             },
                             'lastName': {
                                 'S': item['lastName']
+                            },
+                            'profilePicUrl': {
+                                'S': item['profilePicUrl']
                             },
                             'address': {
                                 'S': item['address']

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: fastjsonschema
-Version: 2.15.1
+Version: 2.15.2
 Summary: Fastest Python implementation of JSON schema
 Home-page: https://github.com/seznam/python-fastjsonschema
 Author: Michal Horejsek
