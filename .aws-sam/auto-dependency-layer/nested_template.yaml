@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS SAM CLI Nested Stack for Auto Dependency Layer Creation
+Metadata:
+  SamCliInfo: 1.35.0
+  key: AWS SAM CLI sync command
+Outputs:
+  AddUserToGroupFunction339552e8DepLayer:
+    Value:
+      Ref: AddUserToGroupFunction339552e8DepLayer
+  BabySitterFunctiond87509c6DepLayer:
+    Value:
+      Ref: BabySitterFunctiond87509c6DepLayer
+  UpdateJobApplicationsFunctiond5f947c6DepLayer:
+    Value:
+      Ref: UpdateJobApplicationsFunctiond5f947c6DepLayer
+Resources:
+  AddUserToGroupFunction339552e8DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - python3.8
+      ContentUri: /Users/imac/Documents/graphql_api/.aws-sam/auto-dependency-layer/AddUserToGroupFunction339552e8DepLayer
+      Description: Auto created layer for dependencies of function AddUserToGroupFunction
+      LayerName: babysitterc0f49b96-AddUserToGroupFunction339552e8-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+  BabySitterFunctiond87509c6DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - python3.8
+      ContentUri: /Users/imac/Documents/graphql_api/.aws-sam/auto-dependency-layer/BabySitterFunctiond87509c6DepLayer
+      Description: Auto created layer for dependencies of function BabySitterFunction
+      LayerName: babysitterc0f49b96-BabySitterFunctiond87509c6-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+  UpdateJobApplicationsFunctiond5f947c6DepLayer:
+    Metadata:
+      CreatedBy: AWS SAM CLI sync command
+    Properties:
+      CompatibleRuntimes:
+      - python3.8
+      ContentUri: /Users/imac/Documents/graphql_api/.aws-sam/auto-dependency-layer/UpdateJobApplicationsFunctiond5f947c6DepLayer
+      Description: Auto created layer for dependencies of function UpdateJobApplicationsFunction
+      LayerName: babysitterc0f49b96-UpdateJobApplicationsFd5f947c6-DepLayer
+      RetentionPolicy: Delete
+    Type: AWS::Serverless::LayerVersion
+Transform: AWS::Serverless-2016-10-31

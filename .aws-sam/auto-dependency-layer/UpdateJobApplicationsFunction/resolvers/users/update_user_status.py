@@ -12,7 +12,7 @@ logger = Logger(service="update_user_status")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 @tracer.capture_method
-def updateUserStatus(username: str = "", status: str = ""):
+def update_user_status(username: str = "", status: str = ""):
     logger.debug(f'update user status :{username} , {status}')
 
     try:

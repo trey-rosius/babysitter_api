@@ -1,0 +1,16 @@
+fastjsonschema/__init__.py,sha256=dZAKrmmRICU-pvGIRqIvPori8u_d_llZaSECUHE_qIY,8759
+fastjsonschema/__main__.py,sha256=4hfd23przxmQc8VjL0fUsbsrvvA73gJ2HDNPgLLFdAI,312
+fastjsonschema/draft04.py,sha256=vOTBAZ0Ovh4mJ2tPOgzWWdl2SU2I1HuSW0-pISU72GE,29157
+fastjsonschema/draft06.py,sha256=5PaM94KjjqqS2McDgOsgf4kXh4mBf0qho5zvo5rzQN4,7661
+fastjsonschema/draft07.py,sha256=uQp7Z68Jo2OUe7YCsvc6EuGXWK9zWoJ875tQriPWl9Q,4222
+fastjsonschema/exceptions.py,sha256=wJAM7Xp3oLpnt_IbnXPog0_f0dIOXMoJHVxFEK2-QyI,1610
+fastjsonschema/generator.py,sha256=tRGAiiAKAhVZVjemb1j_Ooyak5ujKYIrAWqzEyeRcdw,10768
+fastjsonschema/indent.py,sha256=juZFW9LSvmDJbPFIUm3GPqdPqJoUnqvM8neHN5rkvzU,920
+fastjsonschema/ref_resolver.py,sha256=xm2Gzr6E5izn3xEh5MVnwC66ccxNUtXrTEmqWvvP1rM,5191
+fastjsonschema/version.py,sha256=6y4JKGNvCnJUxRrL_AMo0AV03AZTT71uuwwKW2WZN_s,19
+fastjsonschema-2.15.2.dist-info/AUTHORS,sha256=DLGgN1TEmM2VoBM4cRn-gklc4HA8jLLPDDCeBD1kGhU,350
+fastjsonschema-2.15.2.dist-info/LICENSE,sha256=nM3faes5mKYBSN6-hblMWv7VNpG2R0aS54q8wKDlRPE,1518
+fastjsonschema-2.15.2.dist-info/METADATA,sha256=Bnr0eBRnT1MEPvXqUrLbOCtnyAiyiIs8CWOxrjs2CFo,1877
+fastjsonschema-2.15.2.dist-info/WHEEL,sha256=p46_5Uhzqz6AzeSosiOnxK-zmFja1i22CrQCjmYe8ec,92
+fastjsonschema-2.15.2.dist-info/top_level.txt,sha256=8RQcPDFXXHZKduTjgzugpPNW3zIjxFT0axTh4UsT6gE,15
+fastjsonschema-2.15.2.dist-info/RECORD,,

@@ -38,6 +38,15 @@ schema {
             type:UserType!
             firstName:String!
             lastName:String!
+            profilePicUrl:String!
+            day:Int!
+            month:Int!
+            year:Int!
+            dateOfBirth:AWSDate!
+            age:Int!
+            male:Boolean!
+            female:Boolean!
+
             address:String!
             about:String!
             longitude:Float!
@@ -105,6 +114,14 @@ schema {
             type:UserType!
             firstName:String!
             lastName:String!
+            profilePicUrl:String!
+            day:Int!
+            month:Int!
+            year:Int!
+            dateOfBirth:AWSDate!
+            age:Int!
+            male:Boolean!
+            female:Boolean!
             address:String!
             about:String!
             longitude:Float!
@@ -121,6 +138,14 @@ schema {
             firstName:String!
             lastName:String!
             address:String!
+            profilePicUrl:String
+            day:Int!
+            month:Int!
+            age:Int!
+            year:Int!
+            dateOfBirth:AWSDate!
+            male:Boolean!
+            female:Boolean!
             about:String!
            longitude:Float!
             latitude:Float!

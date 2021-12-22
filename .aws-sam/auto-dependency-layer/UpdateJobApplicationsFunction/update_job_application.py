@@ -1,5 +1,6 @@
 import json
 import os
+import boto3
 from typing import Any, List, Literal, Union
 from aws_lambda_powertools.utilities.batch import (BatchProcessor,
                                                    EventType,
@@ -8,7 +9,6 @@ from aws_lambda_powertools.utilities.batch import (BatchProcessor,
                                                    batch_processor)
 from aws_lambda_powertools.utilities.data_classes.sqs_event import SQSRecord
 from aws_lambda_powertools.utilities.typing import LambdaContext
-import boto3
 from aws_lambda_powertools import Logger, Tracer
 
 tracer = Tracer(service="update_job_application")

@@ -10,7 +10,7 @@ from decima_encoder import handle_decimal_type
 from botocore.exceptions import ClientError
 
 logger = Logger(service="book_nanny")
-tracer = Tracer()
+tracer = Tracer(service="book_nanny")
 # client library
 client = boto3.client('dynamodb')
 # resource library
@@ -20,7 +20,7 @@ sqs = boto3.resource("sqs")
 queue = sqs.Queue(os.environ["UPDATE_JOB_APPLICATIONS_SQS_QUEUE"])
 
 
-def bookNanny(username: str = "", jobId: str = "", applicationId: str = "", applicationStatus: str = ""):
+def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", applicationStatus: str = ""):
     logger.info({f"Parameters {jobId, applicationId, applicationStatus}"})
     # first step involves get all applications for a the said job
     response_items = table.query(
@@ -87,6 +87,7 @@ def bookNanny(username: str = "", jobId: str = "", applicationId: str = "", appl
                 queue.send_message(MessageBody=json.dumps(item, default=handle_decimal_type))
             else:
                 logger.info("Accepted applicationId. So we don't have to put it into SQS")
+                # you can send a notification or an email to the accepted user here
 
         return True
 

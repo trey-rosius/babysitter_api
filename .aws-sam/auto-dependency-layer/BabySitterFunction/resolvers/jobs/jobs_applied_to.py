@@ -2,8 +2,8 @@ from aws_lambda_powertools import Logger, Tracer
 import boto3
 import os
 
-from entities.User import User
-from entities.Job import Job
+from entities.user_entity import UserEntity
+from entities.job_entity import JobEntity
 
 from botocore.exceptions import ClientError
 
@@ -15,7 +15,7 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 
 @tracer.capture_method
-def jobsAppliedTo(username: str = ""):
+def jobs_applied_to(username: str = ""):
     logger.debug(f'username is:{username}')
 
     try:
@@ -32,10 +32,10 @@ def jobsAppliedTo(username: str = ""):
 
         )
 
-        user = User(response['Items'][0])
+        user = UserEntity(response['Items'][0])
         logger.debug("jobs_applied_to {}".format(response["Items"]))
 
-        jobs = [Job(item).job_dict() for item in response['Items'][1:]]
+        jobs = [JobEntity(item).job_dict() for item in response['Items'][1:]]
 
         return user.user_jobs(jobs)
 
