@@ -13,6 +13,7 @@ Globals:
     Environment:
       Variables:
         TABLE_NAME: !Ref DynamoDBBabySitterTable
+        UPDATE_JOB_APPLICATIONS_SQS_QUEUE: !Ref UpdateJobApplicationsSQSQueue
         LOG_LEVEL: DEBUG
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
@@ -50,9 +51,6 @@ Resources:
       CodeUri: babysitter/
       Handler: app.lambda_handler
       Role: !GetAtt AddBabysitterRole.Arn
-      Environment:
-        Variables:
-          UPDATE_JOB_APPLICATIONS_SQS_QUEUE: !Ref UpdateJobApplicationsSQSQueue
       Runtime: python3.8
       Description: Sample Lambda Powertools Direct Lambda Resolver
       Tags:
@@ -67,7 +65,6 @@ Resources:
       Runtime: python3.8
       Description:  Lambda Powertools Direct Lambda Resolver
       Policies:
-
         - SQSPollerPolicy:
             QueueName:
               !GetAtt UpdateJobApplicationsSQSQueue.QueueName

@@ -22,7 +22,7 @@ queue = sqs.Queue(os.environ["UPDATE_JOB_APPLICATIONS_SQS_QUEUE"])
 
 def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", applicationStatus: str = ""):
     logger.info({f"Parameters {jobId, applicationId, applicationStatus}"})
-    # first step involves get all applications for a the said job
+    # first step involves getting all applications for  the said job
     response_items = table.query(
         IndexName="jobApplications",
         KeyConditionExpression=Key('GSI1PK').eq(f'JOB#{jobId}'),

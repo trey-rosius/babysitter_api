@@ -23,7 +23,7 @@ processor = BatchProcessor(event_type=EventType.SQS)
 def record_handler(record: SQSRecord):
     """
     Handle messages from SQS Queue containing job applications.
-    Update each application status to CLOSED
+    Update each job application status to DECLINED
     """
     payload:str = record.body
 
