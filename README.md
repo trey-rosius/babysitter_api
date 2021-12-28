@@ -2170,6 +2170,8 @@ def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", app
 
 ``` 
 
+<br />
+
 So, the code simply does this. 
 
 - Get all applications for a job.
@@ -2180,6 +2182,7 @@ PENDING to DECLINED asynchronously.
 
 We expect a function to receive all these messages from the SQS queue and process them.
 Let's configure this function in `template.yaml`
+<br />
 
 ```
 
