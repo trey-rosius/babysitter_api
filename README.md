@@ -1757,8 +1757,27 @@ dynamodb table.
 2) Create a file called `job.py` in the directory `babysitter/resolvers` and add the create job
 endpoint. This file would contain all job endpoints.
 <br />
+```
+from decimal import Decimal
+from typing import Dict
+
+from aws_lambda_powertools import Logger, Tracer
+from aws_lambda_powertools.event_handler.appsync import Router
+from resolvers.jobs.create import createJob
 
 
+
+logger = Logger(child=True)
+router = Router()
+
+
+@router.resolver(type_name="Mutation", field_name="createJob")
+def create_job(job=None) -> Dict[str, Decimal]:
+    if job is None:
+        job = {}
+    return createJob(job)
+
+```
 
 Take note of the resolvers `type_name` and `field_name`.
 
