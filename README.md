@@ -910,7 +910,7 @@ For a user account to be unique, we apply a unique constraint on 2 attributes
 No 2 users can have same username and email. We'll use a condition expression ensure uniqueness,then use 2 put request inside a dynamodb transaction api.
 <br />
 
-DynamoDB transactions provide developers with atomicity, consistency, isolation, and durability (ACID) across tables. It processes requests in batches. If one request in the batch
+DynamoDb transactions provide developers with atomicity, consistency, isolation, and durability (ACID) across tables. It processes requests in batches. If one request in the batch
 fails, the whole batch fails. The batch succeeds, when all requests succeed and that's exactly the use case we want.
 <br />
 
