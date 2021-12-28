@@ -904,7 +904,7 @@ I already explained why we need Glabal Secondary Indexes, and why our table is s
 #### Create user
 The first resolver we'll create for our api is  `create_user`. It is the gateway into our app.
 We want users to be able to create an account. 
-For a user account to be unique, we apply a uniqe constraint on 2 attributes
+For a user account to be unique, we apply a unique constraint on 2 attributes
 - username
 - email
 No 2 users can have same username and email. We'll use a condition expression ensure uniqueness,then use 2 put request inside a dynamodb transaction api.
@@ -914,7 +914,7 @@ DynamoDB transactions provide developers with atomicity, consistency, isolation,
 fails, the whole batch fails. The batch succeeds, when all requests succeed and that's exactly the use case we want.
 <br />
 
-Inside the `resolvers` function, create a folder called `users` and inside of users folder, create a file called `create.py` and type in the following code.
+Inside the `resolvers` function, create a folder called `users` and inside of users folder, create a file called `create_user_account.py` and type in the following code.
 
 ```
 from aws_lambda_powertools import Logger, Tracer
@@ -932,7 +932,7 @@ client = boto3.client('dynamodb')
 
 
 @tracer.capture_method
-def createUser(user=None):
+def create_user_account(user=None):
     if user is None:
         user = {}
     logger.info(f'items:{user}')
@@ -1238,7 +1238,7 @@ An account can only be updated, if the primary key already exists. So we'll use
 dynamoDB's `ConditionExpression="attribute_exists(PK)"` to ensure they account exists before updating.
 <br />
 
-Create a file called `update_user.py` inside `resolvers/users/` directory and type in the following code.
+Create a file called `update_user_account.py` inside `resolvers/users/` directory and type in the following code.
 ```
 from aws_lambda_powertools import Logger, Tracer
 import boto3
@@ -1346,7 +1346,7 @@ This issue is related to the longitude and latitude values. They are float value
 by DynamoDB yet. So we have to convert them to Decimal types.
 <br />
 
-Navigate to `updateUser.py` file and add the Decimal import 
+Navigate to `update_user_account.py` file and add the Decimal import 
 `from decimal import Decimal`
 
 <br />
@@ -1427,7 +1427,7 @@ Remember that the repo has code, which you can always jump back to, incase you m
 
 #### Get User Endpoint.
 - PK= `USER#<Username>`
-- SK= `USER#<Username`
+- SK= `USER#<Username>`
 
 1) Create a file called `get_user.py` inside `resolver/users` and type in the following code.
 ```
@@ -1468,7 +1468,7 @@ def getUser(username: str = ""):
 
 ```
 We use DynamoDb's `get_item` function to get a particular user with identical PK and SK.
-2) Add the endpoint to `user.py` file located at `resolver/user.py`
+2) Add the endpoint to `user.py` file located at `resolvers/user_resolver.py`
 
 ```
 @router.resolver(type_name="Query", field_name="getUser")
@@ -1764,7 +1764,7 @@ from typing import Dict
 
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler.appsync import Router
-from resolvers.jobs.create import createJob
+from resolvers.jobs.create_job import create_job as createJob
 
 
 
