@@ -114,7 +114,7 @@ This REPO would contain all the code for the babysitter serverless GraphQL API.
 
 #### Ratings and Reviews
 
-##### Nannys
+##### Nanny's
 
 - Answer a set of questions based on their experience with a Parent.
 - Leave a brief review
@@ -348,7 +348,7 @@ head around AWS IAM.
 <br />
 A ton of serverless tutorials out there rarely talk about IAM and just dive into creating API's.
 <br />
-I think we should make a difference. 
+I think we should make a difference and cast some proper light on this concept. 
 <br />
 #### What are IAM Policies
 AWS services are born with zero permissions. You manage access in AWS by creating policies and attaching them to IAM identities (users, groups of users, or roles) or AWS resources. 
@@ -466,10 +466,16 @@ Open up the `requirements.txt` file located at `babysitter_api/babysitter/` and 
 <br />
 
 ```
-aws-lambda-powertools==1.22.0
+aws-lambda-powertools==1.23.0
 boto3
 ```
-Open up your terminal from that directory and run the below command to install the libraries
+`aws-lambda-powertools` is a suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.
+<br />
+
+`boto3` is th AWS SDK for python, which can be use to create,configure and manage AWS services.
+<br />
+
+Open up your terminal from that directory and run the below command to install the libraries.
 <br />
 
 `pip install -r requirements.txt`
@@ -506,7 +512,7 @@ Globals:
 
 ```
 Under Resources, let's create our cognito user pool and user pool client. We'll use AWS Cognito to
-authenticate and secure our endpoints
+authenticate and secure our Graphql endpoints
 
 ```
   ###################
@@ -564,7 +570,7 @@ Next, add the GraphQL API, API_KEY and GraphQl Schema
 
 ```
 We've set the default authentication type for our api to `API_KEY`. In our application, we have
-one public endpoint(list ) and we definitely have to control throttling for that endpoint.
+one public endpoint(list) and we definitely have to control throttling for that endpoint.
 <br />
 This `API_KEY` is valid for 7 days after which it has to be regenerated again.
 <br />
@@ -2173,7 +2179,7 @@ PENDING to DECLINED asynchronously.
 <br />
 
 We expect a function to receive all these messages from the SQS queue and process them.
-Let's configure this funciton in `template.yaml`
+Let's configure this function in `template.yaml`
 
 ```
 
@@ -2210,6 +2216,120 @@ Let's configure this funciton in `template.yaml`
 
 
 ```
+`SQSPollerPolicy` gives permission to `UpdateJobApplicationsFunction` to poll our SQS queue.
+<br />
+Since our function would be performing an update operation on dynamoDB items, it's just right we assign
+dynamoDB update permissions to it.
+<br />
+
+Our function would poll SQS messages in batches of 5 (`BatchSize: 5`)
+<br />
+
+Since we are using SQS,we must configure our Lambda function event source to use `ReportBatchItemFailures`.
+<br />
+
+Remember that our lambda function is triggered with a batch of messages.
+<br />
+
+If our function fails to process any message from the batch, the entire batch returns to our queue. This same batch is then retried until either condition happens first: 
+a) your Lambda function returns a successful response
+b) record reaches maximum retry attempts, or
+c) when records expire
+
+<br />
+We would use the `batch processing` utility of the `aws-lambda-powertools` to ensure that, batch records are processed individually – only messages that failed to be processed return to the queue  for a further retry. 
+<br />
+
+This works when two mechanisms are in place:
+<br />
+
+- `ReportBatchItemFailures` is set in your SQS event source properties
+- A [specific response](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#sqs-batchfailurereporting-syntax) is returned so Lambda knows which records should not be deleted during partial responses.
+
+<br />
+
+Create a file called `update_job_application.py` in the `/babysitter` directory type in the following code
+
+```
+
+import json
+import os
+import boto3
+from typing import Any, List, Literal, Union
+from aws_lambda_powertools.utilities.batch import (BatchProcessor,
+                                                   EventType,
+                                                   FailureResponse,
+                                                   SuccessResponse,
+                                                   batch_processor)
+from aws_lambda_powertools.utilities.data_classes.sqs_event import SQSRecord
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from aws_lambda_powertools import Logger, Tracer
+
+tracer = Tracer(service="update_job_application")
+logger = Logger(service="update_job_application")
+
+
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table(os.environ["TABLE_NAME"])
+processor = BatchProcessor(event_type=EventType.SQS)
+
+@tracer.capture_method
+def record_handler(record: SQSRecord):
+    """
+    Handle messages from SQS Queue containing job applications.
+    Update each job application status to DECLINED
+    """
+    payload:str = record.body
+
+    logger.info(f"payload has {len(payload)} records")
+
+    if payload:
+        logger.debug(" application item is {}".format(payload))
+        item = json.loads(payload)
+        response = table.update_item(
+            Key={
+                'PK': f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
+                'SK': f"JOB#{item['jobId']}#APPLICATION#{item['id']}"
+            },
+            ConditionExpression="attribute_exists(PK)",
+            UpdateExpression="set jobApplicationStatus= :jobApplicationStatus",
+
+            ExpressionAttributeValues={
+                ':jobApplicationStatus': 'DECLINED'
+            },
+            ReturnValues="ALL_NEW"
+        )
+
+        logger.debug({' update response': response['Attributes']})
+
+
+
+@logger.inject_lambda_context
+@tracer.capture_lambda_handler
+@batch_processor(record_handler=record_handler, processor=processor)
+def lambda_handler(event, context: LambdaContext):
+    batch = event["Records"]
+    with processor(records=batch, processor=processor):
+        processed_messages: List[Union[SuccessResponse, FailureResponse]] = processor.process()
+
+    for messages in processed_messages:
+        for message in messages:
+            status: Union[Literal["success"], Literal["fail"]] = message[0]
+            result: Any = message[1]
+            record: SQSRecord = message[2]
+            logger.debug("status is {}".format(status))
+            logger.debug("result is {}".format(result))
+            logger.debug("record is {}".format(record))
+    return processor.response()
+
+
+```
+Here are the steps involved in processing messages from our SQS in the above code.
+1) Instantiate our dynamoDB resource, and also the BatchProcessor and choose EventType.SQS for the event type.
+2) Define the function to handle each batch record, and use SQSRecord type annotation for autocompletion.
+In our case, we upadte each `jobApplicationStatus` to `DECLINED`
+3) We use `batch_processor` decorator to kick off processing.
+4) Return the appropriate response contract to Lambda via .response() processor method
 
 
 
