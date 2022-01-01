@@ -17,7 +17,7 @@ def create_user_account(user=None):
         user = {}
     logger.info(f'items:{user}')
 
-    if user['type'] == 'parent'
+
     item: dict = {
         "id": scalar_types_utils.make_id(),
         "username": user['username'],
