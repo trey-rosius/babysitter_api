@@ -27,12 +27,12 @@ There has to be a solution to this 🤔. Yeahhhh... Get a nanny.But then,other i
 
 - How can you speak to other parents that have worked with them in the past ?
   <br />
-  And a ton of other questions.
+  And a ton of other concerns.
 
 BUT!!!!! 
 <br />
-What if there's an online website just for stuff like this. 
-- Where you can meet people willing to carryout nanny duties.
+What if there's an online service, just for stuff like this ? 
+- Where you can meet people willing to carryout nanny duties?
 - You can post job offers 
 - See Nanny ratings based on previous jobs they've completed
 - Book a nanny
