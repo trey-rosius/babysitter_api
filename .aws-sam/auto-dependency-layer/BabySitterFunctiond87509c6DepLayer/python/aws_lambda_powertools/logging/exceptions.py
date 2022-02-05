@@ -1,2 +1,0 @@
-class InvalidLoggerSamplingRateError(Exception):
-    pass

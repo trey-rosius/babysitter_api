@@ -16,6 +16,7 @@ def create_user_account(user=None):
     if user is None:
         user = {}
     logger.info(f'items:{user}')
+
     item: dict = {
         "id": scalar_types_utils.make_id(),
         "username": user['username'],
@@ -79,14 +80,20 @@ def create_user_account(user=None):
                                 'S': item['lastName']
                             },
                             'day': {
-                                'N': item['day']
+                                'N': f"{item['day']}"
                             },
                             'month': {
-                                'N': item['month']
+                                'N': f"{item['month']}"
                             },
+
                             'year': {
-                                'N': item['year']
+                                'N': f"{item['year']}"
                             },
+                            'age': {
+                                'N': f"{item['age']}"
+
+                            },
+
                             'male': {
                                 'BOOL': item['male']
                             },

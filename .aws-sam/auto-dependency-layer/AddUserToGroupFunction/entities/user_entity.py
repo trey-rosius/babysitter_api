@@ -47,7 +47,9 @@ class UserEntity:
             "createdOn": self.createdOn
         }
 
-    def user_jobs(self, jobs=[]):
+    def user_jobs(self, jobs=None):
+        if jobs is None:
+            jobs = []
         return {
             "id": self.id,
             "username": self.username,

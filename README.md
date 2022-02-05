@@ -2,7 +2,7 @@
 
 ## The Problem
 
-So COVID came along and made Remote work possible. Yay!!!. Now we can work in our pyjamas, our bedrooms,sipping coffee from that large Mug we've always dreamt of. 
+So COVID came along and made Remote work possible. Yay!!!. Now we can work in our pyjamas, from our bedrooms,sipping coffee from that large Mug we got for special moments like these. 
 I don't know about you, but to me, working like this is a dream come true.
 <br />
 <br />
@@ -10,10 +10,10 @@ But as the saying goes,
 > When you pray for the rain, you've got to deal with the mud too
 
 Working from home ain't all sunshine and merry making.
-Most of us are parents, and for some sweet reason, our kids always decide to show how much they love us, during zoom meetings or when we want to put some work in.
+Most of us are parents, and for some sweet reason, our kids always decide to show how much they love us, during zoom meetings or when we want to put in some work.
 <br />
 <br />
-They're either banging on the closed door or creating some noise with stuff from outside, because there's nobody to sit and put them to order.
+They're either banging on the closed door or creating some noise with their toys, because there's nobody to sit and put them to order.
 <br />
 <br />
 There has to be a solution to this 🤔. Yeahhhh... Get a nanny.But then,other issues come in.
@@ -21,11 +21,11 @@ There has to be a solution to this 🤔. Yeahhhh... Get a nanny.But then,other i
 
 - Firstly, where or how do i get this nanny ?
 
-- Supposing you meet them ,are you comfortable leaving your kids with somebody you just met ?
+- Supposing i meet them ,am i comfortable leaving my kids with somebody i just met ?
 
-- How do you evaluate them to know if they are a good fit for your kids ?
+- How do i evaluate them to know if they are a good fit for my kids ?
 
-- How can you speak to other parents that have worked with them in the past ?
+- How can i speak to other parents that have worked with them in the past ?
   <br />
   And a ton of other concerns.
 
@@ -34,7 +34,8 @@ BUT!!!!!
 What if there's an online service, just for stuff like this ? 
 - Where you can meet people willing to carryout nanny duties?
 - You can post job offers 
-- See Nanny ratings based on previous jobs they've completed
+- See Nanny ratings based on previous jobs they've completed.
+- Connect with other parents.
 - Book a nanny
 - etc
 <br />
@@ -46,7 +47,7 @@ out there who's willing to go all in on building something similar
 
 ## Proposed Solution
 
-This REPO would contain all the code for the babysitter serverless GraphQL API.
+This Repo would contain all the code for the babysitter serverless GraphQL API.
 
 ## ENTITIES
 - [x] User
@@ -135,7 +136,7 @@ Reviews/Ratings will be publicly visible on each users profile.
 
 ## Overview
 This api is built as a serverless graphql api, using [Serverless Application
-Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code, [AWS AppSync](https://aws.amazon.com/appsync/) for the serverless GraphQL, [AWS Cognito](https://aws.amazon.com/cognito/) for authentication,python 3.8 as the runtime language, [AWS Lambda](https://aws.amazon.com/lambda/) for direct lambda resolvers,
+Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code, [AWS AppSync](https://aws.amazon.com/appsync/) for serverless GraphQL, [AWS Cognito](https://aws.amazon.com/cognito/) for authentication, python 3.8 as the runtime language, [AWS Lambda](https://aws.amazon.com/lambda/) for direct lambda resolvers,
 [Simple Queue Service(SQS)](https://aws.amazon.com/sqs/) for executing requests asynchronously, [AWS DynamoDB](https://aws.amazon.com/dynamodb/) for storing data.
 
 
@@ -179,18 +180,16 @@ Here are the concepts we'll be covering in this article.
 route all Graphql endpoints.
 - Build faster with the new SAM Cli (`sam sync --stack-name`)
 
-We already highlighted our use case above. Now, let's dive into our DynamoDB table.
+We already highlighted our use case above. Now, let's dive into our DynamoDB table Design.
 #### DynamoDB Table
 Our dynamodb table stores all data related to the application.
 <br />
-<br />
-Since we already understand our access patterns, let's dive right into the 
-relationship between entities.
+Here's an illustration of the relationship between entities.
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_entity.png)
 
-- There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple job.
-- There's also a one to many relationship between a Job and Application
+- There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple jobs.
+- There's also a one to many relationship between a Job and Application.
 
 #### Primary Key Design
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/primary_key_design.png)
@@ -223,11 +222,11 @@ From this current design, here are the access patterns available
 - `PK=JOB#<JobId>#APPLICATION#<ApplicationId>`
 <br>
 
-Booking a nanny means, changing the status of an application from `PENDING`  to `ACCEPTED` , while changing the 
+Booking a nanny means, changing the status of a job application from `PENDING`  to `ACCEPTED` , while changing the 
 job status from `OPEN` to `CLOSED`
 <br>
 <br>
-The current design has limitations, There are a couple of access patterns it doesn't support yet.
+The current design has limitations. There are a couple of access patterns it doesn't support yet.
 For example, currently, we can't get all applications for a particular job.We need a Global Secondary index(GSI) for that. 
 <br>
 For this application, we'll create 3 GSI's for additional access patterns.

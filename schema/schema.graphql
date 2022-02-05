@@ -46,7 +46,6 @@ schema {
             age:Int!
             male:Boolean!
             female:Boolean!
-
             address:String!
             about:String!
             longitude:Float!
