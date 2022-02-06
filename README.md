@@ -227,9 +227,9 @@ job status from `OPEN` to `CLOSED`
 <br>
 <br>
 The current design has limitations. There are a couple of access patterns it doesn't support yet.
-For example, currently, we can't get all applications for a particular job.We need a Global Secondary index(GSI) for that. 
+For example, we can't get all job applications for a particular job.We need a Global Secondary index(GSI) for that. 
 <br>
-For this application, we'll create 3 GSI's for additional access patterns.
+For this api, we'll create 3 GSI's for additional access patterns.
 #### Global Secondary Indexes
 1) `jobApplications`: Get applications for a job. Parents have to see all applications for the job
 they posted, in-order to book who they intend to work with.
@@ -258,15 +258,12 @@ I won't paste the complete GraphQl schema here, just the relevant parts that nee
             @aws_cognito_user_pools
 
             deleteUser(username:String!):Boolean
-            @aws_cognito_user_pools
-
-
             createJob(job:CreateJobInput!):Job!
+
             @aws_cognito_user_pools(cognito_groups: ["parent"])
-
             applyToJob(application:CreateJobApplicationInput!):JobApplication!
-            @aws_cognito_user_pools(cognito_groups: ["nanny"])
 
+            @aws_cognito_user_pools(cognito_groups: ["nanny"])
             bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
             @aws_cognito_user_pools(cognito_groups: ["parent"])
         }
@@ -274,10 +271,11 @@ I won't paste the complete GraphQl schema here, just the relevant parts that nee
 ```
 A user has to be authenticated before carrying out any `Mutation`.
 <br />
-Users are seperated into 3 user groups
+Users are separated into 3 user groups
 - Admin
 - Parent
 - Nanny
+
 Some Mutations can only be executed by Users of a particular group, while other
 Mutations can be executed by Users of any group. 
 <br />
@@ -322,7 +320,7 @@ Any User group can create an account
 #### Queries
 Same User Group concept apply to queries.
 ```
-        type Query {
+  type Query {
             getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
 
             listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
@@ -579,92 +577,8 @@ The next authentication type is `AMAZON_COGNITO_USER_POOLS` which requires a use
 
 Then we have our graphQL schema in a file called `schema.graphql` located in the `schema` folder.
 Here's the content of the file. 
-```
-schema {
-            query:Query
-            mutation: Mutation
-        }
-
-        type Query {
-            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
-          
-
-        }
-
-        type Mutation {
-            createUser(user:CreateUserInput!):User!
-            @aws_cognito_user_pools
-            updateUserStatus(username:String!,status:UserAccountStatus!):User
-            @aws_cognito_user_pools(cognito_groups: ["admin"])
-            updateUser(user:UpdateUserInput!):User!
-            @aws_cognito_user_pools
-            deleteUser(username:String!):Boolean
-            
-        }
-
-        type User @aws_cognito_user_pools {
-            id: ID!
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            postedJobs:[Job]
-            createdOn:AWSTimestamp
-
-
-
-        }
-     
-
-        input CreateUserInput {
-            id: ID!
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            createdOn:AWSTimestamp
-
-
-
-        }
-        input UpdateUserInput {
-            id: ID!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Int!
-            latitude:Int!
-            status:UserAccountStatus!
-
-
-
-        }
-
-        enum UserAccountStatus {
-            VERIFIED
-            UNVERIFIED
-            DEACTIVATED
-        }
-        enum UserType{
-            NANNY
-            PARENT
-        }
-        
-```
-
+[GraphQl Schema](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/schema/schema.graphql)
+<br />
 Delete the hello world function and type in this one
 
 ```
@@ -682,7 +596,7 @@ Delete the hello world function and type in this one
         SOLUTION: LambdaPowertoolsPython
 
 ```
-This function is our direct lambda resolver. It'll serve a the gateway to all the endpoints of our app.
+This function is our direct lambda resolver. It'll serve as the gateway to all the endpoints of our api.
 We need permissions in-order to get tracer and logger functioning properly. That's why there's a 
 ```
     DependsOn:
@@ -822,7 +736,7 @@ Still under `Resource`, add these roles and policies.
 
 ####Datasource
 
-The lambda function we created above would be used as our Datasource.Here's how we define it other `Resources` 
+The lambda function we created above would be used as our Datasource.Here's how we define it's `Resources` 
 ```
   ###################
   # Lambda Direct Data Source and Resolver
@@ -896,7 +810,7 @@ Before we begin creating our resolvers, let's create our DynamoDb table.Still un
             ProjectionType: ALL
 
 ```
-I already explained why we need Glabal Secondary Indexes, and why our table is structured this way. Short answer is,
+I already explained why we need Global Secondary Indexes, and why our table is structured this way. Short answer is,
 `access patterns`
 
 ### Resolvers
@@ -906,7 +820,7 @@ We want users to be able to create an account.
 For a user account to be unique, we apply a unique constraint on 2 attributes
 - username
 - email
-No 2 users can have same username and email. We'll use a condition expression ensure uniqueness,then use 2 put request inside a dynamodb transaction api.
+No 2 users can have same username and email. We'll use a conditional expression to ensure uniqueness,then use 2 put request inside a dynamodb transaction api.
 <br />
 
 DynamoDb transactions provide developers with atomicity, consistency, isolation, and durability (ACID) across tables. It processes requests in batches. If one request in the batch
@@ -916,31 +830,30 @@ fails, the whole batch fails. The batch succeeds, when all requests succeed and 
 Inside the `resolvers` function, create a folder called `users` and inside of users folder, create a file called `create_user_account.py` and type in the following code.
 
 ```
-from aws_lambda_powertools import Logger, Tracer
-import boto3
-import os
-
-from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
-from botocore.exceptions import ClientError
-
-
 tracer = Tracer(service="create_user_resolver")
 logger = Logger(service="create_user_resolver")
 
 client = boto3.client('dynamodb')
-
-
 @tracer.capture_method
 def create_user_account(user=None):
     if user is None:
         user = {}
     logger.info(f'items:{user}')
+
     item: dict = {
         "id": scalar_types_utils.make_id(),
         "username": user['username'],
         "type": user['type'],
         "email": user['email'],
         "firstName": user["firstName"],
+        "day": user["day"],
+        "month": user['month'],
+        "year": user['year'],
+        "age": user['age'],
+        "dateOfBirth": user['dateOfBirth'],
+        "male": user['male'],
+        "female": user['female'],
+        "profilePicUrl": user['profilePicUrl'],
         "lastName": user["lastName"],
         "address": user["address"],
         "about": user["about"],
@@ -988,6 +901,33 @@ def create_user_account(user=None):
                             },
                             'lastName': {
                                 'S': item['lastName']
+                            },
+                            'day': {
+                                'N': f"{item['day']}"
+                            },
+                            'month': {
+                                'N': f"{item['month']}"
+                            },
+
+                            'year': {
+                                'N': f"{item['year']}"
+                            },
+                            'age': {
+                                'N': f"{item['age']}"
+
+                            },
+
+                            'male': {
+                                'BOOL': item['male']
+                            },
+                            'female': {
+                                'BOOL': item['female']
+                            },
+                            'dateOfBirth': {
+                                'S': item['dateOfBirth']
+                            },
+                            'profilePicUrl': {
+                                'S': item['profilePicUrl']
                             },
                             'address': {
                                 'S': item['address']
@@ -1049,11 +989,13 @@ def create_user_account(user=None):
         return item
     except ClientError as err:
         logger.debug(f"Error occurred during transact write{err.response}")
+        logger.debug(f"Error occurred during transact write{err}")
         logger.debug(f"Error occurred during transact write{err.response['Error']}")
         if err.response['Error']['Code'] == 'TransactionCanceledException':
             if err.response['CancellationReasons'][0]['Code'] == 'ConditionalCheckFailed':
                 # TODO make exception handling DRY
                 errObj = Exception("Username already exist")
+
                 raise errObj
             elif err.response['CancellationReasons'][1]['Code'] == 'ConditionalCheckFailed':
                 # TODO make exception handling DRY
@@ -1063,7 +1005,6 @@ def create_user_account(user=None):
 
         else:
             raise err
-
 
 ```
 Firstly, we initiate tracer, logger and the boto3 client library.Then we annotate the function 
@@ -1205,6 +1146,10 @@ If everything goes successfully, you should see output similar to this.
 If you run the Mutation again, you should see this output
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/f.png)
+<br />
+<br />
+Here's a frontend workflow of the complete process from user sign up to account creation.
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_signup_workflow.png)
 
 <br />
 If you run into any issues, don't forget to open up cloudwatch and checkout the lambda logs. Remember we 
@@ -1501,174 +1446,17 @@ If you plan on expanding this application, you can restrict a users access to th
 based on the status of their account.That might be a good challenge for you.
 <br />
 
-As another challenge, try implementing this endpoint. I don't mean to disrespect a boss like you with this joke of a challenge.
+As another challenge, try implementing this endpoint. I mean no to disrespect a boss like you.
 I know you'll crush it with your left hand. 😤
 <br />
 
 Remember the solution is in the repo.
 
-#### Update graphql schema
-```
-schema {
-            query:Query
-            mutation: Mutation
-        }
-
-        type Query {
-            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
-            listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
-            listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
-            listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-            listApplicationsPerJob(jobId:String!):Job!
-            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-            listJobsAppliedTo(username:String!):User!
-            @aws_cognito_user_pools(cognito_groups:["admin","parent"])
-
-        }
-
-        type Mutation {
-            createUser(user:CreateUserInput!):User!
-            @aws_cognito_user_pools
-            updateUserStatus(username:String!,status:UserAccountStatus!):User
-            @aws_cognito_user_pools(cognito_groups: ["admin"])
-            updateUser(user:UpdateUserInput!):User!
-            @aws_cognito_user_pools
-            deleteUser(username:String!):Boolean
-            createJob(job:CreateJobInput!):Job!
-            @aws_cognito_user_pools(cognito_groups: ["parent"])
-            applyToJob(application:CreateJobApplicationInput!):JobApplication!
-            @aws_cognito_user_pools(cognito_groups: ["nanny"])
-            bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
-            @aws_cognito_user_pools(cognito_groups: ["parent"])
-        }
-
-        type User @aws_cognito_user_pools {
-            id: ID!
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            postedJobs:[Job]
-            createdOn:AWSTimestamp
-
-
-
-        }
-       type Job @aws_cognito_user_pools{
-            id:ID!
-            jobType:JobType!
-            username:String!
-            startDate:AWSDate!
-            endDate:AWSDate!
-            startTime:AWSTime!
-            endTime:AWSTime!
-            longitude:Float!
-            latitude:Float!
-            address:String!
-            city:String!
-            cost:Int!
-            jobStatus:JobStatus!
-            applications:[JobApplication]
-
-       }
-       type JobApplication @aws_cognito_user_pools{
-           id:ID!
-           username:String!
-           jobId:String!
-           jobApplicationStatus:JobApplicationStatus!
-           createdOn:AWSTimestamp!
-       }
-
-        input CreateJobApplicationInput{
-            id:ID!
-           username:String!
-           jobId:String!
-           jobApplicationStatus:JobApplicationStatus!
-           createdOn:AWSTimestamp
-        }
-
-        input CreateJobInput{
-            id:ID!
-            jobType:JobType!
-            startDate:AWSDate!
-            endDate:AWSDate!
-            startTime:AWSTime!
-            endTime:AWSTime!
-            longitude:Float!
-            latitude:Float!
-            jobStatus:JobStatus!
-            address:String!
-            city:String!
-            cost:Int!
-            username:String!
-
-        }
-
-        input CreateUserInput {
-            username: String!
-            email: AWSEmail!
-            type:UserType!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-            longitude:Float!
-            latitude:Float!
-            status:UserAccountStatus!
-            createdOn:AWSTimestamp
-
-
-
-        }
-        input UpdateUserInput {
-            username: String!
-            email: AWSEmail!
-            firstName:String!
-            lastName:String!
-            address:String!
-            about:String!
-           longitude:Float!
-            latitude:Float!
-
-        }
-
-        enum UserAccountStatus {
-            VERIFIED
-            UNVERIFIED
-            DEACTIVATED
-        }
-        enum UserType{
-            NANNY
-            PARENT
-        }
-        enum JobType{
-            BABYSITTING
-            CLEANING
-            RUNNING_ERRANDS
-
-        }
-        enum JobStatus{
-            OPEN
-            CLOSED
-        }
-        enum JobApplicationStatus{
-            PENDING
-            DECLINED
-            ACCEPTED
-
-        }
-
-```
 
 #### Create Job Endpoint
 This endpoint is reserved for PARENTS only.It allows parents to put up job offers, which can be applied to 
 by nanny's.
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/post_job.png)
 Here's how the schema looks like
 ```
 
