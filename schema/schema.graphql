@@ -83,7 +83,6 @@ schema {
        }
 
         input CreateJobApplicationInput{
-            id:ID!
            username:String!
            jobId:String!
            jobApplicationStatus:JobApplicationStatus!
@@ -91,7 +90,6 @@ schema {
         }
 
         input CreateJobInput{
-            id:ID!
             jobType:JobType!
             startDate:AWSDate!
             endDate:AWSDate!
@@ -126,9 +124,6 @@ schema {
             longitude:Float!
             latitude:Float!
             status:UserAccountStatus!
-            createdOn:AWSTimestamp
-
-
 
         }
         input UpdateUserInput {
