@@ -3,7 +3,7 @@ name: Pipeline
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
       - 'feature**'
   delete:
     branches:
@@ -103,7 +103,7 @@ jobs:
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
   build-and-package:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [test]
     runs-on: ubuntu-latest
     steps:
@@ -161,7 +161,7 @@ jobs:
           path: packaged-prod.yaml
 
   deploy-testing:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [build-and-package]
     runs-on: ubuntu-latest
     steps:
@@ -194,7 +194,7 @@ jobs:
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
   integration-test:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [deploy-testing]
     runs-on: ubuntu-latest
     steps:
@@ -203,7 +203,7 @@ jobs:
           # trigger the integration tests here
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [integration-test]
     runs-on: ubuntu-latest
     # Configure GitHub Action Environment to have a manual approval step before deployment to production
