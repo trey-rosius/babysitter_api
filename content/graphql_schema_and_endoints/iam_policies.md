@@ -68,7 +68,7 @@ it requires for it's execution.
 Remember that, it's the same role we've attached the DynamoDB policy to.
 <br />
 
-Therefore once this role is attached to a lambda function, that function would have permissions to write to the 
+Therefore, once this role is attached to a lambda function, that function would have permissions to write to the 
 dynamoDB table.
 
 ```
