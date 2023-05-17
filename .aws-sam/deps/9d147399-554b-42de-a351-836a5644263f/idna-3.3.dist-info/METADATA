@@ -109,7 +109,7 @@ Compatibility Mapping (UTS #46)
 
 As described in `RFC 5895 <https://tools.ietf.org/html/rfc5895>`_, the IDNA
 specification does not normalize input from different potential ways a user
-may input a domain name. This functionality, known as a “mapping”, is 
+may input a domain name. This functionality, known as a “mapping”, is
 considered by the specification to be a local user-interface issue distinct
 from IDNA conversion functionality.
 
@@ -180,8 +180,8 @@ tables for performance. These tables are derived from computing against
 eligibility criteria in the respective standards. These tables are
 computed using the command-line script ``tools/idna-data``.
 
-This tool will fetch relevant codepoint data from the Unicode repository 
-and perform the required calculations to identify eligibility. There are 
+This tool will fetch relevant codepoint data from the Unicode repository
+and perform the required calculations to identify eligibility. There are
 three main modes:
 
 * ``idna-data make-libdata``. Generates ``idnadata.py`` and ``uts46data.py``,
@@ -233,4 +233,3 @@ Additional Notes
   wish to consider trying the encode/decode operation in this library first, and then falling
   back to using `encodings.idna`. See `the Github project <https://github.com/kjd/idna/issues/18>`_
   for more discussion.
-

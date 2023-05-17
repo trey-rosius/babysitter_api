@@ -1,4 +1,4 @@
-'''
+"""
 This module provides a newnext() function in Python 2 that mimics the
 behaviour of ``next()`` in Python 3, falling back to Python 2's behaviour for
 compatibility if this fails.
@@ -34,11 +34,12 @@ to explicitly decorate the class with the @implements_iterator decorator from
 
 This next() function is primarily for consuming iterators defined in Python 3
 code elsewhere that we would like to run on Python 2 or 3.
-'''
+"""
 
 _builtin_next = next
 
 _SENTINEL = object()
+
 
 def newnext(iterator, default=_SENTINEL):
     """
@@ -58,8 +59,11 @@ def newnext(iterator, default=_SENTINEL):
             try:
                 return iterator.next()
             except AttributeError:
-                raise TypeError("'{0}' object is not an iterator".format(
-                                           iterator.__class__.__name__))
+                raise TypeError(
+                    "'{0}' object is not an iterator".format(
+                        iterator.__class__.__name__
+                    )
+                )
     except StopIteration as e:
         if default is _SENTINEL:
             raise e
@@ -67,4 +71,4 @@ def newnext(iterator, default=_SENTINEL):
             return default
 
 
-__all__ = ['newnext']
+__all__ = ["newnext"]

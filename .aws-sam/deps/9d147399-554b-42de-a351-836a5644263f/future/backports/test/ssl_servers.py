@@ -7,29 +7,34 @@ import ssl
 import pprint
 import socket
 from future.backports.urllib import parse as urllib_parse
-from future.backports.http.server import (HTTPServer as _HTTPServer,
-    SimpleHTTPRequestHandler, BaseHTTPRequestHandler)
+from future.backports.http.server import (
+    HTTPServer as _HTTPServer,
+    SimpleHTTPRequestHandler,
+    BaseHTTPRequestHandler,
+)
 from future.backports.test import support
+
 threading = support.import_module("threading")
 
 here = os.path.dirname(__file__)
 
 HOST = support.HOST
-CERTFILE = os.path.join(here, 'keycert.pem')
+CERTFILE = os.path.join(here, "keycert.pem")
 
 # This one's based on HTTPServer, which is based on SocketServer
 
-class HTTPSServer(_HTTPServer):
 
+class HTTPSServer(_HTTPServer):
     def __init__(self, server_address, handler_class, context):
         _HTTPServer.__init__(self, server_address, handler_class)
         self.context = context
 
     def __str__(self):
-        return ('<%s %s:%s>' %
-                (self.__class__.__name__,
-                 self.server_name,
-                 self.server_port))
+        return "<%s %s:%s>" % (
+            self.__class__.__name__,
+            self.server_name,
+            self.server_port,
+        )
 
     def get_request(self):
         # override this to wrap socket with SSL
@@ -42,6 +47,7 @@ class HTTPSServer(_HTTPServer):
                 sys.stderr.write("Got an error:\n%s\n" % e)
             raise
         return sslconn, addr
+
 
 class RootedHTTPRequestHandler(SimpleHTTPRequestHandler):
     # need to override translate_path to get a known root,
@@ -64,7 +70,7 @@ class RootedHTTPRequestHandler(SimpleHTTPRequestHandler):
         # abandon query parameters
         path = urllib.parse.urlparse(path)[2]
         path = os.path.normpath(urllib.parse.unquote(path))
-        words = path.split('/')
+        words = path.split("/")
         words = filter(None, words)
         path = self.root
         for word in words:
@@ -76,12 +82,16 @@ class RootedHTTPRequestHandler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         # we override this to suppress logging unless "verbose"
         if support.verbose:
-            sys.stdout.write(" server (%s:%d %s):\n   [%s] %s\n" %
-                             (self.server.server_address,
-                              self.server.server_port,
-                              self.request.cipher(),
-                              self.log_date_time_string(),
-                              format%args))
+            sys.stdout.write(
+                " server (%s:%d %s):\n   [%s] %s\n"
+                % (
+                    self.server.server_address,
+                    self.server.server_port,
+                    self.request.cipher(),
+                    self.log_date_time_string(),
+                    format % args,
+                )
+            )
 
 
 class StatsRequestHandler(BaseHTTPRequestHandler):
@@ -96,12 +106,12 @@ class StatsRequestHandler(BaseHTTPRequestHandler):
         sock = self.rfile.raw._sock
         context = sock.context
         stats = {
-            'session_cache': context.session_stats(),
-            'cipher': sock.cipher(),
-            'compression': sock.compression(),
-            }
+            "session_cache": context.session_stats(),
+            "cipher": sock.cipher(),
+            "compression": sock.compression(),
+        }
         body = pprint.pformat(stats)
-        body = body.encode('utf-8')
+        body = body.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-type", "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -119,12 +129,11 @@ class StatsRequestHandler(BaseHTTPRequestHandler):
 
 
 class HTTPSServerThread(threading.Thread):
-
     def __init__(self, context, host=HOST, handler_class=None):
         self.flag = None
-        self.server = HTTPSServer((host, 0),
-                                  handler_class or RootedHTTPRequestHandler,
-                                  context)
+        self.server = HTTPSServer(
+            (host, 0), handler_class or RootedHTTPRequestHandler, context
+        )
         self.port = self.server.server_port
         threading.Thread.__init__(self)
         self.daemon = True
@@ -156,33 +165,63 @@ def make_https_server(case, certfile=CERTFILE, host=HOST, handler_class=None):
     flag = threading.Event()
     server.start(flag)
     flag.wait()
+
     def cleanup():
         if support.verbose:
-            sys.stdout.write('stopping HTTPS server\n')
+            sys.stdout.write("stopping HTTPS server\n")
         server.stop()
         if support.verbose:
-            sys.stdout.write('joining HTTPS thread\n')
+            sys.stdout.write("joining HTTPS thread\n")
         server.join()
+
     case.addCleanup(cleanup)
     return server
 
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(
-        description='Run a test HTTPS server. '
-                    'By default, the current directory is served.')
-    parser.add_argument('-p', '--port', type=int, default=4433,
-                        help='port to listen on (default: %(default)s)')
-    parser.add_argument('-q', '--quiet', dest='verbose', default=True,
-                        action='store_false', help='be less verbose')
-    parser.add_argument('-s', '--stats', dest='use_stats_handler', default=False,
-                        action='store_true', help='always return stats page')
-    parser.add_argument('--curve-name', dest='curve_name', type=str,
-                        action='store',
-                        help='curve name for EC-based Diffie-Hellman')
-    parser.add_argument('--dh', dest='dh_file', type=str, action='store',
-                        help='PEM file containing DH parameters')
+        description="Run a test HTTPS server. "
+        "By default, the current directory is served."
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=4433,
+        help="port to listen on (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        dest="verbose",
+        default=True,
+        action="store_false",
+        help="be less verbose",
+    )
+    parser.add_argument(
+        "-s",
+        "--stats",
+        dest="use_stats_handler",
+        default=False,
+        action="store_true",
+        help="always return stats page",
+    )
+    parser.add_argument(
+        "--curve-name",
+        dest="curve_name",
+        type=str,
+        action="store",
+        help="curve name for EC-based Diffie-Hellman",
+    )
+    parser.add_argument(
+        "--dh",
+        dest="dh_file",
+        type=str,
+        action="store",
+        help="PEM file containing DH parameters",
+    )
     args = parser.parse_args()
 
     support.verbose = args.verbose

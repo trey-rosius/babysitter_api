@@ -29,9 +29,9 @@ class XRayTracedCursor(wrapt.ObjectProxy):
         self._xray_meta = meta
 
         # we preset database type if db is framework built-in
-        if not self._xray_meta.get('database_type'):
-            db_type = cursor.__class__.__module__.split('.')[0]
-            self._xray_meta['database_type'] = db_type
+        if not self._xray_meta.get("database_type"):
+            db_type = cursor.__class__.__module__.split(".")[0]
+            self._xray_meta["database_type"] = db_type
 
     def __enter__(self):
 
@@ -66,11 +66,11 @@ def add_sql_meta(meta):
     if not subsegment:
         return
 
-    if meta.get('name', None):
-        subsegment.name = meta['name']
+    if meta.get("name", None):
+        subsegment.name = meta["name"]
 
     sql_meta = copy.copy(meta)
-    if sql_meta.get('name', None):
-        del sql_meta['name']
+    if sql_meta.get("name", None):
+        del sql_meta["name"]
     subsegment.set_sql(sql_meta)
-    subsegment.namespace = 'remote'
+    subsegment.namespace = "remote"

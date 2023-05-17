@@ -24,8 +24,13 @@ from urllib3.connectionpool import HTTPSConnectionPool
 import botocore.utils
 from botocore.compat import six
 from botocore.compat import (
-    HTTPHeaders, HTTPResponse, urlunsplit, urlsplit,
-    urlencode, urlparse, MutableMapping
+    HTTPHeaders,
+    HTTPResponse,
+    urlunsplit,
+    urlsplit,
+    urlencode,
+    urlparse,
+    MutableMapping,
 )
 from botocore.exceptions import UnseekableStreamError
 
@@ -37,7 +42,7 @@ class AWSHTTPResponse(HTTPResponse):
     # The *args, **kwargs is used because the args are slightly
     # different in py2.6 than in py2.7/py3.
     def __init__(self, *args, **kwargs):
-        self._status_tuple = kwargs.pop('status_tuple')
+        self._status_tuple = kwargs.pop("status_tuple")
         HTTPResponse.__init__(self, *args, **kwargs)
 
     def _read_status(self):
@@ -61,6 +66,7 @@ class AWSConnection(object):
     this against AWS services.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(AWSConnection, self).__init__(*args, **kwargs)
         self._original_response_cls = self.response_class
@@ -84,13 +90,14 @@ class AWSConnection(object):
 
     def _send_request(self, method, url, body, headers, *args, **kwargs):
         self._response_received = False
-        if headers.get('Expect', b'') == b'100-continue':
+        if headers.get("Expect", b"") == b"100-continue":
             self._expect_header_set = True
         else:
             self._expect_header_set = False
             self.response_class = self._original_response_cls
         rval = super(AWSConnection, self)._send_request(
-            method, url, body, headers, *args, **kwargs)
+            method, url, body, headers, *args, **kwargs
+        )
         self._expect_header_set = False
         return rval
 
@@ -101,7 +108,7 @@ class AWSConnection(object):
         bytes_buffer = []
         for chunk in mixed_buffer:
             if isinstance(chunk, six.text_type):
-                bytes_buffer.append(chunk.encode('utf-8'))
+                bytes_buffer.append(chunk.encode("utf-8"))
             else:
                 bytes_buffer.append(chunk)
         msg = b"\r\n".join(bytes_buffer)
@@ -136,8 +143,10 @@ class AWSConnection(object):
                 # server (possibly via a proxy) from which it has never seen a
                 # 100 (Continue) status, the client SHOULD NOT wait for an
                 # indefinite period before sending the request body.
-                logger.debug("No response seen from server, continuing to "
-                             "send the response body.")
+                logger.debug(
+                    "No response seen from server, continuing to "
+                    "send the response body."
+                )
         if message_body is not None:
             # message_body was not a string (i.e. it is a file), and
             # we must run the risk of Nagle.
@@ -152,23 +161,22 @@ class AWSConnection(object):
         # we'll read until we read '\r\n', and ignore any headers
         # that come immediately after the 100 continue response.
         current = None
-        while current != b'\r\n':
+        while current != b"\r\n":
             current = fp.readline()
 
     def _handle_expect_response(self, message_body):
         # This is called when we sent the request headers containing
         # an Expect: 100-continue header and received a response.
         # We now need to figure out what to do.
-        fp = self.sock.makefile('rb', 0)
+        fp = self.sock.makefile("rb", 0)
         try:
             maybe_status_line = fp.readline()
             parts = maybe_status_line.split(None, 2)
             if self._is_100_continue_status(maybe_status_line):
                 self._consume_headers(fp)
-                logger.debug("100 Continue response seen, "
-                             "now sending request body.")
+                logger.debug("100 Continue response seen, " "now sending request body.")
                 self._send_message_body(message_body)
-            elif len(parts) == 3 and parts[0].startswith(b'HTTP/'):
+            elif len(parts) == 3 and parts[0].startswith(b"HTTP/"):
                 # From the RFC:
                 # Requirements for HTTP/1.1 origin servers:
                 #
@@ -181,12 +189,18 @@ class AWSConnection(object):
                 # So if we don't get a 100 Continue response, then
                 # whatever the server has sent back is the final response
                 # and don't send the message_body.
-                logger.debug("Received a non 100 Continue response "
-                             "from the server, NOT sending request body.")
-                status_tuple = (parts[0].decode('ascii'),
-                                int(parts[1]), parts[2].decode('ascii'))
+                logger.debug(
+                    "Received a non 100 Continue response "
+                    "from the server, NOT sending request body."
+                )
+                status_tuple = (
+                    parts[0].decode("ascii"),
+                    int(parts[1]),
+                    parts[2].decode("ascii"),
+                )
                 response_class = functools.partial(
-                    AWSHTTPResponse, status_tuple=status_tuple)
+                    AWSHTTPResponse, status_tuple=status_tuple
+                )
                 self.response_class = response_class
                 self._response_received = True
         finally:
@@ -198,27 +212,24 @@ class AWSConnection(object):
 
     def send(self, str):
         if self._response_received:
-            logger.debug("send() called, but reseponse already received. "
-                         "Not sending data.")
+            logger.debug(
+                "send() called, but reseponse already received. " "Not sending data."
+            )
             return
         return super(AWSConnection, self).send(str)
 
     def _is_100_continue_status(self, maybe_status_line):
         parts = maybe_status_line.split(None, 2)
         # Check for HTTP/<version> 100 Continue\r\n
-        return (
-            len(parts) >= 3
-            and parts[0].startswith(b'HTTP/')
-            and parts[1] == b'100'
-        )
+        return len(parts) >= 3 and parts[0].startswith(b"HTTP/") and parts[1] == b"100"
 
 
 class AWSHTTPConnection(AWSConnection, HTTPConnection):
-    """ An HTTPConnection that supports 100 Continue behavior. """
+    """An HTTPConnection that supports 100 Continue behavior."""
 
 
 class AWSHTTPSConnection(AWSConnection, VerifiedHTTPSConnection):
-    """ An HTTPSConnection that supports 100 Continue behavior. """
+    """An HTTPSConnection that supports 100 Continue behavior."""
 
 
 class AWSHTTPConnectionPool(HTTPConnectionPool):
@@ -229,8 +240,7 @@ class AWSHTTPSConnectionPool(HTTPSConnectionPool):
     ConnectionCls = AWSHTTPSConnection
 
 
-def prepare_request_dict(request_dict, endpoint_url, context=None,
-                         user_agent=None):
+def prepare_request_dict(request_dict, endpoint_url, context=None, user_agent=None):
     """
     This method prepares a request dict to be created into an
     AWSRequestObject. This prepares the request dict by adding the
@@ -249,24 +259,24 @@ def prepare_request_dict(request_dict, endpoint_url, context=None,
     """
     r = request_dict
     if user_agent is not None:
-        headers = r['headers']
-        headers['User-Agent'] = user_agent
-    host_prefix = r.get('host_prefix')
-    url = _urljoin(endpoint_url, r['url_path'], host_prefix)
-    if r['query_string']:
+        headers = r["headers"]
+        headers["User-Agent"] = user_agent
+    host_prefix = r.get("host_prefix")
+    url = _urljoin(endpoint_url, r["url_path"], host_prefix)
+    if r["query_string"]:
         # NOTE: This is to avoid circular import with utils. This is being
         # done to avoid moving classes to different modules as to not cause
         # breaking chainges.
         percent_encode_sequence = botocore.utils.percent_encode_sequence
-        encoded_query_string = percent_encode_sequence(r['query_string'])
-        if '?' not in url:
-            url += '?%s' % encoded_query_string
+        encoded_query_string = percent_encode_sequence(r["query_string"])
+        if "?" not in url:
+            url += "?%s" % encoded_query_string
         else:
-            url += '&%s' % encoded_query_string
-    r['url'] = url
-    r['context'] = context
+            url += "&%s" % encoded_query_string
+    r["url"] = url
+    r["context"] = context
     if context is None:
-        r['context'] = {}
+        r["context"] = {}
 
 
 def create_request_object(request_dict):
@@ -284,8 +294,9 @@ def create_request_object(request_dict):
     """
     r = request_dict
     request_object = AWSRequest(
-        method=r['method'], url=r['url'], data=r['body'], headers=r['headers'])
-    request_object.context = r['context']
+        method=r["method"], url=r["url"], data=r["body"], headers=r["headers"]
+    )
+    request_object.context = r["context"]
     return request_object
 
 
@@ -297,14 +308,14 @@ def _urljoin(endpoint_url, url_path, host_prefix):
     # path     - p[2]
     # query    - p[3]
     # fragment - p[4]
-    if not url_path or url_path == '/':
+    if not url_path or url_path == "/":
         # If there's no path component, ensure the URL ends with
         # a '/' for backwards compatibility.
         if not p[2]:
-            new_path = '/'
+            new_path = "/"
         else:
             new_path = p[2]
-    elif p[2].endswith('/') and url_path.startswith('/'):
+    elif p[2].endswith("/") and url_path.startswith("/"):
         new_path = p[2][:-1] + url_path
     else:
         new_path = p[2] + url_path
@@ -337,6 +348,7 @@ class AWSRequestPreparer(object):
 
         This class does not prepare the method, auth or cookies.
     """
+
     def prepare(self, original):
         method = original.method
         url = self._prepare_url(original)
@@ -350,7 +362,7 @@ class AWSRequestPreparer(object):
         url = original.url
         if original.params:
             url_parts = urlparse(url)
-            delim = '&' if url_parts.query else '?'
+            delim = "&" if url_parts.query else "?"
             params = urlencode(list(original.params.items()), doseq=True)
             url = delim.join((url, params))
         return url
@@ -359,35 +371,35 @@ class AWSRequestPreparer(object):
         headers = HeadersDict(original.headers.items())
 
         # If the transfer encoding or content length is already set, use that
-        if 'Transfer-Encoding' in headers or 'Content-Length' in headers:
+        if "Transfer-Encoding" in headers or "Content-Length" in headers:
             return headers
 
         # Ensure we set the content length when it is expected
-        if original.method not in ('GET', 'HEAD', 'OPTIONS'):
+        if original.method not in ("GET", "HEAD", "OPTIONS"):
             length = self._determine_content_length(prepared_body)
             if length is not None:
-                headers['Content-Length'] = str(length)
+                headers["Content-Length"] = str(length)
             else:
                 # Failed to determine content length, using chunked
                 # NOTE: This shouldn't ever happen in practice
                 body_type = type(prepared_body)
-                logger.debug('Failed to determine length of %s', body_type)
-                headers['Transfer-Encoding'] = 'chunked'
+                logger.debug("Failed to determine length of %s", body_type)
+                headers["Transfer-Encoding"] = "chunked"
 
         return headers
 
     def _to_utf8(self, item):
         key, value = item
         if isinstance(key, six.text_type):
-            key = key.encode('utf-8')
+            key = key.encode("utf-8")
         if isinstance(value, six.text_type):
-            value = value.encode('utf-8')
+            value = value.encode("utf-8")
         return key, value
 
     def _prepare_body(self, original):
         """Prepares the given HTTP body data."""
         body = original.data
-        if body == b'':
+        if body == b"":
             body = None
 
         if isinstance(body, dict):
@@ -408,7 +420,7 @@ class AWSRequestPreparer(object):
             pass
 
         # Try getting the length from a seekable stream
-        if hasattr(body, 'seek') and hasattr(body, 'tell'):
+        if hasattr(body, "seek") and hasattr(body, "tell"):
             try:
                 orig_pos = body.tell()
                 body.seek(0, 2)
@@ -435,14 +447,16 @@ class AWSRequest(object):
 
     _REQUEST_PREPARER_CLS = AWSRequestPreparer
 
-    def __init__(self,
-                 method=None,
-                 url=None,
-                 headers=None,
-                 data=None,
-                 params=None,
-                 auth_path=None,
-                 stream_output=False):
+    def __init__(
+        self,
+        method=None,
+        url=None,
+        headers=None,
+        data=None,
+        params=None,
+        auth_path=None,
+        stream_output=False,
+    ):
 
         self._request_preparer = self._REQUEST_PREPARER_CLS()
 
@@ -478,7 +492,7 @@ class AWSRequest(object):
     def body(self):
         body = self.prepare().body
         if isinstance(body, six.text_type):
-            body = body.encode('utf-8')
+            body = body.encode("utf-8")
         return body
 
 
@@ -494,6 +508,7 @@ class AWSPreparedRequest(object):
     :ivar body: The HTTP body.
     :ivar stream_output: If the response for this request should be streamed.
     """
+
     def __init__(self, method, url, headers, body, stream_output):
         self.method = method
         self.url = url
@@ -502,10 +517,7 @@ class AWSPreparedRequest(object):
         self.stream_output = stream_output
 
     def __repr__(self):
-        fmt = (
-            '<AWSPreparedRequest stream_output=%s, method=%s, url=%s, '
-            'headers=%s>'
-        )
+        fmt = "<AWSPreparedRequest stream_output=%s, method=%s, url=%s, " "headers=%s>"
         return fmt % (self.stream_output, self.method, self.url, self.headers)
 
     def reset_stream(self):
@@ -578,7 +590,7 @@ class AWSResponse(object):
         if encoding:
             return self.content.decode(encoding)
         else:
-            return self.content.decode('utf-8')
+            return self.content.decode("utf-8")
 
 
 class _HeaderKey(object):
@@ -600,7 +612,8 @@ class _HeaderKey(object):
 
 
 class HeadersDict(MutableMapping):
-    """A case-insenseitive dictionary to represent HTTP headers. """
+    """A case-insenseitive dictionary to represent HTTP headers."""
+
     def __init__(self, *args, **kwargs):
         self._dict = {}
         self.update(*args, **kwargs)

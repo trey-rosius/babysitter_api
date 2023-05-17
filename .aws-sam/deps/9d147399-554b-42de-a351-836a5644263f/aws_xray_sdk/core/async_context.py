@@ -14,6 +14,7 @@ class AsyncContext(_Context):
     Replaces threading.local with a task based local storage class,
     Also overrides clear_trace_entities
     """
+
     def __init__(self, *args, loop=None, use_task_factory=True, **kwargs):
         super(AsyncContext, self).__init__(*args, **kwargs)
 
@@ -38,13 +39,14 @@ class TaskLocalStorage(object):
     """
     Simple task local storage
     """
+
     def __init__(self, loop=None):
         if loop is None:
             loop = asyncio.get_event_loop()
         self._loop = loop
 
     def __setattr__(self, name, value):
-        if name in ('_loop',):
+        if name in ("_loop",):
             # Set normal attributes
             object.__setattr__(self, name, value)
 
@@ -57,13 +59,13 @@ class TaskLocalStorage(object):
             if task is None:
                 return None
 
-            if not hasattr(task, 'context'):
+            if not hasattr(task, "context"):
                 task.context = {}
 
             task.context[name] = value
 
     def __getattribute__(self, item):
-        if item in ('_loop', 'clear'):
+        if item in ("_loop", "clear"):
             # Return references to local objects
             return object.__getattribute__(self, item)
 
@@ -74,10 +76,10 @@ class TaskLocalStorage(object):
         if task is None:
             return None
 
-        if hasattr(task, 'context') and item in task.context:
+        if hasattr(task, "context") and item in task.context:
             return task.context[item]
 
-        raise AttributeError('Task context does not have attribute {0}'.format(item))
+        raise AttributeError("Task context does not have attribute {0}".format(item))
 
     def clear(self):
         # If were in a task, clear the context dictionary
@@ -85,7 +87,7 @@ class TaskLocalStorage(object):
             task = asyncio.current_task(loop=self._loop)
         else:
             task = asyncio.Task.current_task(loop=self._loop)
-        if task is not None and hasattr(task, 'context'):
+        if task is not None and hasattr(task, "context"):
             task.context.clear()
 
 
@@ -107,7 +109,7 @@ def task_factory(loop, coro):
         current_task = asyncio.current_task(loop=loop)
     else:
         current_task = asyncio.Task.current_task(loop=loop)
-    if current_task is not None and hasattr(current_task, 'context'):
-        setattr(task, 'context', current_task.context)
+    if current_task is not None and hasattr(current_task, "context"):
+        setattr(task, "context", current_task.context)
 
     return task

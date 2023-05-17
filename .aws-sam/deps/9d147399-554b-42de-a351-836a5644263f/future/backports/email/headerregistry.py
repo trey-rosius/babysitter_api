@@ -18,9 +18,9 @@ from future.backports.email import utils
 from future.backports.email import errors
 from future.backports.email import _header_value_parser as parser
 
-class Address(object):
 
-    def __init__(self, display_name='', username='', domain='', addr_spec=None):
+class Address(object):
+    def __init__(self, display_name="", username="", domain="", addr_spec=None):
         """Create an object represeting a full email address.
 
         An address can have a 'display_name', a 'username', and a 'domain'.  In
@@ -42,13 +42,15 @@ class Address(object):
         # and domain.
         if addr_spec is not None:
             if username or domain:
-                raise TypeError("addrspec specified when username and/or "
-                                "domain also specified")
+                raise TypeError(
+                    "addrspec specified when username and/or " "domain also specified"
+                )
             a_s, rest = parser.get_addr_spec(addr_spec)
             if rest:
-                raise ValueError("Invalid addr_spec; only '{}' "
-                                 "could be parsed from '{}'".format(
-                                    a_s, addr_spec))
+                raise ValueError(
+                    "Invalid addr_spec; only '{}' "
+                    "could be parsed from '{}'".format(a_s, addr_spec)
+                )
             if a_s.all_defects:
                 raise a_s.all_defects[0]
             username = a_s.local_part
@@ -75,41 +77,43 @@ class Address(object):
         according to RFC 5322 rules, but with no Content Transfer Encoding.
         """
         nameset = set(self.username)
-        if len(nameset) > len(nameset-parser.DOT_ATOM_ENDS):
+        if len(nameset) > len(nameset - parser.DOT_ATOM_ENDS):
             lp = parser.quote_string(self.username)
         else:
             lp = self.username
         if self.domain:
-            return lp + '@' + self.domain
+            return lp + "@" + self.domain
         if not lp:
-            return '<>'
+            return "<>"
         return lp
 
     def __repr__(self):
         return "Address(display_name={!r}, username={!r}, domain={!r})".format(
-                        self.display_name, self.username, self.domain)
+            self.display_name, self.username, self.domain
+        )
 
     def __str__(self):
         nameset = set(self.display_name)
-        if len(nameset) > len(nameset-parser.SPECIALS):
+        if len(nameset) > len(nameset - parser.SPECIALS):
             disp = parser.quote_string(self.display_name)
         else:
             disp = self.display_name
         if disp:
-            addr_spec = '' if self.addr_spec=='<>' else self.addr_spec
+            addr_spec = "" if self.addr_spec == "<>" else self.addr_spec
             return "{} <{}>".format(disp, addr_spec)
         return self.addr_spec
 
     def __eq__(self, other):
         if type(other) != type(self):
             return False
-        return (self.display_name == other.display_name and
-                self.username == other.username and
-                self.domain == other.domain)
+        return (
+            self.display_name == other.display_name
+            and self.username == other.username
+            and self.domain == other.domain
+        )
 
 
 class Group(object):
-
     def __init__(self, display_name=None, addresses=None):
         """Create an object representing an address group.
 
@@ -138,28 +142,32 @@ class Group(object):
 
     def __repr__(self):
         return "Group(display_name={!r}, addresses={!r}".format(
-                 self.display_name, self.addresses)
+            self.display_name, self.addresses
+        )
 
     def __str__(self):
-        if self.display_name is None and len(self.addresses)==1:
+        if self.display_name is None and len(self.addresses) == 1:
             return str(self.addresses[0])
         disp = self.display_name
         if disp is not None:
             nameset = set(disp)
-            if len(nameset) > len(nameset-parser.SPECIALS):
+            if len(nameset) > len(nameset - parser.SPECIALS):
                 disp = parser.quote_string(disp)
         adrstr = ", ".join(str(x) for x in self.addresses)
-        adrstr = ' ' + adrstr if adrstr else adrstr
+        adrstr = " " + adrstr if adrstr else adrstr
         return "{}:{};".format(disp, adrstr)
 
     def __eq__(self, other):
         if type(other) != type(self):
             return False
-        return (self.display_name == other.display_name and
-                self.addresses == other.addresses)
+        return (
+            self.display_name == other.display_name
+            and self.addresses == other.addresses
+        )
 
 
 # Header Classes #
+
 
 class BaseHeader(str):
 
@@ -196,18 +204,20 @@ class BaseHeader(str):
     """
 
     def __new__(cls, name, value):
-        kwds = {'defects': []}
+        kwds = {"defects": []}
         cls.parse(value, kwds)
-        if utils._has_surrogates(kwds['decoded']):
-            kwds['decoded'] = utils._sanitize(kwds['decoded'])
-        self = str.__new__(cls, kwds['decoded'])
+        if utils._has_surrogates(kwds["decoded"]):
+            kwds["decoded"] = utils._sanitize(kwds["decoded"])
+        self = str.__new__(cls, kwds["decoded"])
         # del kwds['decoded']
         self.init(name, **kwds)
         return self
 
     def init(self, name, **_3to2kwargs):
-        defects = _3to2kwargs['defects']; del _3to2kwargs['defects']
-        parse_tree = _3to2kwargs['parse_tree']; del _3to2kwargs['parse_tree']
+        defects = _3to2kwargs["defects"]
+        del _3to2kwargs["defects"]
+        parse_tree = _3to2kwargs["parse_tree"]
+        del _3to2kwargs["parse_tree"]
         self._name = name
         self._parse_tree = parse_tree
         self._defects = defects
@@ -228,14 +238,16 @@ class BaseHeader(str):
                 self.__class__.__bases__,
                 str(self),
             ),
-            self.__dict__)
+            self.__dict__,
+        )
 
     @classmethod
     def _reconstruct(cls, value):
         return str.__new__(cls, value)
 
     def fold(self, **_3to2kwargs):
-        policy = _3to2kwargs['policy']; del _3to2kwargs['policy']
+        policy = _3to2kwargs["policy"]
+        del _3to2kwargs["policy"]
         """Fold header according to policy.
 
         The parsed representation of the header is folded according to
@@ -252,12 +264,18 @@ class BaseHeader(str):
 
         """
         # At some point we need to only put fws here if it was in the source.
-        header = parser.Header([
-            parser.HeaderLabel([
-                parser.ValueTerminal(self.name, 'header-name'),
-                parser.ValueTerminal(':', 'header-sep')]),
-            parser.CFWSList([parser.WhiteSpaceTerminal(' ', 'fws')]),
-                             self._parse_tree])
+        header = parser.Header(
+            [
+                parser.HeaderLabel(
+                    [
+                        parser.ValueTerminal(self.name, "header-name"),
+                        parser.ValueTerminal(":", "header-sep"),
+                    ]
+                ),
+                parser.CFWSList([parser.WhiteSpaceTerminal(" ", "fws")]),
+                self._parse_tree,
+            ]
+        )
         return header.fold(policy=policy)
 
 
@@ -272,8 +290,8 @@ class UnstructuredHeader(object):
 
     @classmethod
     def parse(cls, value, kwds):
-        kwds['parse_tree'] = cls.value_parser(value)
-        kwds['decoded'] = str(kwds['parse_tree'])
+        kwds["parse_tree"] = cls.value_parser(value)
+        kwds["decoded"] = str(kwds["parse_tree"])
 
 
 class UniqueUnstructuredHeader(UnstructuredHeader):
@@ -300,19 +318,19 @@ class DateHeader(object):
     @classmethod
     def parse(cls, value, kwds):
         if not value:
-            kwds['defects'].append(errors.HeaderMissingRequiredValue())
-            kwds['datetime'] = None
-            kwds['decoded'] = ''
-            kwds['parse_tree'] = parser.TokenList()
+            kwds["defects"].append(errors.HeaderMissingRequiredValue())
+            kwds["datetime"] = None
+            kwds["decoded"] = ""
+            kwds["parse_tree"] = parser.TokenList()
             return
         if isinstance(value, str):
             value = utils.parsedate_to_datetime(value)
-        kwds['datetime'] = value
-        kwds['decoded'] = utils.format_datetime(kwds['datetime'])
-        kwds['parse_tree'] = cls.value_parser(kwds['decoded'])
+        kwds["datetime"] = value
+        kwds["decoded"] = utils.format_datetime(kwds["datetime"])
+        kwds["parse_tree"] = cls.value_parser(kwds["decoded"])
 
     def init(self, *args, **kw):
-        self._datetime = kw.pop('datetime')
+        self._datetime = kw.pop("datetime")
         super().init(*args, **kw)
 
     @property
@@ -332,7 +350,7 @@ class AddressHeader(object):
     @staticmethod
     def value_parser(value):
         address_list, value = parser.get_address_list(value)
-        assert not value, 'this should not happen'
+        assert not value, "this should not happen"
         return address_list
 
     @classmethod
@@ -340,31 +358,40 @@ class AddressHeader(object):
         if isinstance(value, str):
             # We are translating here from the RFC language (address/mailbox)
             # to our API language (group/address).
-            kwds['parse_tree'] = address_list = cls.value_parser(value)
+            kwds["parse_tree"] = address_list = cls.value_parser(value)
             groups = []
             for addr in address_list.addresses:
-                groups.append(Group(addr.display_name,
-                                    [Address(mb.display_name or '',
-                                             mb.local_part or '',
-                                             mb.domain or '')
-                                     for mb in addr.all_mailboxes]))
+                groups.append(
+                    Group(
+                        addr.display_name,
+                        [
+                            Address(
+                                mb.display_name or "",
+                                mb.local_part or "",
+                                mb.domain or "",
+                            )
+                            for mb in addr.all_mailboxes
+                        ],
+                    )
+                )
             defects = list(address_list.all_defects)
         else:
             # Assume it is Address/Group stuff
-            if not hasattr(value, '__iter__'):
+            if not hasattr(value, "__iter__"):
                 value = [value]
-            groups = [Group(None, [item]) if not hasattr(item, 'addresses')
-                                          else item
-                                    for item in value]
+            groups = [
+                Group(None, [item]) if not hasattr(item, "addresses") else item
+                for item in value
+            ]
             defects = []
-        kwds['groups'] = groups
-        kwds['defects'] = defects
-        kwds['decoded'] = ', '.join([str(item) for item in groups])
-        if 'parse_tree' not in kwds:
-            kwds['parse_tree'] = cls.value_parser(kwds['decoded'])
+        kwds["groups"] = groups
+        kwds["defects"] = defects
+        kwds["decoded"] = ", ".join([str(item) for item in groups])
+        if "parse_tree" not in kwds:
+            kwds["parse_tree"] = cls.value_parser(kwds["decoded"])
 
     def init(self, *args, **kw):
-        self._groups = tuple(kw.pop('groups'))
+        self._groups = tuple(kw.pop("groups"))
         self._addresses = None
         super().init(*args, **kw)
 
@@ -375,8 +402,9 @@ class AddressHeader(object):
     @property
     def addresses(self):
         if self._addresses is None:
-            self._addresses = tuple([address for group in self._groups
-                                             for address in group.addresses])
+            self._addresses = tuple(
+                [address for group in self._groups for address in group.addresses]
+            )
         return self._addresses
 
 
@@ -386,12 +414,14 @@ class UniqueAddressHeader(AddressHeader):
 
 
 class SingleAddressHeader(AddressHeader):
-
     @property
     def address(self):
-        if len(self.addresses)!=1:
-            raise ValueError(("value of single address header {} is not "
-                "a single address").format(self.name))
+        if len(self.addresses) != 1:
+            raise ValueError(
+                ("value of single address header {} is not " "a single address").format(
+                    self.name
+                )
+            )
         return self.addresses[0]
 
 
@@ -408,20 +438,20 @@ class MIMEVersionHeader(object):
 
     @classmethod
     def parse(cls, value, kwds):
-        kwds['parse_tree'] = parse_tree = cls.value_parser(value)
-        kwds['decoded'] = str(parse_tree)
-        kwds['defects'].extend(parse_tree.all_defects)
-        kwds['major'] = None if parse_tree.minor is None else parse_tree.major
-        kwds['minor'] = parse_tree.minor
+        kwds["parse_tree"] = parse_tree = cls.value_parser(value)
+        kwds["decoded"] = str(parse_tree)
+        kwds["defects"].extend(parse_tree.all_defects)
+        kwds["major"] = None if parse_tree.minor is None else parse_tree.major
+        kwds["minor"] = parse_tree.minor
         if parse_tree.minor is not None:
-            kwds['version'] = '{}.{}'.format(kwds['major'], kwds['minor'])
+            kwds["version"] = "{}.{}".format(kwds["major"], kwds["minor"])
         else:
-            kwds['version'] = None
+            kwds["version"] = None
 
     def init(self, *args, **kw):
-        self._version = kw.pop('version')
-        self._major = kw.pop('major')
-        self._minor = kw.pop('minor')
+        self._version = kw.pop("version")
+        self._major = kw.pop("major")
+        self._minor = kw.pop("minor")
         super().init(*args, **kw)
 
     @property
@@ -446,19 +476,20 @@ class ParameterizedMIMEHeader(object):
 
     @classmethod
     def parse(cls, value, kwds):
-        kwds['parse_tree'] = parse_tree = cls.value_parser(value)
-        kwds['decoded'] = str(parse_tree)
-        kwds['defects'].extend(parse_tree.all_defects)
+        kwds["parse_tree"] = parse_tree = cls.value_parser(value)
+        kwds["decoded"] = str(parse_tree)
+        kwds["defects"].extend(parse_tree.all_defects)
         if parse_tree.params is None:
-            kwds['params'] = {}
+            kwds["params"] = {}
         else:
             # The MIME RFCs specify that parameter ordering is arbitrary.
-            kwds['params'] = dict((utils._sanitize(name).lower(),
-                                   utils._sanitize(value))
-                                  for name, value in parse_tree.params)
+            kwds["params"] = dict(
+                (utils._sanitize(name).lower(), utils._sanitize(value))
+                for name, value in parse_tree.params
+            )
 
     def init(self, *args, **kw):
-        self._params = kw.pop('params')
+        self._params = kw.pop("params")
         super().init(*args, **kw)
 
     @property
@@ -485,7 +516,7 @@ class ContentTypeHeader(ParameterizedMIMEHeader):
 
     @property
     def content_type(self):
-        return self.maintype + '/' + self.subtype
+        return self.maintype + "/" + self.subtype
 
 
 class ContentDispositionHeader(ParameterizedMIMEHeader):
@@ -510,9 +541,9 @@ class ContentTransferEncodingHeader(object):
 
     @classmethod
     def parse(cls, value, kwds):
-        kwds['parse_tree'] = parse_tree = cls.value_parser(value)
-        kwds['decoded'] = str(parse_tree)
-        kwds['defects'].extend(parse_tree.all_defects)
+        kwds["parse_tree"] = parse_tree = cls.value_parser(value)
+        kwds["decoded"] = str(parse_tree)
+        kwds["defects"].extend(parse_tree.all_defects)
 
     def init(self, *args, **kw):
         super().init(*args, **kw)
@@ -526,33 +557,38 @@ class ContentTransferEncodingHeader(object):
 # The header factory #
 
 _default_header_map = {
-    'subject':                      UniqueUnstructuredHeader,
-    'date':                         UniqueDateHeader,
-    'resent-date':                  DateHeader,
-    'orig-date':                    UniqueDateHeader,
-    'sender':                       UniqueSingleAddressHeader,
-    'resent-sender':                SingleAddressHeader,
-    'to':                           UniqueAddressHeader,
-    'resent-to':                    AddressHeader,
-    'cc':                           UniqueAddressHeader,
-    'resent-cc':                    AddressHeader,
-    'bcc':                          UniqueAddressHeader,
-    'resent-bcc':                   AddressHeader,
-    'from':                         UniqueAddressHeader,
-    'resent-from':                  AddressHeader,
-    'reply-to':                     UniqueAddressHeader,
-    'mime-version':                 MIMEVersionHeader,
-    'content-type':                 ContentTypeHeader,
-    'content-disposition':          ContentDispositionHeader,
-    'content-transfer-encoding':    ContentTransferEncodingHeader,
-    }
+    "subject": UniqueUnstructuredHeader,
+    "date": UniqueDateHeader,
+    "resent-date": DateHeader,
+    "orig-date": UniqueDateHeader,
+    "sender": UniqueSingleAddressHeader,
+    "resent-sender": SingleAddressHeader,
+    "to": UniqueAddressHeader,
+    "resent-to": AddressHeader,
+    "cc": UniqueAddressHeader,
+    "resent-cc": AddressHeader,
+    "bcc": UniqueAddressHeader,
+    "resent-bcc": AddressHeader,
+    "from": UniqueAddressHeader,
+    "resent-from": AddressHeader,
+    "reply-to": UniqueAddressHeader,
+    "mime-version": MIMEVersionHeader,
+    "content-type": ContentTypeHeader,
+    "content-disposition": ContentDispositionHeader,
+    "content-transfer-encoding": ContentTransferEncodingHeader,
+}
+
 
 class HeaderRegistry(object):
 
     """A header_factory and header registry."""
 
-    def __init__(self, base_class=BaseHeader, default_class=UnstructuredHeader,
-                       use_default_map=True):
+    def __init__(
+        self,
+        base_class=BaseHeader,
+        default_class=UnstructuredHeader,
+        use_default_map=True,
+    ):
         """Create a header_factory that works with the Policy API.
 
         base_class is the class that will be the last class in the created
@@ -570,14 +606,12 @@ class HeaderRegistry(object):
             self.registry.update(_default_header_map)
 
     def map_to_type(self, name, cls):
-        """Register cls as the specialized class for handling "name" headers.
-
-        """
+        """Register cls as the specialized class for handling "name" headers."""
         self.registry[name.lower()] = cls
 
     def __getitem__(self, name):
         cls = self.registry.get(name.lower(), self.default_class)
-        return type(text_to_native_str('_'+cls.__name__), (cls, self.base_class), {})
+        return type(text_to_native_str("_" + cls.__name__), (cls, self.base_class), {})
 
     def __call__(self, name, value):
         """Create a header instance for header 'name' from 'value'.

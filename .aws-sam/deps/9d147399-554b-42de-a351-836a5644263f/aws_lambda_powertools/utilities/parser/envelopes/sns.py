@@ -18,7 +18,9 @@ class SnsEnvelope(BaseEnvelope):
     all items in the list will be parsed as str and npt as JSON (and vice versa)
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Optional[Model]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Optional[Model]]:
         """Parses records found with model provided
 
         Parameters
@@ -36,7 +38,10 @@ class SnsEnvelope(BaseEnvelope):
         logger.debug(f"Parsing incoming data with SNS model {SnsModel}")
         parsed_envelope = SnsModel.parse_obj(data)
         logger.debug(f"Parsing SNS records in `body` with {model}")
-        return [self._parse(data=record.Sns.Message, model=model) for record in parsed_envelope.Records]
+        return [
+            self._parse(data=record.Sns.Message, model=model)
+            for record in parsed_envelope.Records
+        ]
 
 
 class SnsSqsEnvelope(BaseEnvelope):
@@ -50,7 +55,9 @@ class SnsSqsEnvelope(BaseEnvelope):
     3. Finally, parse provided model against payload extracted
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Optional[Model]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Optional[Model]]:
         """Parses records found with model provided
 
         Parameters

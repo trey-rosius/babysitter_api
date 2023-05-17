@@ -36,4 +36,4 @@ class basestring(with_metaclass(BaseBaseString)):
     """
 
 
-__all__ = ['basestring']
+__all__ = ["basestring"]

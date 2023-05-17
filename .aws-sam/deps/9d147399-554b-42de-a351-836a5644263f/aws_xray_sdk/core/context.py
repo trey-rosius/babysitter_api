@@ -9,9 +9,9 @@ from aws_xray_sdk import global_sdk_config
 
 log = logging.getLogger(__name__)
 
-MISSING_SEGMENT_MSG = 'cannot find the current segment/subsegment, please make sure you have a segment open'
-SUPPORTED_CONTEXT_MISSING = ('RUNTIME_ERROR', 'LOG_ERROR')
-CXT_MISSING_STRATEGY_KEY = 'AWS_XRAY_CONTEXT_MISSING'
+MISSING_SEGMENT_MSG = "cannot find the current segment/subsegment, please make sure you have a segment open"
+SUPPORTED_CONTEXT_MISSING = ("RUNTIME_ERROR", "LOG_ERROR")
+CXT_MISSING_STRATEGY_KEY = "AWS_XRAY_CONTEXT_MISSING"
 
 
 class Context(object):
@@ -27,7 +27,8 @@ class Context(object):
 
     This data structure is thread-safe.
     """
-    def __init__(self, context_missing='RUNTIME_ERROR'):
+
+    def __init__(self, context_missing="RUNTIME_ERROR"):
 
         self._local = threading.local()
         strategy = os.getenv(CXT_MISSING_STRATEGY_KEY, context_missing)
@@ -38,7 +39,7 @@ class Context(object):
         Store the segment created by ``xray_recorder`` to the context.
         It overrides the current segment if there is already one.
         """
-        setattr(self._local, 'entities', [segment])
+        setattr(self._local, "entities", [segment])
 
     def end_segment(self, end_time=None):
         """
@@ -64,7 +65,10 @@ class Context(object):
         """
         entity = self.get_trace_entity()
         if not entity:
-            log.warning("Active segment or subsegment not found. Discarded %s." % subsegment.name)
+            log.warning(
+                "Active segment or subsegment not found. Discarded %s."
+                % subsegment.name
+            )
             return
 
         entity.add_subsegment(subsegment)
@@ -93,7 +97,7 @@ class Context(object):
         it behaves based on pre-defined ``context_missing`` strategy.
         If the SDK is disabled, returns a DummySegment
         """
-        if not getattr(self._local, 'entities', None):
+        if not getattr(self._local, "entities", None):
             if not global_sdk_config.sdk_enabled():
                 return DummySegment()
             return self.handle_context_missing()
@@ -105,7 +109,7 @@ class Context(object):
         Store the input trace_entity to local context. It will overwrite all
         existing ones if there is any.
         """
-        setattr(self._local, 'entities', [trace_entity])
+        setattr(self._local, "entities", [trace_entity])
 
     def clear_trace_entities(self):
         """
@@ -119,14 +123,14 @@ class Context(object):
         """
         Called whenever there is no trace entity to access or mutate.
         """
-        if self.context_missing == 'RUNTIME_ERROR':
+        if self.context_missing == "RUNTIME_ERROR":
             raise SegmentNotFoundException(MISSING_SEGMENT_MSG)
         else:
             log.error(MISSING_SEGMENT_MSG)
 
     def _is_subsegment(self, entity):
 
-        return hasattr(entity, 'type') and entity.type == 'subsegment'
+        return hasattr(entity, "type") and entity.type == "subsegment"
 
     @property
     def context_missing(self):
@@ -135,7 +139,7 @@ class Context(object):
     @context_missing.setter
     def context_missing(self, value):
         if value not in SUPPORTED_CONTEXT_MISSING:
-            log.warning('specified context_missing not supported, using default.')
+            log.warning("specified context_missing not supported, using default.")
             return
 
         self._context_missing = value

@@ -38,7 +38,6 @@ try:
 
         return _CACERT_PATH
 
-
 except ImportError:
     # This fallback will work for Python versions prior to 3.7 that lack the
     # importlib.resources module but relies on the existing `where` function

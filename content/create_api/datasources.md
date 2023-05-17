@@ -1,6 +1,6 @@
 ####Datasource
 
-The lambda function we created above would be used as our Datasource.Here's how we define it's `Resources` 
+The lambda function we created above would be used as our Datasource.Here's how we define it's `Resources`
 ```
   ###################
   # Lambda Direct Data Source and Resolver

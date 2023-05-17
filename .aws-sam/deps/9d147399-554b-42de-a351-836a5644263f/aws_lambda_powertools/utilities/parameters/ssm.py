@@ -76,7 +76,11 @@ class SSMProvider(BaseProvider):
 
     client: Any = None
 
-    def __init__(self, config: Optional[Config] = None, boto3_session: Optional[boto3.session.Session] = None):
+    def __init__(
+        self,
+        config: Optional[Config] = None,
+        boto3_session: Optional[boto3.session.Session] = None,
+    ):
         """
         Initialize the SSM Parameter Store client
         """
@@ -150,7 +154,9 @@ class SSMProvider(BaseProvider):
 
         return self.client.get_parameter(**sdk_options)["Parameter"]["Value"]
 
-    def _get_multiple(self, path: str, decrypt: bool = False, recursive: bool = False, **sdk_options) -> Dict[str, str]:
+    def _get_multiple(
+        self, path: str, decrypt: bool = False, recursive: bool = False, **sdk_options
+    ) -> Dict[str, str]:
         """
         Retrieve multiple parameter values from AWS Systems Manager Parameter Store
 
@@ -172,7 +178,9 @@ class SSMProvider(BaseProvider):
         sdk_options["Recursive"] = recursive
 
         parameters = {}
-        for page in self.client.get_paginator("get_parameters_by_path").paginate(**sdk_options):
+        for page in self.client.get_paginator("get_parameters_by_path").paginate(
+            **sdk_options
+        ):
             for parameter in page.get("Parameters", []):
                 # Standardize the parameter name
                 # The parameter name returned by SSM will contained the full path.
@@ -251,7 +259,11 @@ def get_parameter(
     sdk_options["decrypt"] = decrypt
 
     return DEFAULT_PROVIDERS["ssm"].get(
-        name, max_age=max_age, transform=transform, force_fetch=force_fetch, **sdk_options
+        name,
+        max_age=max_age,
+        transform=transform,
+        force_fetch=force_fetch,
+        **sdk_options
     )
 
 

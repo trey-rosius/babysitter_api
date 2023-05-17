@@ -3,25 +3,30 @@ import logging
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core.models import http
 from aws_xray_sdk.core.utils import stacktrace
-from aws_xray_sdk.ext.util import calculate_sampling_decision, \
-    calculate_segment_name, construct_xray_header, prepare_response_header
+from aws_xray_sdk.ext.util import (
+    calculate_sampling_decision,
+    calculate_segment_name,
+    construct_xray_header,
+    prepare_response_header,
+)
 from aws_xray_sdk.core.lambda_launcher import check_in_lambda, LambdaContext
 
 
 log = logging.getLogger(__name__)
 
 # Django will rewrite some http request headers.
-USER_AGENT_KEY = 'HTTP_USER_AGENT'
-X_FORWARDED_KEY = 'HTTP_X_FORWARDED_FOR'
-REMOTE_ADDR_KEY = 'REMOTE_ADDR'
-HOST_KEY = 'HTTP_HOST'
-CONTENT_LENGTH_KEY = 'content-length'
+USER_AGENT_KEY = "HTTP_USER_AGENT"
+X_FORWARDED_KEY = "HTTP_X_FORWARDED_FOR"
+REMOTE_ADDR_KEY = "REMOTE_ADDR"
+HOST_KEY = "HTTP_HOST"
+CONTENT_LENGTH_KEY = "content-length"
 
 
 class XRayMiddleware(object):
     """
     Middleware that wraps each incoming request to a segment.
     """
+
     def __init__(self, get_response):
 
         self.get_response = get_response
@@ -40,10 +45,10 @@ class XRayMiddleware(object):
         name = calculate_segment_name(meta.get(HOST_KEY), xray_recorder)
 
         sampling_req = {
-            'host': meta.get(HOST_KEY),
-            'method': request.method,
-            'path': request.path,
-            'service': name,
+            "host": meta.get(HOST_KEY),
+            "method": request.method,
+            "path": request.path,
+            "service": name,
         }
         sampling_decision = calculate_sampling_decision(
             trace_header=xray_header,

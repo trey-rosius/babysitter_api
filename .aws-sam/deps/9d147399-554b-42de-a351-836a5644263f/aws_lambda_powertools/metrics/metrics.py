@@ -121,11 +121,16 @@ class Metrics(MetricManager):
         self.metric_set.clear()
         self.dimension_set.clear()
         self.metadata_set.clear()
-        self.set_default_dimensions(**self.default_dimensions)  # re-add default dimensions
+        self.set_default_dimensions(
+            **self.default_dimensions
+        )  # re-add default dimensions
 
     def log_metrics(
         self,
-        lambda_handler: Union[Callable[[Dict, Any], Any], Optional[Callable[[Dict, Any, Optional[Dict]], Any]]] = None,
+        lambda_handler: Union[
+            Callable[[Dict, Any], Any],
+            Optional[Callable[[Dict, Any, Optional[Dict]], Any]],
+        ] = None,
         capture_cold_start_metric: bool = False,
         raise_on_empty_metrics: bool = False,
         default_dimensions: Optional[Dict[str, str]] = None,
@@ -207,7 +212,12 @@ class Metrics(MetricManager):
         global is_cold_start
         if is_cold_start:
             logger.debug("Adding cold start metric and function_name dimension")
-            with single_metric(name="ColdStart", unit=MetricUnit.Count, value=1, namespace=self.namespace) as metric:
+            with single_metric(
+                name="ColdStart",
+                unit=MetricUnit.Count,
+                value=1,
+                namespace=self.namespace,
+            ) as metric:
                 metric.add_dimension(name="function_name", value=context.function_name)
                 metric.add_dimension(name="service", value=self.service)
                 is_cold_start = False

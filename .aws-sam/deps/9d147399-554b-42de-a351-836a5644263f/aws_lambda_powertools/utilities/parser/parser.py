@@ -1,7 +1,11 @@
 import logging
 from typing import Any, Callable, Dict, Optional, Type, overload
 
-from aws_lambda_powertools.utilities.parser.types import EnvelopeModel, EventParserReturnType, Model
+from aws_lambda_powertools.utilities.parser.types import (
+    EnvelopeModel,
+    EventParserReturnType,
+    Model,
+)
 
 from ...middleware_factory import lambda_handler_decorator
 from ..typing import LambdaContext
@@ -79,7 +83,11 @@ def event_parser(
     InvalidEnvelopeError
         When envelope given does not implement BaseEnvelope
     """
-    parsed_event = parse(event=event, model=model, envelope=envelope) if envelope else parse(event=event, model=model)
+    parsed_event = (
+        parse(event=event, model=model, envelope=envelope)
+        if envelope
+        else parse(event=event, model=model)
+    )
     logger.debug(f"Calling handler {handler.__name__}")
     return handler(parsed_event, context)
 
@@ -90,11 +98,15 @@ def parse(event: Dict[str, Any], model: Type[Model]) -> Model:
 
 
 @overload
-def parse(event: Dict[str, Any], model: Type[Model], envelope: Type[Envelope]) -> EnvelopeModel:
+def parse(
+    event: Dict[str, Any], model: Type[Model], envelope: Type[Envelope]
+) -> EnvelopeModel:
     ...  # pragma: no cover
 
 
-def parse(event: Dict[str, Any], model: Type[Model], envelope: Optional[Type[Envelope]] = None):
+def parse(
+    event: Dict[str, Any], model: Type[Model], envelope: Optional[Type[Envelope]] = None
+):
     """Standalone function to parse & validate events using Pydantic models
 
     Typically used when you need fine-grained control over error handling compared to event_parser decorator.
@@ -153,7 +165,9 @@ def parse(event: Dict[str, Any], model: Type[Model], envelope: Optional[Type[Env
             logger.debug(f"Parsing and validating event model with envelope={envelope}")
             return envelope().parse(data=event, model=model)
         except AttributeError:
-            raise InvalidEnvelopeError(f"Envelope must implement BaseEnvelope, envelope={envelope}")
+            raise InvalidEnvelopeError(
+                f"Envelope must implement BaseEnvelope, envelope={envelope}"
+            )
 
     try:
         logger.debug("Parsing and validating event model; no envelope used")
@@ -162,4 +176,6 @@ def parse(event: Dict[str, Any], model: Type[Model], envelope: Optional[Type[Env
 
         return model.parse_obj(event)
     except AttributeError:
-        raise InvalidModelTypeError(f"Input model must implement BaseModel, model={model}")
+        raise InvalidModelTypeError(
+            f"Input model must implement BaseModel, model={model}"
+        )

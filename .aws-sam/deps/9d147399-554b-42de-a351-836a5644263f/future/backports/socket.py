@@ -59,9 +59,9 @@ try:
     import errno
 except ImportError:
     errno = None
-EBADF = getattr(errno, 'EBADF', 9)
-EAGAIN = getattr(errno, 'EAGAIN', 11)
-EWOULDBLOCK = getattr(errno, 'EWOULDBLOCK', 11)
+EBADF = getattr(errno, "EBADF", 9)
+EAGAIN = getattr(errno, "EAGAIN", 11)
+EWOULDBLOCK = getattr(errno, "EWOULDBLOCK", 11)
 
 __all__ = ["getfqdn", "create_connection"]
 __all__.extend(os._get_exports_list(_socket))
@@ -75,7 +75,7 @@ if sys.platform.lower().startswith("win"):
     errorTab[10004] = "The operation was interrupted."
     errorTab[10009] = "A bad file handle was passed."
     errorTab[10013] = "Permission denied."
-    errorTab[10014] = "A fault occurred on the network??" # WSAEFAULT
+    errorTab[10014] = "A fault occurred on the network??"  # WSAEFAULT
     errorTab[10022] = "An invalid operation was attempted."
     errorTab[10035] = "The socket operation would block"
     errorTab[10036] = "A blocking operation is already in progress."
@@ -115,10 +115,12 @@ class socket(_socket.socket):
         """Wrap __repr__() to reveal the real class name."""
         s = _socket.socket.__repr__(self)
         if s.startswith("<socket object"):
-            s = "<%s.%s%s%s" % (self.__class__.__module__,
-                                self.__class__.__name__,
-                                getattr(self, '_closed', False) and " [closed] " or "",
-                                s[7:])
+            s = "<%s.%s%s%s" % (
+                self.__class__.__module__,
+                self.__class__.__name__,
+                getattr(self, "_closed", False) and " [closed] " or "",
+                s[7:],
+            )
         return s
 
     def __getstate__(self):
@@ -157,12 +159,21 @@ class socket(_socket.socket):
         except the only mode characters supported are 'r', 'w' and 'b'.
         The semantics are similar too.  (XXX refactor to share code?)
         """
-        if 'newline' in _3to2kwargs: newline = _3to2kwargs['newline']; del _3to2kwargs['newline']
-        else: newline = None
-        if 'errors' in _3to2kwargs: errors = _3to2kwargs['errors']; del _3to2kwargs['errors']
-        else: errors = None
-        if 'encoding' in _3to2kwargs: encoding = _3to2kwargs['encoding']; del _3to2kwargs['encoding']
-        else: encoding = None
+        if "newline" in _3to2kwargs:
+            newline = _3to2kwargs["newline"]
+            del _3to2kwargs["newline"]
+        else:
+            newline = None
+        if "errors" in _3to2kwargs:
+            errors = _3to2kwargs["errors"]
+            del _3to2kwargs["errors"]
+        else:
+            errors = None
+        if "encoding" in _3to2kwargs:
+            encoding = _3to2kwargs["encoding"]
+            del _3to2kwargs["encoding"]
+        else:
+            encoding = None
         for c in mode:
             if c not in ("r", "w", "b"):
                 raise ValueError("invalid mode %r (only r, w, b allowed)")
@@ -224,8 +235,9 @@ class socket(_socket.socket):
         self._closed = True
         return super().detach()
 
+
 def fromfd(fd, family, type, proto=0):
-    """ fromfd(fd, family, type[, proto]) -> socket object
+    """fromfd(fd, family, type[, proto]) -> socket object
 
     Create a socket object from a duplicate of the given file
     descriptor.  The remaining arguments are the same as for socket().
@@ -233,14 +245,17 @@ def fromfd(fd, family, type, proto=0):
     nfd = dup(fd)
     return socket(family, type, proto, nfd)
 
+
 if hasattr(_socket.socket, "share"):
+
     def fromshare(info):
-        """ fromshare(info) -> socket object
+        """fromshare(info) -> socket object
 
         Create a socket object from a the bytes object returned by
         socket.share(pid).
         """
         return socket(0, 0, 0, info)
+
 
 if hasattr(_socket, "socketpair"):
 
@@ -264,6 +279,7 @@ if hasattr(_socket, "socketpair"):
 
 
 _blocking_errnos = set([EAGAIN, EWOULDBLOCK])
+
 
 class SocketIO(io.RawIOBase):
 
@@ -336,29 +352,25 @@ class SocketIO(io.RawIOBase):
             raise
 
     def readable(self):
-        """True if the SocketIO is open for reading.
-        """
+        """True if the SocketIO is open for reading."""
         if self.closed:
             raise ValueError("I/O operation on closed socket.")
         return self._reading
 
     def writable(self):
-        """True if the SocketIO is open for writing.
-        """
+        """True if the SocketIO is open for writing."""
         if self.closed:
             raise ValueError("I/O operation on closed socket.")
         return self._writing
 
     def seekable(self):
-        """True if the SocketIO is open for seeking.
-        """
+        """True if the SocketIO is open for seeking."""
         if self.closed:
             raise ValueError("I/O operation on closed socket.")
         return super().seekable()
 
     def fileno(self):
-        """Return the file descriptor of the underlying socket.
-        """
+        """Return the file descriptor of the underlying socket."""
         self._checkClosed()
         return self._sock.fileno()
 
@@ -384,7 +396,7 @@ class SocketIO(io.RawIOBase):
         self._sock = None
 
 
-def getfqdn(name=''):
+def getfqdn(name=""):
     """Get fully qualified domain name from name.
 
     An empty argument is interpreted as meaning the local host.
@@ -394,7 +406,7 @@ def getfqdn(name=''):
     from gethostname() is returned.
     """
     name = name.strip()
-    if not name or name == '0.0.0.0':
+    if not name or name == "0.0.0.0":
         name = gethostname()
     try:
         hostname, aliases, ipaddrs = gethostbyaddr(name)
@@ -403,7 +415,7 @@ def getfqdn(name=''):
     else:
         aliases.insert(0, hostname)
         for name in aliases:
-            if '.' in name:
+            if "." in name:
                 break
         else:
             name = hostname
@@ -412,11 +424,11 @@ def getfqdn(name=''):
 
 # Re-use the same sentinel as in the Python stdlib socket module:
 from socket import _GLOBAL_DEFAULT_TIMEOUT
+
 # Was: _GLOBAL_DEFAULT_TIMEOUT = object()
 
 
-def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT,
-                      source_address=None):
+def create_connection(address, timeout=_GLOBAL_DEFAULT_TIMEOUT, source_address=None):
     """Connect to *address* and return the socket object.
 
     Convenience function.  Connect to *address* (a 2-tuple ``(host,

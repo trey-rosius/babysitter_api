@@ -3,8 +3,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
-SERVICE_NAME = 'ecs'
-ORIGIN = 'AWS::ECS::Container'
+SERVICE_NAME = "ecs"
+ORIGIN = "AWS::ECS::Container"
 
 
 def initialize():
@@ -13,7 +13,7 @@ def initialize():
         runtime_context = {}
         host_name = socket.gethostname()
         if host_name:
-            runtime_context['container'] = host_name
+            runtime_context["container"] = host_name
 
     except Exception:
         runtime_context = None

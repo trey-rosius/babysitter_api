@@ -36,7 +36,7 @@ the code further.)
 
 """
 
-from __future__ import (absolute_import, print_function, unicode_literals)
+from __future__ import absolute_import, print_function, unicode_literals
 
 import sys
 import logging
@@ -55,34 +55,67 @@ def main(args=None):
     """
     # Set up option parser
     parser = optparse.OptionParser(usage="pasteurize [options] file|dir ...")
-    parser.add_option("-V", "--version", action="store_true",
-                      help="Report the version number of pasteurize")
-    parser.add_option("-a", "--all-imports", action="store_true",
-                      help="Adds all __future__ and future imports to each module")
-    parser.add_option("-f", "--fix", action="append", default=[],
-                      help="Each FIX specifies a transformation; default: all")
-    parser.add_option("-j", "--processes", action="store", default=1,
-                      type="int", help="Run 2to3 concurrently")
-    parser.add_option("-x", "--nofix", action="append", default=[],
-                      help="Prevent a fixer from being run.")
-    parser.add_option("-l", "--list-fixes", action="store_true",
-                      help="List available transformations")
+    parser.add_option(
+        "-V",
+        "--version",
+        action="store_true",
+        help="Report the version number of pasteurize",
+    )
+    parser.add_option(
+        "-a",
+        "--all-imports",
+        action="store_true",
+        help="Adds all __future__ and future imports to each module",
+    )
+    parser.add_option(
+        "-f",
+        "--fix",
+        action="append",
+        default=[],
+        help="Each FIX specifies a transformation; default: all",
+    )
+    parser.add_option(
+        "-j",
+        "--processes",
+        action="store",
+        default=1,
+        type="int",
+        help="Run 2to3 concurrently",
+    )
+    parser.add_option(
+        "-x",
+        "--nofix",
+        action="append",
+        default=[],
+        help="Prevent a fixer from being run.",
+    )
+    parser.add_option(
+        "-l", "--list-fixes", action="store_true", help="List available transformations"
+    )
     # parser.add_option("-p", "--print-function", action="store_true",
     #                   help="Modify the grammar so that print() is a function")
-    parser.add_option("-v", "--verbose", action="store_true",
-                      help="More verbose logging")
-    parser.add_option("--no-diffs", action="store_true",
-                      help="Don't show diffs of the refactoring")
-    parser.add_option("-w", "--write", action="store_true",
-                      help="Write back modified files")
-    parser.add_option("-n", "--nobackups", action="store_true", default=False,
-                      help="Don't write backups for modified files.")
+    parser.add_option(
+        "-v", "--verbose", action="store_true", help="More verbose logging"
+    )
+    parser.add_option(
+        "--no-diffs", action="store_true", help="Don't show diffs of the refactoring"
+    )
+    parser.add_option(
+        "-w", "--write", action="store_true", help="Write back modified files"
+    )
+    parser.add_option(
+        "-n",
+        "--nobackups",
+        action="store_true",
+        default=False,
+        help="Don't write backups for modified files.",
+    )
 
     # Parse command line arguments
     refactor_stdin = False
     flags = {}
     options, args = parser.parse_args(args)
-    fixer_pkg = 'libpasteurize.fixes'
+    fixer_pkg = "libpasteurize.fixes"
     avail_fixes = fix_names
     flags["print_function"] = True
 
@@ -100,8 +133,7 @@ def main(args=None):
         if not args:
             return 0
     if not args:
-        print("At least one file or directory argument required.",
-              file=sys.stderr)
+        print("At least one file or directory argument required.", file=sys.stderr)
         print("Use --help to show usage.", file=sys.stderr)
         return 2
     if "-" in args:
@@ -112,7 +144,7 @@ def main(args=None):
 
     # Set up logging handler
     level = logging.DEBUG if options.verbose else logging.INFO
-    logging.basicConfig(format='%(name)s: %(message)s', level=level)
+    logging.basicConfig(format="%(name)s: %(message)s", level=level)
 
     unwanted_fixes = set()
     for fix in options.nofix:
@@ -122,32 +154,34 @@ def main(args=None):
             # Infer the full module name for the fixer.
             # First ensure that no names clash (e.g.
             # lib2to3.fixes.fix_blah and libfuturize.fixes.fix_blah):
-            found = [f for f in avail_fixes
-                     if f.endswith('fix_{0}'.format(fix))]
+            found = [f for f in avail_fixes if f.endswith("fix_{0}".format(fix))]
             if len(found) > 1:
-                print("Ambiguous fixer name. Choose a fully qualified "
-                      "module name instead from these:\n" +
-                      "\n".join("  " + myf for myf in found),
-                      file=sys.stderr)
+                print(
+                    "Ambiguous fixer name. Choose a fully qualified "
+                    "module name instead from these:\n"
+                    + "\n".join("  " + myf for myf in found),
+                    file=sys.stderr,
+                )
                 return 2
             elif len(found) == 0:
-                print("Unknown fixer. Use --list-fixes or -l for a list.",
-                      file=sys.stderr)
+                print(
+                    "Unknown fixer. Use --list-fixes or -l for a list.", file=sys.stderr
+                )
                 return 2
             unwanted_fixes.add(found[0])
 
     extra_fixes = set()
     if options.all_imports:
-        prefix = 'libpasteurize.fixes.'
-        extra_fixes.add(prefix + 'fix_add_all__future__imports')
-        extra_fixes.add(prefix + 'fix_add_future_standard_library_import')
-        extra_fixes.add(prefix + 'fix_add_all_future_builtins')
+        prefix = "libpasteurize.fixes."
+        extra_fixes.add(prefix + "fix_add_all__future__imports")
+        extra_fixes.add(prefix + "fix_add_future_standard_library_import")
+        extra_fixes.add(prefix + "fix_add_all_future_builtins")
 
     explicit = set()
     if options.fix:
         all_present = False
         for fix in options.fix:
-            if fix == 'all':
+            if fix == "all":
                 all_present = True
             else:
                 if ".fix_" in fix:
@@ -156,24 +190,31 @@ def main(args=None):
                     # Infer the full module name for the fixer.
                     # First ensure that no names clash (e.g.
                     # lib2to3.fixes.fix_blah and libpasteurize.fixes.fix_blah):
-                    found = [f for f in avail_fixes
-                             if f.endswith('fix_{0}'.format(fix))]
+                    found = [
+                        f for f in avail_fixes if f.endswith("fix_{0}".format(fix))
+                    ]
                     if len(found) > 1:
-                        print("Ambiguous fixer name. Choose a fully qualified "
-                              "module name instead from these:\n" +
-                              "\n".join("  " + myf for myf in found),
-                              file=sys.stderr)
+                        print(
+                            "Ambiguous fixer name. Choose a fully qualified "
+                            "module name instead from these:\n"
+                            + "\n".join("  " + myf for myf in found),
+                            file=sys.stderr,
+                        )
                         return 2
                     elif len(found) == 0:
-                        print("Unknown fixer. Use --list-fixes or -l for a list.",
-                              file=sys.stderr)
+                        print(
+                            "Unknown fixer. Use --list-fixes or -l for a list.",
+                            file=sys.stderr,
+                        )
                         return 2
                     explicit.add(found[0])
         if len(explicit & unwanted_fixes) > 0:
-            print("Conflicting usage: the following fixers have been "
-                  "simultaneously requested and disallowed:\n" +
-                  "\n".join("  " + myf for myf in (explicit & unwanted_fixes)),
-                  file=sys.stderr)
+            print(
+                "Conflicting usage: the following fixers have been "
+                "simultaneously requested and disallowed:\n"
+                + "\n".join("  " + myf for myf in (explicit & unwanted_fixes)),
+                file=sys.stderr,
+            )
             return 2
         requested = avail_fixes.union(explicit) if all_present else explicit
     else:
@@ -182,8 +223,9 @@ def main(args=None):
     fixer_names = requested | extra_fixes - unwanted_fixes
 
     # Initialize the refactoring tool
-    rt = StdoutRefactoringTool(sorted(fixer_names), flags, set(),
-                               options.nobackups, not options.no_diffs)
+    rt = StdoutRefactoringTool(
+        sorted(fixer_names), flags, set(), options.nobackups, not options.no_diffs
+    )
 
     # Refactor all files and directories passed as arguments
     if not rt.errors:
@@ -191,12 +233,10 @@ def main(args=None):
             rt.refactor_stdin()
         else:
             try:
-                rt.refactor(args, options.write, None,
-                            options.processes)
+                rt.refactor(args, options.write, None, options.processes)
             except refactor.MultiprocessingUnsupported:
                 assert options.processes > 1
-                print("Sorry, -j isn't " \
-                      "supported on this platform.", file=sys.stderr)
+                print("Sorry, -j isn't " "supported on this platform.", file=sys.stderr)
                 return 1
         rt.summarize()
 

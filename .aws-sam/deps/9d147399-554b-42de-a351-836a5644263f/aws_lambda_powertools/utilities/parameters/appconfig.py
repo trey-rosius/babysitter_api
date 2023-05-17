@@ -77,7 +77,8 @@ class AppConfigProvider(BaseProvider):
         session = boto3_session or boto3.session.Session()
         self.client = session.client("appconfig", config=config)
         self.application = resolve_env_var_choice(
-            choice=application, env=os.getenv(constants.SERVICE_NAME_ENV, "service_undefined")
+            choice=application,
+            env=os.getenv(constants.SERVICE_NAME_ENV, "service_undefined"),
         )
         self.environment = environment
         self.current_version = ""
@@ -173,10 +174,16 @@ def get_app_config(
 
     # Only create the provider if this function is called at least once
     if "appconfig" not in DEFAULT_PROVIDERS:
-        DEFAULT_PROVIDERS["appconfig"] = AppConfigProvider(environment=environment, application=application)
+        DEFAULT_PROVIDERS["appconfig"] = AppConfigProvider(
+            environment=environment, application=application
+        )
 
     sdk_options["ClientId"] = CLIENT_ID
 
     return DEFAULT_PROVIDERS["appconfig"].get(
-        name, max_age=max_age, transform=transform, force_fetch=force_fetch, **sdk_options
+        name,
+        max_age=max_age,
+        transform=transform,
+        force_fetch=force_fetch,
+        **sdk_options
     )

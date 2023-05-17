@@ -2,29 +2,34 @@ from .draft06 import CodeGeneratorDraft06
 
 
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
-    FORMAT_REGEXS = dict(CodeGeneratorDraft06.FORMAT_REGEXS, **{
-        'date': r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\Z',
-        'iri': r'^\w+:(\/?\/?)[^\s]+\Z',
-        'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
-        'idn-email': r'^[^@]+@[^@]+\.[^@]+\Z',
-        #'idn-hostname': r'',
-        'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
-        #'regex': r'',
-        'time': (
-            r'^(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
-            r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6}))?'
-            r'([zZ]|[+-]\d\d:\d\d)?)?\Z'
-        ),
-    })
+    FORMAT_REGEXS = dict(
+        CodeGeneratorDraft06.FORMAT_REGEXS,
+        **{
+            "date": r"^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\Z",
+            "iri": r"^\w+:(\/?\/?)[^\s]+\Z",
+            "iri-reference": r"^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z",
+            "idn-email": r"^[^@]+@[^@]+\.[^@]+\Z",
+            #'idn-hostname': r'',
+            "relative-json-pointer": r"^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z",
+            #'regex': r'',
+            "time": (
+                r"^(?P<hour>\d{1,2}):(?P<minute>\d{1,2})"
+                r"(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6}))?"
+                r"([zZ]|[+-]\d\d:\d\d)?)?\Z"
+            ),
+        }
+    )
 
     def __init__(self, definition, resolver=None, formats={}, use_default=True):
         super().__init__(definition, resolver, formats, use_default)
         # pylint: disable=duplicate-code
-        self._json_keywords_to_function.update((
-            ('if', self.generate_if_then_else),
-            ('contentEncoding', self.generate_content_encoding),
-            ('contentMediaType', self.generate_content_media_type),
-        ))
+        self._json_keywords_to_function.update(
+            (
+                ("if", self.generate_if_then_else),
+                ("contentEncoding", self.generate_content_encoding),
+                ("contentMediaType", self.generate_content_media_type),
+            )
+        )
 
     def generate_if_then_else(self):
         """
@@ -46,30 +51,30 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
 
         Valid values are any between -10 and 0 or any multiplication of two.
         """
-        with self.l('try:', optimize=False):
+        with self.l("try:", optimize=False):
             self.generate_func_code_block(
-                self._definition['if'],
+                self._definition["if"],
                 self._variable,
                 self._variable_name,
-                clear_variables=True
+                clear_variables=True,
             )
-        with self.l('except JsonSchemaValueException:'):
-            if 'else' in self._definition:
+        with self.l("except JsonSchemaValueException:"):
+            if "else" in self._definition:
                 self.generate_func_code_block(
-                    self._definition['else'],
+                    self._definition["else"],
                     self._variable,
                     self._variable_name,
-                    clear_variables=True
+                    clear_variables=True,
                 )
             else:
-                self.l('pass')
-        if 'then' in self._definition:
-            with self.l('else:'):
+                self.l("pass")
+        if "then" in self._definition:
+            with self.l("else:"):
                 self.generate_func_code_block(
-                    self._definition['then'],
+                    self._definition["then"],
                     self._variable,
                     self._variable_name,
-                    clear_variables=True
+                    clear_variables=True,
                 )
 
     def generate_content_encoding(self):
@@ -82,15 +87,15 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                 'contentEncoding': 'base64',
             }
         """
-        if self._definition['contentEncoding'] == 'base64':
-            with self.l('if isinstance({variable}, str):'):
-                with self.l('try:'):
-                    self.l('import base64')
-                    self.l('{variable} = base64.b64decode({variable})')
-                with self.l('except Exception:'):
-                    self.exc('{name} must be encoded by base64')
+        if self._definition["contentEncoding"] == "base64":
+            with self.l("if isinstance({variable}, str):"):
+                with self.l("try:"):
+                    self.l("import base64")
+                    self.l("{variable} = base64.b64decode({variable})")
+                with self.l("except Exception:"):
+                    self.exc("{name} must be encoded by base64")
                 with self.l('if {variable} == "":'):
-                    self.exc('contentEncoding must be base64')
+                    self.exc("contentEncoding must be base64")
 
     def generate_content_media_type(self):
         """
@@ -102,15 +107,15 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                 'contentMediaType': 'application/json',
             }
         """
-        if self._definition['contentMediaType'] == 'application/json':
-            with self.l('if isinstance({variable}, bytes):'):
-                with self.l('try:'):
+        if self._definition["contentMediaType"] == "application/json":
+            with self.l("if isinstance({variable}, bytes):"):
+                with self.l("try:"):
                     self.l('{variable} = {variable}.decode("utf-8")')
-                with self.l('except Exception:'):
-                    self.exc('{name} must encoded by utf8')
-            with self.l('if isinstance({variable}, str):'):
-                with self.l('try:'):
-                    self.l('import json')
-                    self.l('{variable} = json.loads({variable})')
-                with self.l('except Exception:'):
-                    self.exc('{name} must be valid JSON')
+                with self.l("except Exception:"):
+                    self.exc("{name} must encoded by utf8")
+            with self.l("if isinstance({variable}, str):"):
+                with self.l("try:"):
+                    self.l("import json")
+                    self.l("{variable} = json.loads({variable})")
+                with self.l("except Exception:"):
+                    self.exc("{name} must be valid JSON")

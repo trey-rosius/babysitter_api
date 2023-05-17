@@ -14,4 +14,4 @@ class FixBasestring(fixer_base.BaseFix):
     PATTERN = "'basestring'"
 
     def transform(self, node, results):
-        touch_import_top(u'past.builtins', 'basestring', node)
+        touch_import_top("past.builtins", "basestring", node)

@@ -1,15 +1,16 @@
 import json
 import logging
 from future.standard_library import install_aliases
+
 install_aliases()
 
 from urllib.request import urlopen, Request
 
 log = logging.getLogger(__name__)
 
-SERVICE_NAME = 'ec2'
-ORIGIN = 'AWS::EC2::Instance'
-IMDS_URL = 'http://169.254.169.254/latest/'
+SERVICE_NAME = "ec2"
+ORIGIN = "AWS::EC2::Instance"
+IMDS_URL = "http://169.254.169.254/latest/"
 
 
 def initialize():
@@ -35,9 +36,7 @@ def get_token():
     token = None
     try:
         headers = {"X-aws-ec2-metadata-token-ttl-seconds": "60"}
-        token = do_request(url=IMDS_URL + "api/token",
-                           headers=headers,
-                           method="PUT")
+        token = do_request(url=IMDS_URL + "api/token", headers=headers, method="PUT")
     except Exception:
         log.warning("Failed to get token for IMDSv2")
     return token
@@ -49,9 +48,11 @@ def get_metadata(token=None):
         if token:
             header = {"X-aws-ec2-metadata-token": token}
 
-        metadata_json = do_request(url=IMDS_URL + "dynamic/instance-identity/document",
-                                   headers=header,
-                                   method="GET")
+        metadata_json = do_request(
+            url=IMDS_URL + "dynamic/instance-identity/document",
+            headers=header,
+            method="GET",
+        )
 
         return parse_metadata_json(metadata_json)
     except Exception:
@@ -62,10 +63,10 @@ def get_metadata(token=None):
 def parse_metadata_json(json_str):
     data = json.loads(json_str)
     dict = {
-        'instance_id': data['instanceId'],
-        'availability_zone': data['availabilityZone'],
-        'instance_type': data['instanceType'],
-        'ami_id': data['imageId']
+        "instance_id": data["instanceId"],
+        "availability_zone": data["availabilityZone"],
+        "instance_type": data["instanceType"],
+        "ami_id": data["imageId"],
     }
 
     return dict
@@ -82,4 +83,4 @@ def do_request(url, headers=None, method="GET"):
     req.headers = headers
     req.method = method
     res = urlopen(req, timeout=1)
-    return res.read().decode('utf-8')
+    return res.read().decode("utf-8")

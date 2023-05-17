@@ -62,7 +62,7 @@ def get_user(username: str = ""):
 ```
 Go ahead and deploy your app.
 <br />
-If you had `sam sync --stack-name babysitter --watch` running, once you hit save, the application synchronizes with the cloud. 
+If you had `sam sync --stack-name babysitter --watch` running, once you hit save, the application synchronizes with the cloud.
 Go ahead and test to make sure it works well.
 
 #### Update User Status
@@ -80,4 +80,3 @@ I know you'll crush it with your left hand. 😤
 <br />
 
 Remember the solution is in the repo.
-

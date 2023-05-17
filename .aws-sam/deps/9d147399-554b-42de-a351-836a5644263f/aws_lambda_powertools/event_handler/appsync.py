@@ -29,7 +29,9 @@ class BaseRouter(ABC):
         """
 
         def register_resolver(func):
-            logger.debug(f"Adding resolver `{func.__name__}` for field `{type_name}.{field_name}`")
+            logger.debug(
+                f"Adding resolver `{func.__name__}` for field `{type_name}.{field_name}`"
+            )
             self._resolvers[f"{type_name}.{field_name}"] = {"func": func}
             return func
 
@@ -71,7 +73,10 @@ class AppSyncResolver(BaseRouter):
         super().__init__()
 
     def resolve(
-        self, event: dict, context: LambdaContext, data_model: Type[AppSyncResolverEvent] = AppSyncResolverEvent
+        self,
+        event: dict,
+        context: LambdaContext,
+        data_model: Type[AppSyncResolverEvent] = AppSyncResolverEvent,
     ) -> Any:
         """Resolve field_name
 
@@ -144,7 +149,9 @@ class AppSyncResolver(BaseRouter):
         """
         BaseRouter.current_event = data_model(event)
         BaseRouter.lambda_context = context
-        resolver = self._get_resolver(BaseRouter.current_event.type_name, BaseRouter.current_event.field_name)
+        resolver = self._get_resolver(
+            BaseRouter.current_event.type_name, BaseRouter.current_event.field_name
+        )
         return resolver(**BaseRouter.current_event.arguments)
 
     def _get_resolver(self, type_name: str, field_name: str) -> Callable:
@@ -163,13 +170,18 @@ class AppSyncResolver(BaseRouter):
             callable function and configuration
         """
         full_name = f"{type_name}.{field_name}"
-        resolver = self._resolvers.get(full_name, self._resolvers.get(f"*.{field_name}"))
+        resolver = self._resolvers.get(
+            full_name, self._resolvers.get(f"*.{field_name}")
+        )
         if not resolver:
             raise ValueError(f"No resolver found for '{full_name}'")
         return resolver["func"]
 
     def __call__(
-        self, event: dict, context: LambdaContext, data_model: Type[AppSyncResolverEvent] = AppSyncResolverEvent
+        self,
+        event: dict,
+        context: LambdaContext,
+        data_model: Type[AppSyncResolverEvent] = AppSyncResolverEvent,
     ) -> Any:
         """Implicit lambda handler which internally calls `resolve`"""
         return self.resolve(event, context, data_model)

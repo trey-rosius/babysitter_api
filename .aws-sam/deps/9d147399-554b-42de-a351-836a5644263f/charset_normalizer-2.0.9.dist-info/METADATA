@@ -73,12 +73,12 @@ This project offers you an alternative to **Universal Charset Encoding Detector*
 <p align="center">
 <img src="https://i.imgflip.com/373iay.gif" alt="Reading Normalized Text" width="226"/><img src="https://media.tenor.com/images/c0180f70732a18b4965448d33adba3d0/tenor.gif" alt="Cat Reading Text" width="200"/>
 
-*\*\* : They are clearly using specific code for a specific encoding even if covering most of used one*<br> 
+*\*\* : They are clearly using specific code for a specific encoding even if covering most of used one*<br>
 
 ## ⭐ Your support
 
 *Fork, test-it, star-it, submit your ideas! We do listen.*
-  
+
 ## ⚡ Performance
 
 This package offer better performance than its counterpart Chardet. Here are some numbers.
@@ -99,7 +99,7 @@ Chardet's performance on larger file (1MB+) are very poor. Expect huge differenc
 > And yes, these results might change at any time. The dataset can be updated to include more files.
 > The actual delays heavily depends on your CPU capabilities. The factors should remain the same.
 
-[cchardet](https://github.com/PyYoshi/cChardet) is a non-native (cpp binding) and unmaintained faster alternative with 
+[cchardet](https://github.com/PyYoshi/cChardet) is a non-native (cpp binding) and unmaintained faster alternative with
 a better accuracy than chardet but lower than this package. If speed is the most important factor, you should try it.
 
 ## ✨ Installation
@@ -224,7 +224,7 @@ reliable alternative using a completely different method. Also! I never back dow
 
 I **don't care** about the **originating charset** encoding, because **two different tables** can
 produce **two identical rendered string.**
-What I want is to get readable text, the best I can. 
+What I want is to get readable text, the best I can.
 
 In a way, **I'm brute forcing text decoding.** How cool is that ? 😎
 
@@ -263,5 +263,3 @@ Copyright © 2019 [Ahmed TAHRI @Ousret](https://github.com/Ousret).<br />
 This project is [MIT](https://github.com/Ousret/charset_normalizer/blob/master/LICENSE) licensed.
 
 Characters frequencies used in this project © 2012 [Denny Vrandečić](http://simia.net/letters/)
-
-

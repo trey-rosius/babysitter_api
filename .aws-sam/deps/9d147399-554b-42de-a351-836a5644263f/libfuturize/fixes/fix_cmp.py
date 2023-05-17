@@ -26,8 +26,10 @@ class FixCmp(fixer_base.BaseFix):
               power<
                  ({0}) trailer< '(' args=[any] ')' >
               rest=any* >
-              """.format(expression)
+              """.format(
+        expression
+    )
 
     def transform(self, node, results):
         name = results["name"]
-        touch_import_top(u'past.builtins', name.value, node)
+        touch_import_top("past.builtins", name.value, node)

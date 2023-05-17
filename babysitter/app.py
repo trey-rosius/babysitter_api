@@ -13,8 +13,10 @@ app.include_router(user_resolver.router)
 app.include_router(application_resolver.router)
 
 
-@logger.inject_lambda_context(correlation_id_path=correlation_paths.APPSYNC_RESOLVER, log_event=True)
+@logger.inject_lambda_context(
+    correlation_id_path=correlation_paths.APPSYNC_RESOLVER, log_event=True
+)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
-    logger.debug(f'event is {event}')
+    logger.debug(f"event is {event}")
     return app.resolve(event, context)

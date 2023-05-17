@@ -8,11 +8,17 @@ module names and locations.
 from __future__ import unicode_literals
 
 
-_escape_map = {ord('&'): '&amp;', ord('<'): '&lt;', ord('>'): '&gt;'}
-_escape_map_full = {ord('&'): '&amp;', ord('<'): '&lt;', ord('>'): '&gt;',
-                    ord('"'): '&quot;', ord('\''): '&#x27;'}
+_escape_map = {ord("&"): "&amp;", ord("<"): "&lt;", ord(">"): "&gt;"}
+_escape_map_full = {
+    ord("&"): "&amp;",
+    ord("<"): "&lt;",
+    ord(">"): "&gt;",
+    ord('"'): "&quot;",
+    ord("'"): "&#x27;",
+}
 
 # NB: this is a candidate for a bytes/string polymorphic interface
+
 
 def escape(s, quote=True):
     """
@@ -21,7 +27,7 @@ def escape(s, quote=True):
     characters, both double quote (") and single quote (') characters are also
     translated.
     """
-    assert not isinstance(s, bytes), 'Pass a unicode string'
+    assert not isinstance(s, bytes), "Pass a unicode string"
     if quote:
         return s.translate(_escape_map_full)
     return s.translate(_escape_map)

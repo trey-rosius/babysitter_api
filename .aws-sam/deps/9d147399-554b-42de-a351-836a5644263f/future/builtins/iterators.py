@@ -41,10 +41,12 @@ if not utils.PY3:
     filter = itertools.ifilter
     map = itertools.imap
     from future.types import newrange as range
+
     zip = itertools.izip
-    __all__ = ['filter', 'map', 'range', 'zip']
+    __all__ = ["filter", "map", "range", "zip"]
 else:
     import builtins
+
     filter = builtins.filter
     map = builtins.map
     range = builtins.range

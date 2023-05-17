@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, unicode_literals
 from future.builtins import str
+
 """ robotparser.py
 
     Copyright (C) 2000  Bastian Kleineidam
@@ -15,19 +16,21 @@ from future.builtins import str
 # Was: import urllib.parse, urllib.request
 from future.backports import urllib
 from future.backports.urllib import parse as _parse, request as _request
+
 urllib.parse = _parse
 urllib.request = _request
 
 
 __all__ = ["RobotFileParser"]
 
+
 class RobotFileParser(object):
-    """ This class provides a set of methods to read, parse and answer
+    """This class provides a set of methods to read, parse and answer
     questions about a single robots.txt file.
 
     """
 
-    def __init__(self, url=''):
+    def __init__(self, url=""):
         self.entries = []
         self.default_entry = None
         self.disallow_all = False
@@ -50,6 +53,7 @@ class RobotFileParser(object):
 
         """
         import time
+
         self.last_checked = time.time()
 
     def set_url(self, url):
@@ -102,13 +106,13 @@ class RobotFileParser(object):
                     entry = Entry()
                     state = 0
             # remove optional comment and strip line
-            i = line.find('#')
+            i = line.find("#")
             if i >= 0:
                 line = line[:i]
             line = line.strip()
             if not line:
                 continue
-            line = line.split(':', 1)
+            line = line.split(":", 1)
             if len(line) == 2:
                 line[0] = line[0].strip().lower()
                 line[1] = urllib.parse.unquote(line[1].strip())
@@ -129,7 +133,6 @@ class RobotFileParser(object):
         if state == 2:
             self._add_entry(entry)
 
-
     def can_fetch(self, useragent, url):
         """using the parsed robots.txt decide if useragent can fetch url"""
         if self.disallow_all:
@@ -139,8 +142,16 @@ class RobotFileParser(object):
         # search for given user agent matches
         # the first match counts
         parsed_url = urllib.parse.urlparse(urllib.parse.unquote(url))
-        url = urllib.parse.urlunparse(('','',parsed_url.path,
-            parsed_url.params,parsed_url.query, parsed_url.fragment))
+        url = urllib.parse.urlunparse(
+            (
+                "",
+                "",
+                parsed_url.path,
+                parsed_url.params,
+                parsed_url.query,
+                parsed_url.fragment,
+            )
+        )
         url = urllib.parse.quote(url)
         if not url:
             url = "/"
@@ -154,14 +165,15 @@ class RobotFileParser(object):
         return True
 
     def __str__(self):
-        return ''.join([str(entry) + "\n" for entry in self.entries])
+        return "".join([str(entry) + "\n" for entry in self.entries])
 
 
 class RuleLine(object):
     """A rule line is a single "Allow:" (allowance==True) or "Disallow:"
-       (allowance==False) followed by a path."""
+    (allowance==False) followed by a path."""
+
     def __init__(self, path, allowance):
-        if path == '' and not allowance:
+        if path == "" and not allowance:
             # an empty value means allow all
             allowance = True
         self.path = urllib.parse.quote(path)
@@ -176,6 +188,7 @@ class RuleLine(object):
 
 class Entry(object):
     """An entry has one or more user-agents and zero or more rulelines"""
+
     def __init__(self):
         self.useragents = []
         self.rulelines = []
@@ -186,14 +199,14 @@ class Entry(object):
             ret.extend(["User-agent: ", agent, "\n"])
         for line in self.rulelines:
             ret.extend([str(line), "\n"])
-        return ''.join(ret)
+        return "".join(ret)
 
     def applies_to(self, useragent):
         """check if this entry applies to the specified agent"""
         # split the name token and make it lower case
         useragent = useragent.split("/")[0].lower()
         for agent in self.useragents:
-            if agent == '*':
+            if agent == "*":
                 # we have the catch-all agent
                 return True
             agent = agent.lower()

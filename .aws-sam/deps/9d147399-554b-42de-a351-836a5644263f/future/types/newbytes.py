@@ -36,7 +36,7 @@ class BaseNewBytes(type):
 
 def _newchr(x):
     if isinstance(x, str):  # this happens on pypy
-        return x.encode('ascii')
+        return x.encode("ascii")
     else:
         return chr(x)
 
@@ -45,6 +45,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
     """
     A backport of the Python 3 bytes object to Py2
     """
+
     def __new__(cls, *args, **kwargs):
         """
         From the Py3 bytes docstring:
@@ -71,7 +72,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
             args = list(args)
             if len(args) == 3:
                 errors = args.pop()
-            encoding=args.pop()
+            encoding = args.pop()
         # Was: elif isinstance(args[0], newbytes):
         # We use type() instead of the above because we're redefining
         # this to be True for all unicode string subclasses. Warning:
@@ -85,16 +86,16 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
             value = args[0]
         elif isinstance(args[0], unicode):
             try:
-                if 'encoding' in kwargs:
+                if "encoding" in kwargs:
                     assert encoding is None
-                    encoding = kwargs['encoding']
-                if 'errors' in kwargs:
+                    encoding = kwargs["encoding"]
+                if "errors" in kwargs:
                     assert errors is None
-                    errors = kwargs['errors']
+                    errors = kwargs["errors"]
             except AssertionError:
-                raise TypeError('Argument given by name and position')
+                raise TypeError("Argument given by name and position")
             if encoding is None:
-                raise TypeError('unicode string argument without an encoding')
+                raise TypeError("unicode string argument without an encoding")
             ###
             # Was:   value = args[0].encode(**kwargs)
             # Python 2.6 string encode() method doesn't take kwargs:
@@ -104,12 +105,12 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
                 newargs.append(errors)
             value = args[0].encode(*newargs)
             ###
-        elif hasattr(args[0], '__bytes__'):
+        elif hasattr(args[0], "__bytes__"):
             value = args[0].__bytes__()
         elif isinstance(args[0], Iterable):
             if len(args[0]) == 0:
                 # This could be an empty list or tuple. Return b'' as on Py3.
-                value = b''
+                value = b""
             else:
                 # Was: elif len(args[0])>0 and isinstance(args[0][0], Integral):
                 #      # It's a list of integers
@@ -118,11 +119,11 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
                 try:
                     value = bytearray([_newchr(x) for x in args[0]])
                 except:
-                    raise ValueError('bytes must be in range(0, 256)')
+                    raise ValueError("bytes must be in range(0, 256)")
         elif isinstance(args[0], Integral):
             if args[0] < 0:
-                raise ValueError('negative count')
-            value = b'\x00' * args[0]
+                raise ValueError("negative count")
+            value = b"\x00" * args[0]
         else:
             value = args[0]
         if type(value) == newbytes:
@@ -136,10 +137,10 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
             return super(newbytes, cls).__new__(cls, value)
 
     def __repr__(self):
-        return 'b' + super(newbytes, self).__repr__()
+        return "b" + super(newbytes, self).__repr__()
 
     def __str__(self):
-        return 'b' + "'{0}'".format(super(newbytes, self).__str__())
+        return "b" + "'{0}'".format(super(newbytes, self).__str__())
 
     def __getitem__(self, y):
         value = super(newbytes, self).__getitem__(y)
@@ -190,8 +191,9 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
                 newvals.append(v)
             vals = tuple(newvals)
 
-        elif (hasattr(vals.__class__, '__getitem__') and
-                hasattr(vals.__class__, 'iteritems')):
+        elif hasattr(vals.__class__, "__getitem__") and hasattr(
+            vals.__class__, "iteritems"
+        ):
             for k, v in vals.iteritems():
                 if isinstance(v, newbytes):
                     vals[k] = _builtin_bytes.__str__(v)
@@ -202,7 +204,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
         return self.__mod__(other)
 
     def join(self, iterable_of_bytes):
-        errmsg = 'sequence item {0}: expected bytes, {1} found'
+        errmsg = "sequence item {0}: expected bytes, {1} found"
         if isbytes(iterable_of_bytes) or istext(iterable_of_bytes):
             raise TypeError(errmsg.format(0, type(iterable_of_bytes)))
         for i, item in enumerate(iterable_of_bytes):
@@ -213,7 +215,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
     @classmethod
     def fromhex(cls, string):
         # Only on Py2:
-        return cls(string.replace(' ', '').decode('hex'))
+        return cls(string.replace(" ", "").decode("hex"))
 
     @no(unicode)
     def find(self, sub, *args):
@@ -230,7 +232,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
     def encode(self, *args):
         raise AttributeError("encode method has been disabled in newbytes")
 
-    def decode(self, encoding='utf-8', errors='strict'):
+    def decode(self, encoding="utf-8", errors="strict"):
         """
         Returns a newstr (i.e. unicode subclass)
 
@@ -246,8 +248,9 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
 
         from future.types.newstr import newstr
 
-        if errors == 'surrogateescape':
+        if errors == "surrogateescape":
             from future.utils.surrogateescape import register_surrogateescape
+
             register_surrogateescape()
 
         return newstr(super(newbytes, self).decode(encoding, errors))
@@ -326,22 +329,22 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
 
     @no(unicode, (1,))
     def rindex(self, sub, *args):
-        '''
+        """
         S.rindex(sub [,start [,end]]) -> int
 
         Like S.rfind() but raise ValueError when the substring is not found.
-        '''
+        """
         pos = self.rfind(sub, *args)
         if pos == -1:
-            raise ValueError('substring not found')
+            raise ValueError("substring not found")
 
     @no(unicode)
     def index(self, sub, *args):
-        '''
+        """
         Returns index of sub in bytes.
         Raises ValueError if byte is not in bytes and TypeError if can't
         be converted bytes or its length is not 1.
-        '''
+        """
         if isinstance(sub, int):
             if len(args) == 0:
                 start, end = 0, len(self)
@@ -350,7 +353,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
             elif len(args) == 2:
                 start, end = args
             else:
-                raise TypeError('takes at most 3 arguments')
+                raise TypeError("takes at most 3 arguments")
             return list(self)[start:end].index(sub)
         if not isinstance(sub, bytes):
             try:
@@ -360,7 +363,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
         try:
             return super(newbytes, self).index(sub, *args)
         except ValueError:
-            raise ValueError('substring not found')
+            raise ValueError("substring not found")
 
     def __eq__(self, other):
         if isinstance(other, (_builtin_bytes, bytearray)):
@@ -374,7 +377,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
         else:
             return True
 
-    unorderable_err = 'unorderable types: bytes() and {0}'
+    unorderable_err = "unorderable types: bytes() and {0}"
 
     def __lt__(self, other):
         if isinstance(other, _builtin_bytes):
@@ -406,7 +409,7 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
         A trick to cause the ``hasattr`` builtin-fn to return False for
         the 'encode' method on Py2.
         """
-        if name in ['encode', u'encode']:
+        if name in ["encode", "encode"]:
             raise AttributeError("encode method has been disabled in newbytes")
         return super(newbytes, self).__getattribute__(name)
 
@@ -457,4 +460,4 @@ class newbytes(with_metaclass(BaseNewBytes, _builtin_bytes)):
         return newbytes(string.maketrans(frm, to))
 
 
-__all__ = ['newbytes']
+__all__ = ["newbytes"]

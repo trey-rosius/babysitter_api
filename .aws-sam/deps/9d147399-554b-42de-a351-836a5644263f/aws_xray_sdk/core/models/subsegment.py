@@ -8,12 +8,16 @@ from ..exceptions.exceptions import SegmentNotFoundException
 
 
 # Attribute starts with _self_ to prevent wrapt proxying to underlying function
-SUBSEGMENT_RECORDING_ATTRIBUTE = '_self___SUBSEGMENT_RECORDING_ATTRIBUTE__'
+SUBSEGMENT_RECORDING_ATTRIBUTE = "_self___SUBSEGMENT_RECORDING_ATTRIBUTE__"
 
 
 def set_as_recording(decorated_func, wrapped):
     # If the wrapped function has the attribute, then it has already been patched
-    setattr(decorated_func, SUBSEGMENT_RECORDING_ATTRIBUTE, hasattr(wrapped, SUBSEGMENT_RECORDING_ATTRIBUTE))
+    setattr(
+        decorated_func,
+        SUBSEGMENT_RECORDING_ATTRIBUTE,
+        hasattr(wrapped, SUBSEGMENT_RECORDING_ATTRIBUTE),
+    )
 
 
 def is_already_recording(func):
@@ -52,15 +56,19 @@ class SubsegmentContextManager:
             func_name = wrapped.__name__
 
         return self.recorder.record_subsegment(
-            wrapped, instance, args, kwargs,
+            wrapped,
+            instance,
+            args,
+            kwargs,
             name=func_name,
-            namespace='local',
+            namespace="local",
             meta_processor=None,
         )
 
     def __enter__(self):
         self.subsegment = self.recorder.begin_subsegment(
-            name=self.name, **self.subsegment_kwargs)
+            name=self.name, **self.subsegment_kwargs
+        )
         return self.subsegment
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -73,7 +81,7 @@ class SubsegmentContextManager:
                 traceback.extract_tb(
                     exc_tb,
                     limit=self.recorder.max_trace_back,
-                )
+                ),
             )
         self.recorder.end_subsegment()
 
@@ -86,6 +94,7 @@ class Subsegment(Entity):
     A subsegment can contain additional details about a call to an AWS service,
     an external HTTP API, or an SQL database.
     """
+
     def __init__(self, name, namespace, segment):
         """
         Create a new subsegment.
@@ -98,12 +107,14 @@ class Subsegment(Entity):
         super(Subsegment, self).__init__(name)
 
         if not segment:
-            raise SegmentNotFoundException("A parent segment is required for creating subsegments.")
+            raise SegmentNotFoundException(
+                "A parent segment is required for creating subsegments."
+            )
 
         self.parent_segment = segment
         self.trace_id = segment.trace_id
 
-        self.type = 'subsegment'
+        self.type = "subsegment"
         self.namespace = namespace
 
         self.sql = {}
@@ -149,13 +160,13 @@ class Subsegment(Entity):
         """
         self.sql = sql
 
-    def to_dict(self): 
+    def to_dict(self):
         """
         Convert Subsegment object to dict with required properties
-        that have non-empty values. 
-        """    
+        that have non-empty values.
+        """
         subsegment_dict = super(Subsegment, self).to_dict()
-        
-        del subsegment_dict['parent_segment']
+
+        del subsegment_dict["parent_segment"]
 
         return subsegment_dict

@@ -48,27 +48,28 @@ class newobject(object):
     Subclasses of this class can merely define the Python 3 methods (__next__,
     __str__, and __bool__).
     """
+
     def next(self):
-        if hasattr(self, '__next__'):
+        if hasattr(self, "__next__"):
             return type(self).__next__(self)
-        raise TypeError('newobject is not an iterator')
+        raise TypeError("newobject is not an iterator")
 
     def __unicode__(self):
         # All subclasses of the builtin object should have __str__ defined.
         # Note that old-style classes do not have __str__ defined.
-        if hasattr(self, '__str__'):
+        if hasattr(self, "__str__"):
             s = type(self).__str__(self)
         else:
             s = str(self)
         if isinstance(s, unicode):
             return s
         else:
-            return s.decode('utf-8')
+            return s.decode("utf-8")
 
     def __nonzero__(self):
-        if hasattr(self, '__bool__'):
+        if hasattr(self, "__bool__"):
             return type(self).__bool__(self)
-        if hasattr(self, '__len__'):
+        if hasattr(self, "__len__"):
             return type(self).__len__(self)
         # object has no __nonzero__ method
         return True
@@ -81,7 +82,7 @@ class newobject(object):
     #     return self.__itruediv__(other)
 
     def __long__(self):
-        if not hasattr(self, '__int__'):
+        if not hasattr(self, "__int__"):
             return NotImplemented
         return self.__int__()  # not type(self).__int__(self)
 
@@ -114,4 +115,5 @@ class newobject(object):
 
     __slots__ = []
 
-__all__ = ['newobject']
+
+__all__ = ["newobject"]

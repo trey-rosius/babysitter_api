@@ -7,11 +7,12 @@ if not PY35:
     xray_recorder = AWSXRayRecorder()
 else:
     from .async_recorder import AsyncAWSXRayRecorder
+
     xray_recorder = AsyncAWSXRayRecorder()
 
 __all__ = [
-    'patch',
-    'patch_all',
-    'xray_recorder',
-    'AWSXRayRecorder',
+    "patch",
+    "patch_all",
+    "xray_recorder",
+    "AWSXRayRecorder",
 ]

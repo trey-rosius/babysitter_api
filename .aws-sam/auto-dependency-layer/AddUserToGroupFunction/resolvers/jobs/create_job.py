@@ -21,22 +21,21 @@ def create_job(job=None):
         job = {}
     item = {
         "id": scalar_types_utils.make_id(),
-        "jobType": job['jobType'],
-        "username": job['username'],
+        "jobType": job["jobType"],
+        "username": job["username"],
         "startDate": scalar_types_utils.aws_date(),
         "endDate": scalar_types_utils.aws_date(),
         "startTime": scalar_types_utils.aws_time(),
         "endTime": scalar_types_utils.aws_time(),
-        "jobStatus": job['jobStatus'],
+        "jobStatus": job["jobStatus"],
         "longitude": Decimal(f"{job['longitude']}"),
         "latitude": Decimal(f"{job['latitude']}"),
-        "address": job['address'],
+        "address": job["address"],
         "city": job["city"],
         "cost": job["cost"],
-
     }
 
-    logger.debug(f'job input :{item}')
+    logger.debug(f"job input :{item}")
 
     try:
 
@@ -47,14 +46,12 @@ def create_job(job=None):
                 "GSI1PK": f"JOB#{item['id']}",
                 "GSI1SK": f"JOB#{item['id']}",
                 "GSI2SK": f"JOB#{item['id']}",
-                **item
+                **item,
             }
         )
 
         logger.info(" create job item response {}".format(response))
         return item
-
-
 
     except ClientError as err:
         logger.debug(f"Error occurred during job creation {err.response['Error']}")

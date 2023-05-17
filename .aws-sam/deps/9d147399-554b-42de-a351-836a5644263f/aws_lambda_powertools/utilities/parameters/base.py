@@ -97,7 +97,9 @@ class BaseProvider(ABC):
                 value = value.decode("utf-8")
             value = transform_value(value, transform)
 
-        self.store[key] = ExpirableValue(value, datetime.now() + timedelta(seconds=max_age))
+        self.store[key] = ExpirableValue(
+            value, datetime.now() + timedelta(seconds=max_age)
+        )
 
         return value
 
@@ -153,7 +155,9 @@ class BaseProvider(ABC):
             return self.store[key].value
 
         try:
-            values: Dict[str, Union[str, bytes, dict, None]] = self._get_multiple(path, **sdk_options)
+            values: Dict[str, Union[str, bytes, dict, None]] = self._get_multiple(
+                path, **sdk_options
+            )
         # Encapsulate all errors into a generic GetParameterError
         except Exception as exc:
             raise GetParameterError(str(exc))
@@ -164,9 +168,13 @@ class BaseProvider(ABC):
                 if _transform is None:
                     continue
 
-                values[key] = transform_value(value, _transform, raise_on_transform_error)
+                values[key] = transform_value(
+                    value, _transform, raise_on_transform_error
+                )
 
-        self.store[key] = ExpirableValue(values, datetime.now() + timedelta(seconds=max_age))
+        self.store[key] = ExpirableValue(
+            values, datetime.now() + timedelta(seconds=max_age)
+        )
 
         return values
 
@@ -217,7 +225,9 @@ def get_transform_method(key: str, transform: Optional[str] = None) -> Optional[
     return None
 
 
-def transform_value(value: str, transform: str, raise_on_transform_error: bool = True) -> Union[dict, bytes, None]:
+def transform_value(
+    value: str, transform: str, raise_on_transform_error: bool = True
+) -> Union[dict, bytes, None]:
     """
     Apply a transform to a value
 

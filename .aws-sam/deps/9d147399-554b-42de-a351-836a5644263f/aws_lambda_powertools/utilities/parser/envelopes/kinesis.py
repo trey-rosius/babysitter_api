@@ -19,7 +19,9 @@ class KinesisDataStreamEnvelope(BaseEnvelope):
     all items in the list will be parsed as str and npt as JSON (and vice versa)
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Optional[Model]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Optional[Model]]:
         """Parses records found with model provided
 
         Parameters
@@ -34,9 +36,12 @@ class KinesisDataStreamEnvelope(BaseEnvelope):
         List
             List of records parsed with model provided
         """
-        logger.debug(f"Parsing incoming data with Kinesis model {KinesisDataStreamModel}")
+        logger.debug(
+            f"Parsing incoming data with Kinesis model {KinesisDataStreamModel}"
+        )
         parsed_envelope: KinesisDataStreamModel = KinesisDataStreamModel.parse_obj(data)
         logger.debug(f"Parsing Kinesis records in `body` with {model}")
         return [
-            self._parse(data=record.kinesis.data.decode("utf-8"), model=model) for record in parsed_envelope.Records
+            self._parse(data=record.kinesis.data.decode("utf-8"), model=model)
+            for record in parsed_envelope.Records
         ]

@@ -7,9 +7,18 @@ if PY3:
     from urllib.parse import *
 else:
     __future_module__ = True
-    from urlparse import (ParseResult, SplitResult, parse_qs, parse_qsl,
-                          urldefrag, urljoin, urlparse, urlsplit,
-                          urlunparse, urlunsplit)
+    from urlparse import (
+        ParseResult,
+        SplitResult,
+        parse_qs,
+        parse_qsl,
+        urldefrag,
+        urljoin,
+        urlparse,
+        urlsplit,
+        urlunparse,
+        urlunsplit,
+    )
 
     # we use this method to get at the original py2 urllib before any renaming
     # quote = sys.py2_modules['urllib'].quote
@@ -20,9 +29,11 @@ else:
     # splitquery = sys.py2_modules['urllib'].splitquery
 
     with suspend_hooks():
-        from urllib import (quote,
-                            quote_plus,
-                            unquote,
-                            unquote_plus,
-                            urlencode,
-                            splitquery)
+        from urllib import (
+            quote,
+            quote_plus,
+            unquote,
+            unquote_plus,
+            urlencode,
+            splitquery,
+        )

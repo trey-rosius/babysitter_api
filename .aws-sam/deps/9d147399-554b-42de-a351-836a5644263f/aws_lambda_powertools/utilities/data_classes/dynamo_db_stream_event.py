@@ -149,7 +149,9 @@ class AttributeValue(DictWrapper):
         return self.map_value
 
     @property
-    def get_value(self) -> Union[Optional[bool], Optional[str], Optional[List], Optional[Dict]]:
+    def get_value(
+        self,
+    ) -> Union[Optional[bool], Optional[str], Optional[List], Optional[Dict]]:
         """Get the attribute value"""
         try:
             return getattr(self, f"{self.dynamodb_type.lower()}_value")
@@ -157,14 +159,20 @@ class AttributeValue(DictWrapper):
             raise TypeError(f"Dynamodb type {self.dynamodb_type} is not supported")
 
 
-def _attribute_value_dict(attr_values: Dict[str, dict], key: str) -> Optional[Dict[str, AttributeValue]]:
+def _attribute_value_dict(
+    attr_values: Dict[str, dict], key: str
+) -> Optional[Dict[str, AttributeValue]]:
     """A dict of type String to AttributeValue object map
 
     Example:
         >>> {"NewImage": {"Id": {"S": "xxx-xxx"}, "Value": {"N": "35"}}}
     """
     attr_values_dict = attr_values.get(key)
-    return None if attr_values_dict is None else {k: AttributeValue(v) for k, v in attr_values_dict.items()}
+    return (
+        None
+        if attr_values_dict is None
+        else {k: AttributeValue(v) for k, v in attr_values_dict.items()}
+    )
 
 
 class StreamViewType(Enum):

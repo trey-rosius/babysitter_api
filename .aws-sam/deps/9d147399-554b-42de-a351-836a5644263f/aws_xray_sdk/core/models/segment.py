@@ -6,7 +6,7 @@ from .traceid import TraceId
 from ..utils.atomic_counter import AtomicCounter
 from ..exceptions.exceptions import SegmentNameMissingException
 
-ORIGIN_TRACE_HEADER_ATTR_KEY = '_origin_trace_header'
+ORIGIN_TRACE_HEADER_ATTR_KEY = "_origin_trace_header"
 
 
 class SegmentContextManager:
@@ -22,7 +22,8 @@ class SegmentContextManager:
 
     def __enter__(self):
         self.segment = self.recorder.begin_segment(
-            name=self.name, **self.segment_kwargs)
+            name=self.name, **self.segment_kwargs
+        )
         return self.segment
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -35,7 +36,7 @@ class SegmentContextManager:
                 traceback.extract_tb(
                     exc_tb,
                     limit=self.recorder.max_trace_back,
-                )
+                ),
             )
         self.recorder.end_segment()
 
@@ -46,8 +47,8 @@ class Segment(Entity):
     about their work as segments. A segment provides the resource's name,
     details about the request, and details about the work done.
     """
-    def __init__(self, name, entityid=None, traceid=None,
-                 parent_id=None, sampled=True):
+
+    def __init__(self, name, entityid=None, traceid=None, parent_id=None, sampled=True):
         """
         Create a segment object.
 
@@ -151,18 +152,18 @@ class Segment(Entity):
         if a segment is sampled because of that rule.
         This method should be only used by the recorder.
         """
-        if not self.aws.get('xray', None):
-            self.aws['xray'] = {}
-        self.aws['xray']['sampling_rule_name'] = rule_name
+        if not self.aws.get("xray", None):
+            self.aws["xray"] = {}
+        self.aws["xray"]["sampling_rule_name"] = rule_name
 
-    def to_dict(self):   
+    def to_dict(self):
         """
         Convert Segment object to dict with required properties
-        that have non-empty values. 
-        """ 
+        that have non-empty values.
+        """
         segment_dict = super(Segment, self).to_dict()
-          
-        del segment_dict['ref_counter']
-        del segment_dict['_subsegments_counter']
-        
+
+        del segment_dict["ref_counter"]
+        del segment_dict["_subsegments_counter"]
+
         return segment_dict

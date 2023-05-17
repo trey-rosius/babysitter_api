@@ -3,19 +3,19 @@
 
 
 def comparator(name, first, second):
-    return {'type': 'comparator', 'children': [first, second], 'value': name}
+    return {"type": "comparator", "children": [first, second], "value": name}
 
 
 def current_node():
-    return {'type': 'current', 'children': []}
+    return {"type": "current", "children": []}
 
 
 def expref(expression):
-    return {'type': 'expref', 'children': [expression]}
+    return {"type": "expref", "children": [expression]}
 
 
 def function_expression(name, args):
-    return {'type': 'function_expression', 'children': args, 'value': name}
+    return {"type": "function_expression", "children": args, "value": name}
 
 
 def field(name):
@@ -23,15 +23,15 @@ def field(name):
 
 
 def filter_projection(left, right, comparator):
-    return {'type': 'filter_projection', 'children': [left, right, comparator]}
+    return {"type": "filter_projection", "children": [left, right, comparator]}
 
 
 def flatten(node):
-    return {'type': 'flatten', 'children': [node]}
+    return {"type": "flatten", "children": [node]}
 
 
 def identity():
-    return {"type": "identity", 'children': []}
+    return {"type": "identity", "children": []}
 
 
 def index(index):
@@ -39,15 +39,15 @@ def index(index):
 
 
 def index_expression(children):
-    return {"type": "index_expression", 'children': children}
+    return {"type": "index_expression", "children": children}
 
 
 def key_val_pair(key_name, node):
-    return {"type": "key_val_pair", 'children': [node], "value": key_name}
+    return {"type": "key_val_pair", "children": [node], "value": key_name}
 
 
 def literal(literal_value):
-    return {'type': 'literal', 'value': literal_value, 'children': []}
+    return {"type": "literal", "value": literal_value, "children": []}
 
 
 def multi_select_dict(nodes):
@@ -71,15 +71,15 @@ def not_expression(expr):
 
 
 def pipe(left, right):
-    return {'type': 'pipe', 'children': [left, right]}
+    return {"type": "pipe", "children": [left, right]}
 
 
 def projection(left, right):
-    return {'type': 'projection', 'children': [left, right]}
+    return {"type": "projection", "children": [left, right]}
 
 
 def subexpression(children):
-    return {"type": "subexpression", 'children': children}
+    return {"type": "subexpression", "children": children}
 
 
 def slice(start, end, step):
@@ -87,4 +87,4 @@ def slice(start, end, step):
 
 
 def value_projection(left, right):
-    return {'type': 'value_projection', 'children': [left, right]}
+    return {"type": "value_projection", "children": [left, right]}

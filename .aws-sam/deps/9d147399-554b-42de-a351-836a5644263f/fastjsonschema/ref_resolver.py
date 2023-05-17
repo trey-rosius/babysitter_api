@@ -20,7 +20,7 @@ def get_id(schema):
     """
     Originally ID was `id` and since v7 it's `$id`.
     """
-    return schema.get('$id', schema.get('id', ''))
+    return schema.get("$id", schema.get("id", ""))
 
 
 def resolve_path(schema, fragment):
@@ -29,16 +29,16 @@ def resolve_path(schema, fragment):
 
     Path is unescaped according https://tools.ietf.org/html/rfc6901
     """
-    fragment = fragment.lstrip('/')
-    parts = unquote(fragment).split('/') if fragment else []
+    fragment = fragment.lstrip("/")
+    parts = unquote(fragment).split("/") if fragment else []
     for part in parts:
-        part = part.replace('~1', '/').replace('~0', '~')
+        part = part.replace("~1", "/").replace("~0", "~")
         if isinstance(schema, list):
             schema = schema[int(part)]
         elif part in schema:
             schema = schema[part]
         else:
-            raise JsonSchemaDefinitionException('Unresolvable ref: {}'.format(part))
+            raise JsonSchemaDefinitionException("Unresolvable ref: {}".format(part))
     return schema
 
 
@@ -60,11 +60,15 @@ def resolve_remote(uri, handlers):
         result = handlers[scheme](uri)
     else:
         req = urlopen(uri)
-        encoding = req.info().get_content_charset() or 'utf-8'
+        encoding = req.info().get_content_charset() or "utf-8"
         try:
-            result = json.loads(req.read().decode(encoding),)
+            result = json.loads(
+                req.read().decode(encoding),
+            )
         except ValueError as exc:
-            raise JsonSchemaDefinitionException('{} failed to decode: {}'.format(uri, exc))
+            raise JsonSchemaDefinitionException(
+                "{} failed to decode: {}".format(uri, exc)
+            )
     return result
 
 
@@ -92,7 +96,7 @@ class RefResolver:
         Construct a resolver from a JSON schema object.
         """
         return cls(
-            get_id(schema) if isinstance(schema, dict) else '',
+            get_id(schema) if isinstance(schema, dict) else "",
             schema,
             handlers=handlers,
             **kwargs
@@ -143,9 +147,11 @@ class RefResolver:
         """
         Get current scope and return it as a valid function name.
         """
-        name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_').replace('"', '')
-        name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '_', name)
-        name = name.lower().rstrip('_')
+        name = "validate_" + unquote(self.resolution_scope).replace("~1", "_").replace(
+            "~0", "_"
+        ).replace('"', "")
+        name = re.sub(r"($[^a-zA-Z]|[^a-zA-Z0-9])", "_", name)
+        name = name.lower().rstrip("_")
         return name
 
     def walk(self, node: dict):
@@ -154,10 +160,10 @@ class RefResolver:
         """
         if isinstance(node, bool):
             pass
-        elif '$ref' in node and isinstance(node['$ref'], str):
-            ref = node['$ref']
-            node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
-        elif ('$id' in node or 'id' in node) and isinstance(get_id(node), str):
+        elif "$ref" in node and isinstance(node["$ref"], str):
+            ref = node["$ref"]
+            node["$ref"] = urlparse.urljoin(self.resolution_scope, ref)
+        elif ("$id" in node or "id" in node) and isinstance(get_id(node), str):
             with self.in_scope(get_id(node)):
                 self.store[normalize(self.resolution_scope)] = node
                 for _, item in node.items():

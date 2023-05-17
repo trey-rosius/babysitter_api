@@ -91,7 +91,9 @@ class IdempotencyHandler:
             record = self._get_idempotency_record()
             return self._handle_for_status(record)
         except Exception as exc:
-            raise IdempotencyPersistenceLayerError("Failed to save in progress record to idempotency store") from exc
+            raise IdempotencyPersistenceLayerError(
+                "Failed to save in progress record to idempotency store"
+            ) from exc
 
         return self._get_function_response()
 
@@ -111,7 +113,9 @@ class IdempotencyHandler:
             logger.debug(
                 f"An existing idempotency record was deleted before we could fetch it. Proceeding with {self.function}"
             )
-            raise IdempotencyInconsistentStateError("save_inprogress and get_record return inconsistent results.")
+            raise IdempotencyInconsistentStateError(
+                "save_inprogress and get_record return inconsistent results."
+            )
 
         # Allow this exception to bubble up
         except IdempotencyValidationError:
@@ -120,7 +124,9 @@ class IdempotencyHandler:
         # Wrap remaining unhandled exceptions with IdempotencyPersistenceLayerError to ease exception handling for
         # clients
         except Exception as exc:
-            raise IdempotencyPersistenceLayerError("Failed to get record from idempotency store") from exc
+            raise IdempotencyPersistenceLayerError(
+                "Failed to get record from idempotency store"
+            ) from exc
 
         return data_record
 
@@ -146,7 +152,9 @@ class IdempotencyHandler:
         """
         # This code path will only be triggered if the record becomes expired between the save_inprogress call and here
         if data_record.status == STATUS_CONSTANTS["EXPIRED"]:
-            raise IdempotencyInconsistentStateError("save_inprogress and get_record return inconsistent results.")
+            raise IdempotencyInconsistentStateError(
+                "save_inprogress and get_record return inconsistent results."
+            )
 
         if data_record.status == STATUS_CONSTANTS["INPROGRESS"]:
             raise IdempotencyAlreadyInProgressError(
@@ -163,7 +171,9 @@ class IdempotencyHandler:
             # We need these nested blocks to preserve function's exception in case the persistence store operation
             # also raises an exception
             try:
-                self.persistence_store.delete_record(data=self.data, exception=handler_exception)
+                self.persistence_store.delete_record(
+                    data=self.data, exception=handler_exception
+                )
             except Exception as delete_exception:
                 raise IdempotencyPersistenceLayerError(
                     "Failed to delete record from idempotency store"

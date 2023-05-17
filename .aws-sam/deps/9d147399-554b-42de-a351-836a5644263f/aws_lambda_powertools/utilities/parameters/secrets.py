@@ -60,7 +60,11 @@ class SecretsProvider(BaseProvider):
 
     client: Any = None
 
-    def __init__(self, config: Optional[Config] = None, boto3_session: Optional[boto3.session.Session] = None):
+    def __init__(
+        self,
+        config: Optional[Config] = None,
+        boto3_session: Optional[boto3.session.Session] = None,
+    ):
         """
         Initialize the Secrets Manager client
         """
@@ -152,5 +156,9 @@ def get_secret(
         DEFAULT_PROVIDERS["secrets"] = SecretsProvider()
 
     return DEFAULT_PROVIDERS["secrets"].get(
-        name, max_age=max_age, transform=transform, force_fetch=force_fetch, **sdk_options
+        name,
+        max_age=max_age,
+        transform=transform,
+        force_fetch=force_fetch,
+        **sdk_options
     )

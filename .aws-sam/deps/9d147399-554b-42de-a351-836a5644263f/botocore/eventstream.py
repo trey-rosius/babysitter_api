@@ -19,44 +19,52 @@ from botocore.exceptions import EventStreamError
 # byte length of the prelude (total_length + header_length + prelude_crc)
 _PRELUDE_LENGTH = 12
 _MAX_HEADERS_LENGTH = 128 * 1024  # 128 Kb
-_MAX_PAYLOAD_LENGTH = 16 * 1024 ** 2  # 16 Mb
+_MAX_PAYLOAD_LENGTH = 16 * 1024**2  # 16 Mb
 
 
 class ParserError(Exception):
-    """Base binary flow encoding parsing exception.  """
+    """Base binary flow encoding parsing exception."""
+
     pass
 
 
 class DuplicateHeader(ParserError):
-    """Duplicate header found in the event. """
+    """Duplicate header found in the event."""
+
     def __init__(self, header):
         message = 'Duplicate header present: "%s"' % header
         super(DuplicateHeader, self).__init__(message)
 
 
 class InvalidHeadersLength(ParserError):
-    """Headers length is longer than the maximum. """
+    """Headers length is longer than the maximum."""
+
     def __init__(self, length):
-        message = 'Header length of %s exceeded the maximum of %s' % (
-            length, _MAX_HEADERS_LENGTH
+        message = "Header length of %s exceeded the maximum of %s" % (
+            length,
+            _MAX_HEADERS_LENGTH,
         )
         super(InvalidHeadersLength, self).__init__(message)
 
 
 class InvalidPayloadLength(ParserError):
-    """Payload length is longer than the maximum. """
+    """Payload length is longer than the maximum."""
+
     def __init__(self, length):
-        message = 'Payload length of %s exceeded the maximum of %s' % (
-            length, _MAX_PAYLOAD_LENGTH
+        message = "Payload length of %s exceeded the maximum of %s" % (
+            length,
+            _MAX_PAYLOAD_LENGTH,
         )
         super(InvalidPayloadLength, self).__init__(message)
 
 
 class ChecksumMismatch(ParserError):
-    """Calculated checksum did not match the expected checksum. """
+    """Calculated checksum did not match the expected checksum."""
+
     def __init__(self, expected, calculated):
-        message = 'Checksum mismatch: expected 0x%08x, calculated 0x%08x' % (
-            expected, calculated
+        message = "Checksum mismatch: expected 0x%08x, calculated 0x%08x" % (
+            expected,
+            calculated,
         )
         super(ChecksumMismatch, self).__init__(message)
 
@@ -67,8 +75,9 @@ class NoInitialResponseError(ParserError):
     This exception is raised when the event stream produced no events or
     the first event in the stream was not of the initial-response type.
     """
+
     def __init__(self):
-        message = 'First event was not of the initial-response type'
+        message = "First event was not of the initial-response type"
         super(NoInitialResponseError, self).__init__(message)
 
 
@@ -80,14 +89,14 @@ class DecodeUtils(object):
     that value.
     """
 
-    UINT8_BYTE_FORMAT = '!B'
-    UINT16_BYTE_FORMAT = '!H'
-    UINT32_BYTE_FORMAT = '!I'
-    INT8_BYTE_FORMAT = '!b'
-    INT16_BYTE_FORMAT = '!h'
-    INT32_BYTE_FORMAT = '!i'
-    INT64_BYTE_FORMAT = '!q'
-    PRELUDE_BYTE_FORMAT = '!III'
+    UINT8_BYTE_FORMAT = "!B"
+    UINT16_BYTE_FORMAT = "!H"
+    UINT32_BYTE_FORMAT = "!I"
+    INT8_BYTE_FORMAT = "!b"
+    INT16_BYTE_FORMAT = "!h"
+    INT32_BYTE_FORMAT = "!i"
+    INT64_BYTE_FORMAT = "!q"
+    PRELUDE_BYTE_FORMAT = "!III"
 
     # uint byte size to unpack format
     UINT_BYTE_FORMAT = {
@@ -248,9 +257,8 @@ class DecodeUtils(object):
         :rtype: (str, int)
         :returns: A tuple containing the (utf-8 string, bytes consumed).
         """
-        array_bytes, consumed = DecodeUtils.unpack_byte_array(
-            data, length_byte_size)
-        return array_bytes.decode('utf-8'), consumed
+        array_bytes, consumed = DecodeUtils.unpack_byte_array(data, length_byte_size)
+        return array_bytes.decode("utf-8"), consumed
 
     @staticmethod
     def unpack_uuid(data):
@@ -288,7 +296,8 @@ def _validate_checksum(data, checksum, crc=0):
 
 
 class MessagePrelude(object):
-    """Represents the prelude of an event stream message. """
+    """Represents the prelude of an event stream message."""
+
     def __init__(self, total_length, headers_length, crc):
         self.total_length = total_length
         self.headers_length = headers_length
@@ -329,7 +338,8 @@ class MessagePrelude(object):
 
 
 class EventStreamMessage(object):
-    """Represents an event stream message. """
+    """Represents an event stream message."""
+
     def __init__(self, prelude, headers, payload, crc):
         self.prelude = prelude
         self.headers = headers
@@ -337,18 +347,18 @@ class EventStreamMessage(object):
         self.crc = crc
 
     def to_response_dict(self, status_code=200):
-        message_type = self.headers.get(':message-type')
-        if message_type == 'error' or message_type == 'exception':
+        message_type = self.headers.get(":message-type")
+        if message_type == "error" or message_type == "exception":
             status_code = 400
         return {
-            'status_code': status_code,
-            'headers': self.headers,
-            'body': self.payload
+            "status_code": status_code,
+            "headers": self.headers,
+            "body": self.payload,
         }
 
 
 class EventStreamHeaderParser(object):
-    """ Parses the event headers from an event stream message.
+    """Parses the event headers from an event stream message.
 
     Expects all of the header data upfront and creates a dictionary of headers
     to return. This object can be reused multiple times to parse the headers
@@ -439,7 +449,7 @@ class EventStreamBuffer(object):
     """
 
     def __init__(self):
-        self._data = b''
+        self._data = b""
         self._prelude = None
         self._header_parser = EventStreamHeaderParser()
 
@@ -464,27 +474,27 @@ class EventStreamBuffer(object):
         prelude = MessagePrelude(*raw_prelude)
         self._validate_prelude(prelude)
         # The minus 4 removes the prelude crc from the bytes to be checked
-        _validate_checksum(prelude_bytes[:_PRELUDE_LENGTH - 4], prelude.crc)
+        _validate_checksum(prelude_bytes[: _PRELUDE_LENGTH - 4], prelude.crc)
         return prelude
 
     def _parse_headers(self):
-        header_bytes = self._data[_PRELUDE_LENGTH:self._prelude.headers_end]
+        header_bytes = self._data[_PRELUDE_LENGTH : self._prelude.headers_end]
         return self._header_parser.parse(header_bytes)
 
     def _parse_payload(self):
         prelude = self._prelude
-        payload_bytes = self._data[prelude.headers_end:prelude.payload_end]
+        payload_bytes = self._data[prelude.headers_end : prelude.payload_end]
         return payload_bytes
 
     def _parse_message_crc(self):
         prelude = self._prelude
-        crc_bytes = self._data[prelude.payload_end:prelude.total_length]
+        crc_bytes = self._data[prelude.payload_end : prelude.total_length]
         message_crc, _ = DecodeUtils.unpack_uint32(crc_bytes)
         return message_crc
 
     def _parse_message_bytes(self):
         # The minus 4 includes the prelude crc to the bytes to be checked
-        message_bytes = self._data[_PRELUDE_LENGTH - 4:self._prelude.payload_end]
+        message_bytes = self._data[_PRELUDE_LENGTH - 4 : self._prelude.payload_end]
         return message_bytes
 
     def _validate_message_crc(self):
@@ -503,7 +513,7 @@ class EventStreamBuffer(object):
 
     def _prepare_for_next_message(self):
         # Advance the data and reset the current prelude
-        self._data = self._data[self._prelude.total_length:]
+        self._data = self._data[self._prelude.total_length :]
         self._prelude = None
 
     def next(self):
@@ -573,6 +583,7 @@ class EventStream(object):
         if not end_event_received:
             raise Exception("End event not received, request incomplete.")
     """
+
     def __init__(self, raw_stream, output_shape, parser, operation_name):
         self._raw_stream = raw_stream
         self._output_shape = output_shape
@@ -596,7 +607,7 @@ class EventStream(object):
     def _parse_event(self, event):
         response_dict = event.to_response_dict()
         parsed_response = self._parser.parse(response_dict, self._output_shape)
-        if response_dict['status_code'] == 200:
+        if response_dict["status_code"] == 200:
             return parsed_response
         else:
             raise EventStreamError(parsed_response, self._operation_name)
@@ -604,13 +615,13 @@ class EventStream(object):
     def get_initial_response(self):
         try:
             initial_event = next(self._event_generator)
-            event_type = initial_event.headers.get(':event-type')
-            if event_type == 'initial-response':
+            event_type = initial_event.headers.get(":event-type")
+            if event_type == "initial-response":
                 return initial_event
         except StopIteration:
             pass
         raise NoInitialResponseError()
 
     def close(self):
-        """Closes the underlying streaming body. """
+        """Closes the underlying streaming body."""
         self._raw_stream.close()

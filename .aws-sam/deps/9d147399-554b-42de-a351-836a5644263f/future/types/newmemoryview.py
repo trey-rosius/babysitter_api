@@ -17,13 +17,14 @@ else:
 #         return isinstance(instance, _builtin_bytes)
 
 
-class newmemoryview(object):   # with_metaclass(BaseNewBytes, _builtin_bytes)):
+class newmemoryview(object):  # with_metaclass(BaseNewBytes, _builtin_bytes)):
     """
     A pretty lame backport of the Python 2.7 and Python 3.x
     memoryviewview object to Py2.6.
     """
+
     def __init__(self, obj):
         return obj
 
 
-__all__ = ['newmemoryview']
+__all__ = ["newmemoryview"]

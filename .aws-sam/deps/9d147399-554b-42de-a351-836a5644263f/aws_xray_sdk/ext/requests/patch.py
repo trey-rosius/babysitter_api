@@ -7,45 +7,41 @@ from aws_xray_sdk.ext.util import inject_trace_header, strip_url, get_hostname
 
 def patch():
 
-    wrapt.wrap_function_wrapper(
-        'requests',
-        'Session.request',
-        _xray_traced_requests
-    )
+    wrapt.wrap_function_wrapper("requests", "Session.request", _xray_traced_requests)
 
-    wrapt.wrap_function_wrapper(
-        'requests',
-        'Session.prepare_request',
-        _inject_header
-    )
+    wrapt.wrap_function_wrapper("requests", "Session.prepare_request", _inject_header)
 
 
 def _xray_traced_requests(wrapped, instance, args, kwargs):
 
-    url = kwargs.get('url') or args[1]
+    url = kwargs.get("url") or args[1]
 
     return xray_recorder.record_subsegment(
-        wrapped, instance, args, kwargs,
+        wrapped,
+        instance,
+        args,
+        kwargs,
         name=get_hostname(url),
-        namespace='remote',
+        namespace="remote",
         meta_processor=requests_processor,
     )
 
 
 def _inject_header(wrapped, instance, args, kwargs):
     request = args[0]
-    headers = getattr(request, 'headers', {})
+    headers = getattr(request, "headers", {})
     inject_trace_header(headers, xray_recorder.current_subsegment())
-    setattr(request, 'headers', headers)
+    setattr(request, "headers", headers)
 
     return wrapped(*args, **kwargs)
 
 
-def requests_processor(wrapped, instance, args, kwargs,
-                       return_value, exception, subsegment, stack):
+def requests_processor(
+    wrapped, instance, args, kwargs, return_value, exception, subsegment, stack
+):
 
-    method = kwargs.get('method') or args[0]
-    url = kwargs.get('url') or args[1]
+    method = kwargs.get("method") or args[0]
+    url = kwargs.get("url") or args[1]
 
     subsegment.put_http_meta(http.METHOD, method)
     subsegment.put_http_meta(http.URL, strip_url(url))

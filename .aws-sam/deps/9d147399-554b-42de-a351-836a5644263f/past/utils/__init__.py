@@ -18,7 +18,7 @@ import numbers
 
 PY3 = sys.version_info[0] >= 3
 PY2 = sys.version_info[0] == 2
-PYPY = hasattr(sys, 'pypy_translation_info')
+PYPY = hasattr(sys, "pypy_translation_info")
 
 
 def with_metaclass(meta, *bases):
@@ -46,14 +46,17 @@ def with_metaclass(meta, *bases):
     This has the advantage over six.with_metaclass of not introducing
     dummy classes into the final MRO.
     """
+
     class metaclass(meta):
         __call__ = type.__call__
         __init__ = type.__init__
+
         def __new__(cls, name, this_bases, d):
             if this_bases is None:
                 return type.__new__(cls, name, (), d)
             return meta(name, bases, d)
-    return metaclass('temporary_class', None, {})
+
+    return metaclass("temporary_class", None, {})
 
 
 def native(obj):
@@ -75,7 +78,7 @@ def native(obj):
     >>> type(native(b'ABC'))
     bytes
     """
-    if hasattr(obj, '__native__'):
+    if hasattr(obj, "__native__"):
         return obj.__native__()
     else:
         return obj
@@ -94,4 +97,5 @@ def old_div(a, b):
     else:
         return a / b
 
-__all__ = ['PY3', 'PY2', 'PYPY', 'with_metaclass', 'native', 'old_div']
+
+__all__ = ["PY3", "PY2", "PYPY", "with_metaclass", "native", "old_div"]

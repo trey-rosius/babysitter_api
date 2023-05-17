@@ -18,7 +18,9 @@ class CloudWatchLogsEnvelope(BaseEnvelope):
     Note: The record will be parsed the same way so if model is str
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Optional[Model]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Optional[Model]]:
         """Parses records found with model provided
 
         Parameters
@@ -37,5 +39,6 @@ class CloudWatchLogsEnvelope(BaseEnvelope):
         parsed_envelope = CloudWatchLogsModel.parse_obj(data)
         logger.debug(f"Parsing CloudWatch records in `body` with {model}")
         return [
-            self._parse(data=record.message, model=model) for record in parsed_envelope.awslogs.decoded_data.logEvents
+            self._parse(data=record.message, model=model)
+            for record in parsed_envelope.awslogs.decoded_data.logEvents
         ]

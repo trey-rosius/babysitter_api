@@ -6,7 +6,4 @@ if PY3:
 else:
     __future_module__ = True
     with standard_library.suspend_hooks():
-        from urllib import (addbase,
-                            addclosehook,
-                            addinfo,
-                            addinfourl)
+        from urllib import addbase, addclosehook, addinfo, addinfourl

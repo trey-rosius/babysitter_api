@@ -51,7 +51,10 @@ class SNSMessage(DictWrapper):
 
     @property
     def message_attributes(self) -> Dict[str, SNSMessageAttribute]:
-        return {k: SNSMessageAttribute(v) for (k, v) in self["Sns"]["MessageAttributes"].items()}
+        return {
+            k: SNSMessageAttribute(v)
+            for (k, v) in self["Sns"]["MessageAttributes"].items()
+        }
 
     @property
     def get_type(self) -> str:

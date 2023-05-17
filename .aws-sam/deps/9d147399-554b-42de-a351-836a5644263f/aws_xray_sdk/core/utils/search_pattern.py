@@ -16,7 +16,7 @@ def wildcard_match(pattern, text, case_insensitive=True):
         return len(text) == 0
 
     # Check the special case of a single * pattern, as it's common
-    if pattern == '*':
+    if pattern == "*":
         return True
 
     # If elif logic Checking different conditions like match between the first i chars in text
@@ -31,15 +31,19 @@ def wildcard_match(pattern, text, case_insensitive=True):
             i = i + 1
             p = p + 1
 
-        elif p < len(pattern) and case_insensitive and text[i].lower() == pattern[p].lower():
+        elif (
+            p < len(pattern)
+            and case_insensitive
+            and text[i].lower() == pattern[p].lower()
+        ):
             i = i + 1
             p = p + 1
 
-        elif p < len(pattern) and pattern[p] == '?':
+        elif p < len(pattern) and pattern[p] == "?":
             i = i + 1
             p = p + 1
 
-        elif p < len(pattern) and pattern[p] == '*':
+        elif p < len(pattern) and pattern[p] == "*":
             iStar = i
             pStar = p
             p += 1
@@ -52,7 +56,7 @@ def wildcard_match(pattern, text, case_insensitive=True):
         else:
             return False
 
-    while p < len(pattern) and pattern[p] == '*':
+    while p < len(pattern) and pattern[p] == "*":
         p = p + 1
 
     return p == len(pattern) and i == len(text)

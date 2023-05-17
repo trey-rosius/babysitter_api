@@ -8,6 +8,7 @@ headers and a geturl() method that returns the url.
 from __future__ import absolute_import, division, unicode_literals
 from future.builtins import object
 
+
 class addbase(object):
     """Base class for addinfo and addclosehook."""
 
@@ -35,8 +36,7 @@ class addbase(object):
         return iter(self.fp)
 
     def __repr__(self):
-        return '<%s at %r whose fp = %r>' % (self.__class__.__name__,
-                                             id(self), self.fp)
+        return "<%s at %r whose fp = %r>" % (self.__class__.__name__, id(self), self.fp)
 
     def close(self):
         if self.fp:
@@ -57,6 +57,7 @@ class addbase(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
+
 class addclosehook(addbase):
     """Class to add a close hook to an open file."""
 
@@ -72,6 +73,7 @@ class addclosehook(addbase):
             self.hookargs = None
         addbase.close(self)
 
+
 class addinfo(addbase):
     """class to add an info() method to an open file."""
 
@@ -81,6 +83,7 @@ class addinfo(addbase):
 
     def info(self):
         return self.headers
+
 
 class addinfourl(addbase):
     """class to add info() and geturl() methods to an open file."""
@@ -99,5 +102,6 @@ class addinfourl(addbase):
 
     def geturl(self):
         return self.url
+
 
 del absolute_import, division, unicode_literals, object

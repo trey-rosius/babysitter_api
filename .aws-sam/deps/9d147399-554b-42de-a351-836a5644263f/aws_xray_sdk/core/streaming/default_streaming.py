@@ -7,6 +7,7 @@ class DefaultStreaming(object):
     segment's children subsegments as a threshold. If the threshold is
     breached, it uses subtree streaming to stream out.
     """
+
     def __init__(self, streaming_threshold=30):
         self._threshold = streaming_threshold
         self._lock = threading.Lock()

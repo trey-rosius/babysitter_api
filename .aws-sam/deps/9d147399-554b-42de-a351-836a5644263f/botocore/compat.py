@@ -51,6 +51,7 @@ if six.PY3:
     from base64 import encodebytes
     from email.utils import formatdate
     from itertools import zip_longest
+
     file_type = _IOBase
     zip = zip
 
@@ -76,7 +77,7 @@ if six.PY3:
         # NOOP in Python 3, because every string is already unicode
         return s
 
-    def ensure_bytes(s, encoding='utf-8', errors='strict'):
+    def ensure_bytes(s, encoding="utf-8", errors="strict"):
         if isinstance(s, str):
             return s.encode(encoding, errors)
         if isinstance(s, bytes):
@@ -96,6 +97,7 @@ else:
     from urlparse import parse_qs
     from email.message import Message
     from email.Utils import formatdate
+
     file_type = file
     from itertools import izip as zip
     from itertools import izip_longest as zip_longest
@@ -110,7 +112,7 @@ else:
             for field, value in self._headers:
                 yield field
 
-    def unquote_str(value, encoding='utf-8'):
+    def unquote_str(value, encoding="utf-8"):
         # In python2, unquote() gives us a string back that has the urldecoded
         # bits, but not the unicode parts.  We need to decode this manually.
         # unquote has special logic in which if it receives a unicode object it
@@ -131,12 +133,12 @@ else:
     def accepts_kwargs(func):
         return inspect.getargspec(func)[2]
 
-    def ensure_unicode(s, encoding='utf-8', errors='strict'):
+    def ensure_unicode(s, encoding="utf-8", errors="strict"):
         if isinstance(s, six.text_type):
             return s
         return unicode(s, encoding, errors)
 
-    def ensure_bytes(s, encoding='utf-8', errors='strict'):
+    def ensure_bytes(s, encoding="utf-8", errors="strict"):
         if isinstance(s, unicode):
             return s.encode(encoding, errors)
         if isinstance(s, str):
@@ -159,10 +161,11 @@ import json
 def filter_ssl_warnings():
     # Ignore warnings related to SNI as it is not being used in validations.
     warnings.filterwarnings(
-        'ignore',
+        "ignore",
         message="A true SSLContext object is not available.*",
         category=exceptions.InsecurePlatformWarning,
-        module=r".*urllib3\.util\.ssl_")
+        module=r".*urllib3\.util\.ssl_",
+    )
 
 
 @classmethod
@@ -179,6 +182,7 @@ def from_pairs(cls, pairs):
     for key, value in pairs:
         new_instance[key] = value
     return new_instance
+
 
 HTTPHeaders.from_dict = from_dict
 HTTPHeaders.from_pairs = from_pairs
@@ -269,7 +273,7 @@ def _windows_shell_split(s):
     is_quoted = False
     num_backslashes = 0
     for character in s:
-        if character == '\\':
+        if character == "\\":
             # We can't simply append backslashes because we don't know if
             # they are being used as escape characters or not. Instead we
             # keep track of how many we've encountered and handle them when
@@ -279,7 +283,7 @@ def _windows_shell_split(s):
             if num_backslashes > 0:
                 # The backslashes are in a chain leading up to a double
                 # quote, so they are escaping each other.
-                buff.append('\\' * int(floor(num_backslashes / 2)))
+                buff.append("\\" * int(floor(num_backslashes / 2)))
                 remainder = num_backslashes % 2
                 num_backslashes = 0
                 if remainder == 1:
@@ -298,39 +302,39 @@ def _windows_shell_split(s):
             # sure it sticks around if there's nothing else between quotes.
             # If there is other stuff between quotes, the empty string will
             # disappear during the joining process.
-            buff.append('')
-        elif character in [' ', '\t'] and not is_quoted:
+            buff.append("")
+        elif character in [" ", "\t"] and not is_quoted:
             # Since the backslashes aren't leading up to a quote, we put in
             # the exact number of backslashes.
             if num_backslashes > 0:
-                buff.append('\\' * num_backslashes)
+                buff.append("\\" * num_backslashes)
                 num_backslashes = 0
 
             # Excess whitespace is ignored, so only add the components list
             # if there is anything in the buffer.
             if buff:
-                components.append(''.join(buff))
+                components.append("".join(buff))
                 buff = []
         else:
             # Since the backslashes aren't leading up to a quote, we put in
             # the exact number of backslashes.
             if num_backslashes > 0:
-                buff.append('\\' * num_backslashes)
+                buff.append("\\" * num_backslashes)
                 num_backslashes = 0
             buff.append(character)
 
     # Quotes must be terminated.
     if is_quoted:
-        raise ValueError('No closing quotation in string: %s' % s)
+        raise ValueError("No closing quotation in string: %s" % s)
 
     # There may be some leftover backslashes, so we need to add them in.
     # There's no quote so we add the exact number.
     if num_backslashes > 0:
-        buff.append('\\' * num_backslashes)
+        buff.append("\\" * num_backslashes)
 
     # Add the final component in if there is anything in the buffer.
     if buff:
-        components.append(''.join(buff))
+        components.append("".join(buff))
 
     return components
 
@@ -339,8 +343,9 @@ def get_tzinfo_options():
     # Due to dateutil/dateutil#197, Windows may fail to parse times in the past
     # with the system clock. We can alternatively fallback to tzwininfo when
     # this happens, which will get time info from the Windows registry.
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         from dateutil.tz import tzwinlocal
+
         return (tzlocal, tzwinlocal)
     else:
         return (tzlocal,)
@@ -354,8 +359,9 @@ except ImportError:
 # Detect if CRT is available for use
 try:
     import awscrt.auth
+
     # Allow user opt-out if needed
-    disabled = os.environ.get('BOTO_DISABLE_CRT', "false")
-    HAS_CRT = not disabled.lower() == 'true'
+    disabled = os.environ.get("BOTO_DISABLE_CRT", "false")
+    HAS_CRT = not disabled.lower() == "true"
 except ImportError:
     HAS_CRT = False

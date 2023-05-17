@@ -33,8 +33,7 @@ XXX To do:
 - send error log to separate file
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 from future import utils
 from future.builtins import *
 
@@ -102,7 +101,7 @@ import os
 import posixpath
 import select
 import shutil
-import socket # For gethostbyaddr()
+import socket  # For gethostbyaddr()
 import sys
 import time
 import copy
@@ -129,12 +128,14 @@ DEFAULT_ERROR_MESSAGE = """\
 
 DEFAULT_ERROR_CONTENT_TYPE = "text/html;charset=utf-8"
 
+
 def _quote_html(html):
     return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+
 class HTTPServer(socketserver.TCPServer):
 
-    allow_reuse_address = 1    # Seems to make sense in testing environment
+    allow_reuse_address = 1  # Seems to make sense in testing environment
 
     def server_bind(self):
         """Override server_bind to store the server name."""
@@ -279,17 +280,17 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         self.command = None  # set in case of error on the first line
         self.request_version = version = self.default_request_version
         self.close_connection = 1
-        requestline = str(self.raw_requestline, 'iso-8859-1')
-        requestline = requestline.rstrip('\r\n')
+        requestline = str(self.raw_requestline, "iso-8859-1")
+        requestline = requestline.rstrip("\r\n")
         self.requestline = requestline
         words = requestline.split()
         if len(words) == 3:
             command, path, version = words
-            if version[:5] != 'HTTP/':
+            if version[:5] != "HTTP/":
                 self.send_error(400, "Bad request version (%r)" % version)
                 return False
             try:
-                base_version_number = version.split('/', 1)[1]
+                base_version_number = version.split("/", 1)[1]
                 version_number = base_version_number.split(".")
                 # RFC 2145 section 3.1 says there can be only one "." and
                 #   - major and minor numbers MUST be treated as
@@ -306,15 +307,13 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             if version_number >= (1, 1) and self.protocol_version >= "HTTP/1.1":
                 self.close_connection = 0
             if version_number >= (2, 0):
-                self.send_error(505,
-                          "Invalid HTTP Version (%s)" % base_version_number)
+                self.send_error(505, "Invalid HTTP Version (%s)" % base_version_number)
                 return False
         elif len(words) == 2:
             command, path = words
             self.close_connection = 1
-            if command != 'GET':
-                self.send_error(400,
-                                "Bad HTTP/0.9 request type (%r)" % command)
+            if command != "GET":
+                self.send_error(400, "Bad HTTP/0.9 request type (%r)" % command)
                 return False
         elif not words:
             return False
@@ -325,23 +324,25 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
 
         # Examine the headers and look for a Connection directive.
         try:
-            self.headers = http_client.parse_headers(self.rfile,
-                                                     _class=self.MessageClass)
+            self.headers = http_client.parse_headers(
+                self.rfile, _class=self.MessageClass
+            )
         except http_client.LineTooLong:
             self.send_error(400, "Line too long")
             return False
 
-        conntype = self.headers.get('Connection', "")
-        if conntype.lower() == 'close':
+        conntype = self.headers.get("Connection", "")
+        if conntype.lower() == "close":
             self.close_connection = 1
-        elif (conntype.lower() == 'keep-alive' and
-              self.protocol_version >= "HTTP/1.1"):
+        elif conntype.lower() == "keep-alive" and self.protocol_version >= "HTTP/1.1":
             self.close_connection = 0
         # Examine the headers and look for an Expect directive
-        expect = self.headers.get('Expect', "")
-        if (expect.lower() == "100-continue" and
-                self.protocol_version >= "HTTP/1.1" and
-                self.request_version >= "HTTP/1.1"):
+        expect = self.headers.get("Expect", "")
+        if (
+            expect.lower() == "100-continue"
+            and self.protocol_version >= "HTTP/1.1"
+            and self.request_version >= "HTTP/1.1"
+        ):
             if not self.handle_expect_100():
                 return False
         return True
@@ -375,9 +376,9 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         try:
             self.raw_requestline = self.rfile.readline(65537)
             if len(self.raw_requestline) > 65536:
-                self.requestline = ''
-                self.request_version = ''
-                self.command = ''
+                self.requestline = ""
+                self.request_version = ""
+                self.command = ""
                 self.send_error(414)
                 return
             if not self.raw_requestline:
@@ -386,15 +387,15 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             if not self.parse_request():
                 # An error code has been sent, just exit
                 return
-            mname = 'do_' + self.command
+            mname = "do_" + self.command
             if not hasattr(self, mname):
                 self.send_error(501, "Unsupported method (%r)" % self.command)
                 return
             method = getattr(self, mname)
             method()
-            self.wfile.flush() #actually send the response if not already done.
+            self.wfile.flush()  # actually send the response if not already done.
         except socket.timeout as e:
-            #a read or a write timed out.  Discard this connection
+            # a read or a write timed out.  Discard this connection
             self.log_error("Request timed out: %r", e)
             self.close_connection = 1
             return
@@ -423,20 +424,23 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         try:
             shortmsg, longmsg = self.responses[code]
         except KeyError:
-            shortmsg, longmsg = '???', '???'
+            shortmsg, longmsg = "???", "???"
         if message is None:
             message = shortmsg
         explain = longmsg
         self.log_error("code %d, message %s", code, message)
         # using _quote_html to prevent Cross Site Scripting attacks (see bug #1100201)
-        content = (self.error_message_format %
-                   {'code': code, 'message': _quote_html(message), 'explain': explain})
+        content = self.error_message_format % {
+            "code": code,
+            "message": _quote_html(message),
+            "explain": explain,
+        }
         self.send_response(code, message)
         self.send_header("Content-Type", self.error_content_type)
-        self.send_header('Connection', 'close')
+        self.send_header("Connection", "close")
         self.end_headers()
-        if self.command != 'HEAD' and code >= 200 and code not in (204, 304):
-            self.wfile.write(content.encode('UTF-8', 'replace'))
+        if self.command != "HEAD" and code >= 200 and code not in (204, 304):
+            self.wfile.write(content.encode("UTF-8", "replace"))
 
     def send_response(self, code, message=None):
         """Add the response header to the headers buffer and log the
@@ -448,8 +452,8 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         """
         self.log_request(code)
         self.send_response_only(code, message)
-        self.send_header('Server', self.version_string())
-        self.send_header('Date', self.date_time_string())
+        self.send_header("Server", self.version_string())
+        self.send_header("Date", self.date_time_string())
 
     def send_response_only(self, code, message=None):
         """Send the response header only."""
@@ -457,48 +461,50 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             if code in self.responses:
                 message = self.responses[code][0]
             else:
-                message = ''
-        if self.request_version != 'HTTP/0.9':
-            if not hasattr(self, '_headers_buffer'):
+                message = ""
+        if self.request_version != "HTTP/0.9":
+            if not hasattr(self, "_headers_buffer"):
                 self._headers_buffer = []
-            self._headers_buffer.append(("%s %d %s\r\n" %
-                    (self.protocol_version, code, message)).encode(
-                        'latin-1', 'strict'))
+            self._headers_buffer.append(
+                ("%s %d %s\r\n" % (self.protocol_version, code, message)).encode(
+                    "latin-1", "strict"
+                )
+            )
 
     def send_header(self, keyword, value):
         """Send a MIME header to the headers buffer."""
-        if self.request_version != 'HTTP/0.9':
-            if not hasattr(self, '_headers_buffer'):
+        if self.request_version != "HTTP/0.9":
+            if not hasattr(self, "_headers_buffer"):
                 self._headers_buffer = []
             self._headers_buffer.append(
-                ("%s: %s\r\n" % (keyword, value)).encode('latin-1', 'strict'))
+                ("%s: %s\r\n" % (keyword, value)).encode("latin-1", "strict")
+            )
 
-        if keyword.lower() == 'connection':
-            if value.lower() == 'close':
+        if keyword.lower() == "connection":
+            if value.lower() == "close":
                 self.close_connection = 1
-            elif value.lower() == 'keep-alive':
+            elif value.lower() == "keep-alive":
                 self.close_connection = 0
 
     def end_headers(self):
         """Send the blank line ending the MIME headers."""
-        if self.request_version != 'HTTP/0.9':
+        if self.request_version != "HTTP/0.9":
             self._headers_buffer.append(b"\r\n")
             self.flush_headers()
 
     def flush_headers(self):
-        if hasattr(self, '_headers_buffer'):
+        if hasattr(self, "_headers_buffer"):
             self.wfile.write(b"".join(self._headers_buffer))
             self._headers_buffer = []
 
-    def log_request(self, code='-', size='-'):
+    def log_request(self, code="-", size="-"):
         """Log an accepted request.
 
         This is called by send_response().
 
         """
 
-        self.log_message('"%s" %s %s',
-                         self.requestline, str(code), str(size))
+        self.log_message('"%s" %s %s', self.requestline, str(code), str(size))
 
     def log_error(self, format, *args):
         """Log an error.
@@ -531,14 +537,14 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
 
         """
 
-        sys.stderr.write("%s - - [%s] %s\n" %
-                         (self.address_string(),
-                          self.log_date_time_string(),
-                          format%args))
+        sys.stderr.write(
+            "%s - - [%s] %s\n"
+            % (self.address_string(), self.log_date_time_string(), format % args)
+        )
 
     def version_string(self):
         """Return the server software version string."""
-        return self.server_version + ' ' + self.sys_version
+        return self.server_version + " " + self.sys_version
 
     def date_time_string(self, timestamp=None):
         """Return the current date and time formatted for a message header."""
@@ -546,9 +552,14 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
             timestamp = time.time()
         year, month, day, hh, mm, ss, wd, y, z = time.gmtime(timestamp)
         s = "%s, %02d %3s %4d %02d:%02d:%02d GMT" % (
-                self.weekdayname[wd],
-                day, self.monthname[month], year,
-                hh, mm, ss)
+            self.weekdayname[wd],
+            day,
+            self.monthname[month],
+            year,
+            hh,
+            mm,
+            ss,
+        )
         return s
 
     def log_date_time_string(self):
@@ -556,14 +567,32 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
         now = time.time()
         year, month, day, hh, mm, ss, x, y, z = time.localtime(now)
         s = "%02d/%3s/%04d %02d:%02d:%02d" % (
-                day, self.monthname[month], year, hh, mm, ss)
+            day,
+            self.monthname[month],
+            year,
+            hh,
+            mm,
+            ss,
+        )
         return s
 
-    weekdayname = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    weekdayname = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-    monthname = [None,
-                 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthname = [
+        None,
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
 
     def address_string(self):
         """Return the client address."""
@@ -583,78 +612,77 @@ class BaseHTTPRequestHandler(socketserver.StreamRequestHandler):
     # form {code: (shortmessage, longmessage)}.
     # See RFC 2616 and 6585.
     responses = {
-        100: ('Continue', 'Request received, please continue'),
-        101: ('Switching Protocols',
-              'Switching to new protocol; obey Upgrade header'),
-
-        200: ('OK', 'Request fulfilled, document follows'),
-        201: ('Created', 'Document created, URL follows'),
-        202: ('Accepted',
-              'Request accepted, processing continues off-line'),
-        203: ('Non-Authoritative Information', 'Request fulfilled from cache'),
-        204: ('No Content', 'Request fulfilled, nothing follows'),
-        205: ('Reset Content', 'Clear input form for further input.'),
-        206: ('Partial Content', 'Partial content follows.'),
-
-        300: ('Multiple Choices',
-              'Object has several resources -- see URI list'),
-        301: ('Moved Permanently', 'Object moved permanently -- see URI list'),
-        302: ('Found', 'Object moved temporarily -- see URI list'),
-        303: ('See Other', 'Object moved -- see Method and URL list'),
-        304: ('Not Modified',
-              'Document has not changed since given time'),
-        305: ('Use Proxy',
-              'You must use proxy specified in Location to access this '
-              'resource.'),
-        307: ('Temporary Redirect',
-              'Object moved temporarily -- see URI list'),
-
-        400: ('Bad Request',
-              'Bad request syntax or unsupported method'),
-        401: ('Unauthorized',
-              'No permission -- see authorization schemes'),
-        402: ('Payment Required',
-              'No payment -- see charging schemes'),
-        403: ('Forbidden',
-              'Request forbidden -- authorization will not help'),
-        404: ('Not Found', 'Nothing matches the given URI'),
-        405: ('Method Not Allowed',
-              'Specified method is invalid for this resource.'),
-        406: ('Not Acceptable', 'URI not available in preferred format.'),
-        407: ('Proxy Authentication Required', 'You must authenticate with '
-              'this proxy before proceeding.'),
-        408: ('Request Timeout', 'Request timed out; try again later.'),
-        409: ('Conflict', 'Request conflict.'),
-        410: ('Gone',
-              'URI no longer exists and has been permanently removed.'),
-        411: ('Length Required', 'Client must specify Content-Length.'),
-        412: ('Precondition Failed', 'Precondition in headers is false.'),
-        413: ('Request Entity Too Large', 'Entity is too large.'),
-        414: ('Request-URI Too Long', 'URI is too long.'),
-        415: ('Unsupported Media Type', 'Entity body in unsupported format.'),
-        416: ('Requested Range Not Satisfiable',
-              'Cannot satisfy request range.'),
-        417: ('Expectation Failed',
-              'Expect condition could not be satisfied.'),
-        428: ('Precondition Required',
-              'The origin server requires the request to be conditional.'),
-        429: ('Too Many Requests', 'The user has sent too many requests '
-              'in a given amount of time ("rate limiting").'),
-        431: ('Request Header Fields Too Large', 'The server is unwilling to '
-              'process the request because its header fields are too large.'),
-
-        500: ('Internal Server Error', 'Server got itself in trouble'),
-        501: ('Not Implemented',
-              'Server does not support this operation'),
-        502: ('Bad Gateway', 'Invalid responses from another server/proxy.'),
-        503: ('Service Unavailable',
-              'The server cannot process the request due to a high load'),
-        504: ('Gateway Timeout',
-              'The gateway server did not receive a timely response'),
-        505: ('HTTP Version Not Supported', 'Cannot fulfill request.'),
-        511: ('Network Authentication Required',
-              'The client needs to authenticate to gain network access.'),
-        }
+        100: ("Continue", "Request received, please continue"),
+        101: ("Switching Protocols", "Switching to new protocol; obey Upgrade header"),
+        200: ("OK", "Request fulfilled, document follows"),
+        201: ("Created", "Document created, URL follows"),
+        202: ("Accepted", "Request accepted, processing continues off-line"),
+        203: ("Non-Authoritative Information", "Request fulfilled from cache"),
+        204: ("No Content", "Request fulfilled, nothing follows"),
+        205: ("Reset Content", "Clear input form for further input."),
+        206: ("Partial Content", "Partial content follows."),
+        300: ("Multiple Choices", "Object has several resources -- see URI list"),
+        301: ("Moved Permanently", "Object moved permanently -- see URI list"),
+        302: ("Found", "Object moved temporarily -- see URI list"),
+        303: ("See Other", "Object moved -- see Method and URL list"),
+        304: ("Not Modified", "Document has not changed since given time"),
+        305: (
+            "Use Proxy",
+            "You must use proxy specified in Location to access this " "resource.",
+        ),
+        307: ("Temporary Redirect", "Object moved temporarily -- see URI list"),
+        400: ("Bad Request", "Bad request syntax or unsupported method"),
+        401: ("Unauthorized", "No permission -- see authorization schemes"),
+        402: ("Payment Required", "No payment -- see charging schemes"),
+        403: ("Forbidden", "Request forbidden -- authorization will not help"),
+        404: ("Not Found", "Nothing matches the given URI"),
+        405: ("Method Not Allowed", "Specified method is invalid for this resource."),
+        406: ("Not Acceptable", "URI not available in preferred format."),
+        407: (
+            "Proxy Authentication Required",
+            "You must authenticate with " "this proxy before proceeding.",
+        ),
+        408: ("Request Timeout", "Request timed out; try again later."),
+        409: ("Conflict", "Request conflict."),
+        410: ("Gone", "URI no longer exists and has been permanently removed."),
+        411: ("Length Required", "Client must specify Content-Length."),
+        412: ("Precondition Failed", "Precondition in headers is false."),
+        413: ("Request Entity Too Large", "Entity is too large."),
+        414: ("Request-URI Too Long", "URI is too long."),
+        415: ("Unsupported Media Type", "Entity body in unsupported format."),
+        416: ("Requested Range Not Satisfiable", "Cannot satisfy request range."),
+        417: ("Expectation Failed", "Expect condition could not be satisfied."),
+        428: (
+            "Precondition Required",
+            "The origin server requires the request to be conditional.",
+        ),
+        429: (
+            "Too Many Requests",
+            "The user has sent too many requests "
+            'in a given amount of time ("rate limiting").',
+        ),
+        431: (
+            "Request Header Fields Too Large",
+            "The server is unwilling to "
+            "process the request because its header fields are too large.",
+        ),
+        500: ("Internal Server Error", "Server got itself in trouble"),
+        501: ("Not Implemented", "Server does not support this operation"),
+        502: ("Bad Gateway", "Invalid responses from another server/proxy."),
+        503: (
+            "Service Unavailable",
+            "The server cannot process the request due to a high load",
+        ),
+        504: (
+            "Gateway Timeout",
+            "The gateway server did not receive a timely response",
+        ),
+        505: ("HTTP Version Not Supported", "Cannot fulfill request."),
+        511: (
+            "Network Authentication Required",
+            "The client needs to authenticate to gain network access.",
+        ),
+    }
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -699,7 +727,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.translate_path(self.path)
         f = None
         if os.path.isdir(path):
-            if not self.path.endswith('/'):
+            if not self.path.endswith("/"):
                 # redirect browser - doing basically what apache does
                 self.send_response(301)
                 self.send_header("Location", self.path + "/")
@@ -714,7 +742,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 return self.list_directory(path)
         ctype = self.guess_type(path)
         try:
-            f = open(path, 'rb')
+            f = open(path, "rb")
         except IOError:
             self.send_error(404, "File not found")
             return None
@@ -743,15 +771,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         r = []
         displaypath = html.escape(urllib_parse.unquote(self.path))
         enc = sys.getfilesystemencoding()
-        title = 'Directory listing for %s' % displaypath
-        r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
-                 '"http://www.w3.org/TR/html4/strict.dtd">')
-        r.append('<html>\n<head>')
-        r.append('<meta http-equiv="Content-Type" '
-                 'content="text/html; charset=%s">' % enc)
-        r.append('<title>%s</title>\n</head>' % title)
-        r.append('<body>\n<h1>%s</h1>' % title)
-        r.append('<hr>\n<ul>')
+        title = "Directory listing for %s" % displaypath
+        r.append(
+            '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
+            '"http://www.w3.org/TR/html4/strict.dtd">'
+        )
+        r.append("<html>\n<head>")
+        r.append(
+            '<meta http-equiv="Content-Type" ' 'content="text/html; charset=%s">' % enc
+        )
+        r.append("<title>%s</title>\n</head>" % title)
+        r.append("<body>\n<h1>%s</h1>" % title)
+        r.append("<hr>\n<ul>")
         for name in list:
             fullname = os.path.join(path, name)
             displayname = linkname = name
@@ -762,13 +793,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if os.path.islink(fullname):
                 displayname = name + "@"
                 # Note: a link to a directory displays with @ and links with /
-            r.append('<li><a href="%s">%s</a></li>'
-                    % (urllib_parse.quote(linkname), html.escape(displayname)))
+            r.append(
+                '<li><a href="%s">%s</a></li>'
+                % (urllib_parse.quote(linkname), html.escape(displayname))
+            )
             # # Use this instead:
             # r.append('<li><a href="%s">%s</a></li>'
             #         % (urllib.quote(linkname), cgi.escape(displayname)))
-        r.append('</ul>\n<hr>\n</body>\n</html>\n')
-        encoded = '\n'.join(r).encode(enc)
+        r.append("</ul>\n<hr>\n</body>\n</html>\n")
+        encoded = "\n".join(r).encode(enc)
         f = io.BytesIO()
         f.write(encoded)
         f.seek(0)
@@ -787,16 +820,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         """
         # abandon query parameters
-        path = path.split('?',1)[0]
-        path = path.split('#',1)[0]
+        path = path.split("?", 1)[0]
+        path = path.split("#", 1)[0]
         path = posixpath.normpath(urllib_parse.unquote(path))
-        words = path.split('/')
+        words = path.split("/")
         words = filter(None, words)
         path = os.getcwd()
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
-            if word in (os.curdir, os.pardir): continue
+            if word in (os.curdir, os.pardir):
+                continue
             path = os.path.join(path, word)
         return path
 
@@ -838,20 +872,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         if ext in self.extensions_map:
             return self.extensions_map[ext]
         else:
-            return self.extensions_map['']
+            return self.extensions_map[""]
 
     if not mimetypes.inited:
-        mimetypes.init() # try to read system mime.types
+        mimetypes.init()  # try to read system mime.types
     extensions_map = mimetypes.types_map.copy()
-    extensions_map.update({
-        '': 'application/octet-stream', # Default
-        '.py': 'text/plain',
-        '.c': 'text/plain',
-        '.h': 'text/plain',
-        })
+    extensions_map.update(
+        {
+            "": "application/octet-stream",  # Default
+            ".py": "text/plain",
+            ".c": "text/plain",
+            ".h": "text/plain",
+        }
+    )
 
 
 # Utilities for CGIHTTPRequestHandler
+
 
 def _url_collapse_path(path):
     """
@@ -871,32 +908,32 @@ def _url_collapse_path(path):
     """
     # Similar to os.path.split(os.path.normpath(path)) but specific to URL
     # path semantics rather than local operating system semantics.
-    path_parts = path.split('/')
+    path_parts = path.split("/")
     head_parts = []
     for part in path_parts[:-1]:
-        if part == '..':
-            head_parts.pop() # IndexError if more '..' than prior parts
-        elif part and part != '.':
-            head_parts.append( part )
+        if part == "..":
+            head_parts.pop()  # IndexError if more '..' than prior parts
+        elif part and part != ".":
+            head_parts.append(part)
     if path_parts:
         tail_part = path_parts.pop()
         if tail_part:
-            if tail_part == '..':
+            if tail_part == "..":
                 head_parts.pop()
-                tail_part = ''
-            elif tail_part == '.':
-                tail_part = ''
+                tail_part = ""
+            elif tail_part == ".":
+                tail_part = ""
     else:
-        tail_part = ''
+        tail_part = ""
 
-    splitpath = ('/' + '/'.join(head_parts), tail_part)
+    splitpath = ("/" + "/".join(head_parts), tail_part)
     collapsed_path = "/".join(splitpath)
 
     return collapsed_path
 
 
-
 nobody = None
+
 
 def nobody_uid():
     """Internal routine to get nobody's uid"""
@@ -908,7 +945,7 @@ def nobody_uid():
     except ImportError:
         return -1
     try:
-        nobody = pwd.getpwnam('nobody')[2]
+        nobody = pwd.getpwnam("nobody")[2]
     except KeyError:
         nobody = 1 + max(x[2] for x in pwd.getpwall())
     return nobody
@@ -930,7 +967,7 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
     """
 
     # Determine platform specifics
-    have_fork = hasattr(os, 'fork')
+    have_fork = hasattr(os, "fork")
 
     # Make rfile unbuffered -- we need to read one line and then pass
     # the rest to a subprocess, so we can't use buffered input.
@@ -971,15 +1008,14 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         """
         collapsed_path = _url_collapse_path(self.path)
-        dir_sep = collapsed_path.find('/', 1)
-        head, tail = collapsed_path[:dir_sep], collapsed_path[dir_sep+1:]
+        dir_sep = collapsed_path.find("/", 1)
+        head, tail = collapsed_path[:dir_sep], collapsed_path[dir_sep + 1 :]
         if head in self.cgi_directories:
             self.cgi_info = head, tail
             return True
         return False
 
-
-    cgi_directories = ['/cgi-bin', '/htbin']
+    cgi_directories = ["/cgi-bin", "/htbin"]
 
     def is_executable(self, path):
         """Test whether argument path is an executable file."""
@@ -995,132 +1031,139 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
         path = self.path
         dir, rest = self.cgi_info
 
-        i = path.find('/', len(dir) + 1)
+        i = path.find("/", len(dir) + 1)
         while i >= 0:
             nextdir = path[:i]
-            nextrest = path[i+1:]
+            nextrest = path[i + 1 :]
 
             scriptdir = self.translate_path(nextdir)
             if os.path.isdir(scriptdir):
                 dir, rest = nextdir, nextrest
-                i = path.find('/', len(dir) + 1)
+                i = path.find("/", len(dir) + 1)
             else:
                 break
 
         # find an explicit query string, if present.
-        i = rest.rfind('?')
+        i = rest.rfind("?")
         if i >= 0:
-            rest, query = rest[:i], rest[i+1:]
+            rest, query = rest[:i], rest[i + 1 :]
         else:
-            query = ''
+            query = ""
 
         # dissect the part after the directory name into a script name &
         # a possible additional path, to be stored in PATH_INFO.
-        i = rest.find('/')
+        i = rest.find("/")
         if i >= 0:
             script, rest = rest[:i], rest[i:]
         else:
-            script, rest = rest, ''
+            script, rest = rest, ""
 
-        scriptname = dir + '/' + script
+        scriptname = dir + "/" + script
         scriptfile = self.translate_path(scriptname)
         if not os.path.exists(scriptfile):
             self.send_error(404, "No such CGI script (%r)" % scriptname)
             return
         if not os.path.isfile(scriptfile):
-            self.send_error(403, "CGI script is not a plain file (%r)" %
-                            scriptname)
+            self.send_error(403, "CGI script is not a plain file (%r)" % scriptname)
             return
         ispy = self.is_python(scriptname)
         if self.have_fork or not ispy:
             if not self.is_executable(scriptfile):
-                self.send_error(403, "CGI script is not executable (%r)" %
-                                scriptname)
+                self.send_error(403, "CGI script is not executable (%r)" % scriptname)
                 return
 
         # Reference: http://hoohoo.ncsa.uiuc.edu/cgi/env.html
         # XXX Much of the following could be prepared ahead of time!
         env = copy.deepcopy(os.environ)
-        env['SERVER_SOFTWARE'] = self.version_string()
-        env['SERVER_NAME'] = self.server.server_name
-        env['GATEWAY_INTERFACE'] = 'CGI/1.1'
-        env['SERVER_PROTOCOL'] = self.protocol_version
-        env['SERVER_PORT'] = str(self.server.server_port)
-        env['REQUEST_METHOD'] = self.command
+        env["SERVER_SOFTWARE"] = self.version_string()
+        env["SERVER_NAME"] = self.server.server_name
+        env["GATEWAY_INTERFACE"] = "CGI/1.1"
+        env["SERVER_PROTOCOL"] = self.protocol_version
+        env["SERVER_PORT"] = str(self.server.server_port)
+        env["REQUEST_METHOD"] = self.command
         uqrest = urllib_parse.unquote(rest)
-        env['PATH_INFO'] = uqrest
-        env['PATH_TRANSLATED'] = self.translate_path(uqrest)
-        env['SCRIPT_NAME'] = scriptname
+        env["PATH_INFO"] = uqrest
+        env["PATH_TRANSLATED"] = self.translate_path(uqrest)
+        env["SCRIPT_NAME"] = scriptname
         if query:
-            env['QUERY_STRING'] = query
-        env['REMOTE_ADDR'] = self.client_address[0]
+            env["QUERY_STRING"] = query
+        env["REMOTE_ADDR"] = self.client_address[0]
         authorization = self.headers.get("authorization")
         if authorization:
             authorization = authorization.split()
             if len(authorization) == 2:
                 import base64, binascii
-                env['AUTH_TYPE'] = authorization[0]
+
+                env["AUTH_TYPE"] = authorization[0]
                 if authorization[0].lower() == "basic":
                     try:
-                        authorization = authorization[1].encode('ascii')
+                        authorization = authorization[1].encode("ascii")
                         if utils.PY3:
                             # In Py3.3, was:
-                            authorization = base64.decodebytes(authorization).\
-                                            decode('ascii')
+                            authorization = base64.decodebytes(authorization).decode(
+                                "ascii"
+                            )
                         else:
                             # Backport to Py2.7:
-                            authorization = base64.decodestring(authorization).\
-                                            decode('ascii')
+                            authorization = base64.decodestring(authorization).decode(
+                                "ascii"
+                            )
                     except (binascii.Error, UnicodeError):
                         pass
                     else:
-                        authorization = authorization.split(':')
+                        authorization = authorization.split(":")
                         if len(authorization) == 2:
-                            env['REMOTE_USER'] = authorization[0]
+                            env["REMOTE_USER"] = authorization[0]
         # XXX REMOTE_IDENT
-        if self.headers.get('content-type') is None:
-            env['CONTENT_TYPE'] = self.headers.get_content_type()
+        if self.headers.get("content-type") is None:
+            env["CONTENT_TYPE"] = self.headers.get_content_type()
         else:
-            env['CONTENT_TYPE'] = self.headers['content-type']
-        length = self.headers.get('content-length')
+            env["CONTENT_TYPE"] = self.headers["content-type"]
+        length = self.headers.get("content-length")
         if length:
-            env['CONTENT_LENGTH'] = length
-        referer = self.headers.get('referer')
+            env["CONTENT_LENGTH"] = length
+        referer = self.headers.get("referer")
         if referer:
-            env['HTTP_REFERER'] = referer
+            env["HTTP_REFERER"] = referer
         accept = []
-        for line in self.headers.getallmatchingheaders('accept'):
+        for line in self.headers.getallmatchingheaders("accept"):
             if line[:1] in "\t\n\r ":
                 accept.append(line.strip())
             else:
-                accept = accept + line[7:].split(',')
-        env['HTTP_ACCEPT'] = ','.join(accept)
-        ua = self.headers.get('user-agent')
+                accept = accept + line[7:].split(",")
+        env["HTTP_ACCEPT"] = ",".join(accept)
+        ua = self.headers.get("user-agent")
         if ua:
-            env['HTTP_USER_AGENT'] = ua
-        co = filter(None, self.headers.get_all('cookie', []))
-        cookie_str = ', '.join(co)
+            env["HTTP_USER_AGENT"] = ua
+        co = filter(None, self.headers.get_all("cookie", []))
+        cookie_str = ", ".join(co)
         if cookie_str:
-            env['HTTP_COOKIE'] = cookie_str
+            env["HTTP_COOKIE"] = cookie_str
         # XXX Other HTTP_* headers
         # Since we're setting the env in the parent, provide empty
         # values to override previously set values
-        for k in ('QUERY_STRING', 'REMOTE_HOST', 'CONTENT_LENGTH',
-                  'HTTP_USER_AGENT', 'HTTP_COOKIE', 'HTTP_REFERER'):
+        for k in (
+            "QUERY_STRING",
+            "REMOTE_HOST",
+            "CONTENT_LENGTH",
+            "HTTP_USER_AGENT",
+            "HTTP_COOKIE",
+            "HTTP_REFERER",
+        ):
             env.setdefault(k, "")
 
         self.send_response(200, "Script output follows")
         self.flush_headers()
 
-        decoded_query = query.replace('+', ' ')
+        decoded_query = query.replace("+", " ")
 
         if self.have_fork:
             # Unix -- fork as we should
             args = [script]
-            if '=' not in decoded_query:
+            if "=" not in decoded_query:
                 args.append(decoded_query)
             nobody = nobody_uid()
-            self.wfile.flush() # Always flush before forking
+            self.wfile.flush()  # Always flush before forking
             pid = os.fork()
             if pid != 0:
                 # Parent
@@ -1148,26 +1191,28 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
         else:
             # Non-Unix -- use subprocess
             import subprocess
+
             cmdline = [scriptfile]
             if self.is_python(scriptfile):
                 interp = sys.executable
                 if interp.lower().endswith("w.exe"):
                     # On Windows, use python.exe, not pythonw.exe
                     interp = interp[:-5] + interp[-4:]
-                cmdline = [interp, '-u'] + cmdline
-            if '=' not in query:
+                cmdline = [interp, "-u"] + cmdline
+            if "=" not in query:
                 cmdline.append(query)
             self.log_message("command: %s", subprocess.list2cmdline(cmdline))
             try:
                 nbytes = int(length)
             except (TypeError, ValueError):
                 nbytes = 0
-            p = subprocess.Popen(cmdline,
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env = env
-                                 )
+            p = subprocess.Popen(
+                cmdline,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+            )
             if self.command.lower() == "post" and nbytes > 0:
                 data = self.rfile.read(nbytes)
             else:
@@ -1179,7 +1224,7 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
             stdout, stderr = p.communicate(data)
             self.wfile.write(stdout)
             if stderr:
-                self.log_error('%s', stderr)
+                self.log_error("%s", stderr)
             p.stderr.close()
             p.stdout.close()
             status = p.returncode
@@ -1189,15 +1234,19 @@ class CGIHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.log_message("CGI script exited OK")
 
 
-def test(HandlerClass = BaseHTTPRequestHandler,
-         ServerClass = HTTPServer, protocol="HTTP/1.0", port=8000):
+def test(
+    HandlerClass=BaseHTTPRequestHandler,
+    ServerClass=HTTPServer,
+    protocol="HTTP/1.0",
+    port=8000,
+):
     """Test the HTTP request handler class.
 
     This runs an HTTP server on port 8000 (or the first command line
     argument).
 
     """
-    server_address = ('', port)
+    server_address = ("", port)
 
     HandlerClass.protocol_version = protocol
     httpd = ServerClass(server_address, HandlerClass)
@@ -1211,14 +1260,18 @@ def test(HandlerClass = BaseHTTPRequestHandler,
         httpd.server_close()
         sys.exit(0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cgi', action='store_true',
-                       help='Run as CGI Server')
-    parser.add_argument('port', action='store',
-                        default=8000, type=int,
-                        nargs='?',
-                        help='Specify alternate port [default: 8000]')
+    parser.add_argument("--cgi", action="store_true", help="Run as CGI Server")
+    parser.add_argument(
+        "port",
+        action="store",
+        default=8000,
+        type=int,
+        nargs="?",
+        help="Specify alternate port [default: 8000]",
+    )
     args = parser.parse_args()
     if args.cgi:
         test(HandlerClass=CGIHTTPRequestHandler, port=args.port)

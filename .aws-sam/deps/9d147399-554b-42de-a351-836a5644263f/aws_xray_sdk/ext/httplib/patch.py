@@ -12,19 +12,19 @@ from aws_xray_sdk.ext.util import inject_trace_header, strip_url, unwrap, get_ho
 
 if sys.version_info >= (3, 0, 0):
     PY2 = False
-    httplib_client_module = 'http.client'
+    httplib_client_module = "http.client"
     import http.client as httplib
 else:
     PY2 = True
-    httplib_client_module = 'httplib'
+    httplib_client_module = "httplib"
     import httplib
 
 
-_XRAY_PROP = '_xray_prop'
-_XRay_Data = namedtuple('xray_data', ['method', 'host', 'url'])
-_XRay_Ignore = namedtuple('xray_ignore', ['subclass', 'hostname', 'urls'])
+_XRAY_PROP = "_xray_prop"
+_XRay_Data = namedtuple("xray_data", ["method", "host", "url"])
+_XRay_Ignore = namedtuple("xray_ignore", ["subclass", "hostname", "urls"])
 # A flag indicates whether this module is X-Ray patched or not
-PATCH_FLAG = '__xray_patched'
+PATCH_FLAG = "__xray_patched"
 # Calls that should be ignored
 _XRAY_IGNORE = set()
 
@@ -44,15 +44,19 @@ def reset_ignored():
 
 def _ignored_add_default():
     # skip httplib tracing for SDK built-in centralized sampling pollers
-    add_ignored(subclass='botocore.awsrequest.AWSHTTPConnection', urls=['/GetSamplingRules', '/SamplingTargets'])
+    add_ignored(
+        subclass="botocore.awsrequest.AWSHTTPConnection",
+        urls=["/GetSamplingRules", "/SamplingTargets"],
+    )
 
 
 # make sure we have the default rules
 _ignored_add_default()
 
 
-def http_response_processor(wrapped, instance, args, kwargs, return_value,
-                            exception, subsegment, stack):
+def http_response_processor(
+    wrapped, instance, args, kwargs, return_value, exception, subsegment, stack
+):
     xray_data = getattr(instance, _XRAY_PROP, None)
     if not xray_data:
         return
@@ -64,7 +68,7 @@ def http_response_processor(wrapped, instance, args, kwargs, return_value,
         subsegment.put_http_meta(http.STATUS, return_value.status)
 
         # propagate to response object
-        xray_data = _XRay_Data('READ', xray_data.host, xray_data.url)
+        xray_data = _XRay_Data("READ", xray_data.host, xray_data.url)
         setattr(return_value, _XRAY_PROP, xray_data)
 
     if exception:
@@ -72,7 +76,7 @@ def http_response_processor(wrapped, instance, args, kwargs, return_value,
 
 
 def _xray_traced_http_getresponse(wrapped, instance, args, kwargs):
-    if not PY2 and kwargs.get('buffering', False):
+    if not PY2 and kwargs.get("buffering", False):
         # ignore py2 calls that fail as 'buffering` only exists in py2.
         return wrapped(*args, **kwargs)
 
@@ -81,15 +85,19 @@ def _xray_traced_http_getresponse(wrapped, instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
     return xray_recorder.record_subsegment(
-        wrapped, instance, args, kwargs,
+        wrapped,
+        instance,
+        args,
+        kwargs,
         name=get_hostname(xray_data.url),
-        namespace='remote',
+        namespace="remote",
         meta_processor=http_response_processor,
     )
 
 
-def http_send_request_processor(wrapped, instance, args, kwargs, return_value,
-                                exception, subsegment, stack):
+def http_send_request_processor(
+    wrapped, instance, args, kwargs, return_value, exception, subsegment, stack
+):
     xray_data = getattr(instance, _XRAY_PROP, None)
     if not xray_data:
         return
@@ -108,10 +116,16 @@ def _ignore_request(instance, hostname, url):
     if module is None or module == str.__class__.__module__:
         subclass = instance.__class__.__name__
     else:
-        subclass = module + '.' + instance.__class__.__name__
+        subclass = module + "." + instance.__class__.__name__
     for rule in _XRAY_IGNORE:
-        subclass_match = subclass == rule.subclass if rule.subclass is not None else True
-        host_match = fnmatch.fnmatch(hostname, rule.hostname) if rule.hostname is not None else True
+        subclass_match = (
+            subclass == rule.subclass if rule.subclass is not None else True
+        )
+        host_match = (
+            fnmatch.fnmatch(hostname, rule.hostname)
+            if rule.hostname is not None
+            else True
+        )
         url_match = url in rule.urls if rule.urls is not None else True
         if url_match and host_match and subclass_match:
             return True
@@ -135,32 +149,38 @@ def _send_request(wrapped, instance, args, kwargs):
             inject_trace_header(headers, subsegment)
 
         if issubclass(instance.__class__, urllib3.connection.HTTPSConnection):
-            ssl_cxt = getattr(instance, 'ssl_context', None)
+            ssl_cxt = getattr(instance, "ssl_context", None)
         elif issubclass(instance.__class__, httplib.HTTPSConnection):
-            ssl_cxt = getattr(instance, '_context', None)
+            ssl_cxt = getattr(instance, "_context", None)
         else:
             # In this case, the patcher can't determine which module the connection instance is from.
             # We default to it to check ssl_context but may be None so that the default scheme would be
             # (and may falsely be) http.
-            ssl_cxt = getattr(instance, 'ssl_context', None)
-        scheme = 'https' if ssl_cxt and type(ssl_cxt).__name__ == 'SSLContext' else 'http'
-        xray_url = '{}://{}{}'.format(scheme, instance.host, url)
+            ssl_cxt = getattr(instance, "ssl_context", None)
+        scheme = (
+            "https" if ssl_cxt and type(ssl_cxt).__name__ == "SSLContext" else "http"
+        )
+        xray_url = "{}://{}{}".format(scheme, instance.host, url)
         xray_data = _XRay_Data(method, instance.host, xray_url)
         setattr(instance, _XRAY_PROP, xray_data)
 
         # we add a segment here in case connect fails
         return xray_recorder.record_subsegment(
-            wrapped, instance, args, kwargs,
+            wrapped,
+            instance,
+            args,
+            kwargs,
             name=get_hostname(xray_data.url),
-            namespace='remote',
-            meta_processor=http_send_request_processor
+            namespace="remote",
+            meta_processor=http_send_request_processor,
         )
 
     return decompose_args(*args, **kwargs)
 
 
-def http_read_processor(wrapped, instance, args, kwargs, return_value,
-                        exception, subsegment, stack):
+def http_read_processor(
+    wrapped, instance, args, kwargs, return_value, exception, subsegment, stack
+):
     xray_data = getattr(instance, _XRAY_PROP, None)
     if not xray_data:
         return
@@ -180,10 +200,13 @@ def _xray_traced_http_client_read(wrapped, instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
     return xray_recorder.record_subsegment(
-        wrapped, instance, args, kwargs,
+        wrapped,
+        instance,
+        args,
+        kwargs,
         name=get_hostname(xray_data.url),
-        namespace='remote',
-        meta_processor=http_read_processor
+        namespace="remote",
+        meta_processor=http_read_processor,
     )
 
 
@@ -197,21 +220,17 @@ def patch():
     setattr(httplib, PATCH_FLAG, True)
 
     wrapt.wrap_function_wrapper(
-        httplib_client_module,
-        'HTTPConnection._send_request',
-        _send_request
+        httplib_client_module, "HTTPConnection._send_request", _send_request
     )
 
     wrapt.wrap_function_wrapper(
         httplib_client_module,
-        'HTTPConnection.getresponse',
-        _xray_traced_http_getresponse
+        "HTTPConnection.getresponse",
+        _xray_traced_http_getresponse,
     )
 
     wrapt.wrap_function_wrapper(
-        httplib_client_module,
-        'HTTPResponse.read',
-        _xray_traced_http_client_read
+        httplib_client_module, "HTTPResponse.read", _xray_traced_http_client_read
     )
 
 
@@ -220,9 +239,9 @@ def unpatch():
     Unpatch any previously patched modules.
     This operation is idempotent.
     """
-    _PATCHED_MODULES.discard('httplib')
+    _PATCHED_MODULES.discard("httplib")
     setattr(httplib, PATCH_FLAG, False)
     # _send_request encapsulates putrequest, putheader[s], and endheaders
-    unwrap(httplib.HTTPConnection, '_send_request')
-    unwrap(httplib.HTTPConnection, 'getresponse')
-    unwrap(httplib.HTTPResponse, 'read')
+    unwrap(httplib.HTTPConnection, "_send_request")
+    unwrap(httplib.HTTPConnection, "getresponse")
+    unwrap(httplib.HTTPResponse, "read")

@@ -64,7 +64,7 @@ issues for tracking bugs and feature requests.
 If you encounter a bug with the AWS X-Ray SDK for Python, we want to hear about
 it. Before opening a new issue, search the [existing issues](https://github.com/aws/aws-xray-sdk-python/issues)
 to see if others are also experiencing the issue. Include the version of the AWS X-Ray
-SDK for Python, Python language, and botocore/boto3 if applicable. In addition, 
+SDK for Python, Python language, and botocore/boto3 if applicable. In addition,
 include the repro case when appropriate.
 
 The GitHub issues are intended for bug reports and feature requests. For help and
@@ -109,7 +109,7 @@ with xray_recorder.in_segment('segment_name') as segment:
         # Do something here
     with xray_recorder.in_subsegment('subsegment2') as subsegment:
         subsegment.put_annotation('key2', 'value2')
-        # Do something else 
+        # Do something else
 ```
 
 async versions of context managers:
@@ -125,7 +125,7 @@ async with xray_recorder.in_segment_async('segment_name') as segment:
         # Do something here
     async with xray_recorder.in_subsegment_async('subsegment2') as subsegment:
         subsegment.put_annotation('key2', 'value2')
-        # Do something else 
+        # Do something else
 ```
 
 Default begin/end functions:
@@ -231,7 +231,7 @@ There are two ways to disable X-Ray, one is through environment variables, and t
 
 **Disabling through the environment variable:**
 
-Prior to running your application, make sure to have the environment variable `AWS_XRAY_SDK_ENABLED` set to `false`. 
+Prior to running your application, make sure to have the environment variable `AWS_XRAY_SDK_ENABLED` set to `false`.
 
 **Disabling through the SDKConfig module:**
 ```
@@ -382,7 +382,7 @@ For more information about configuring Django with X-Ray read more about it in t
 
 #### SQL tracing
 If Django's ORM is patched - either using the `AUTO_INSTRUMENT = True` in your settings file
-or explicitly calling `patch_db()` - the SQL query trace streaming can then be enabled or 
+or explicitly calling `patch_db()` - the SQL query trace streaming can then be enabled or
 disabled updating the `STREAM_SQL` variable in your settings file. It is enabled by default.
 
 #### Automatic patching
@@ -402,7 +402,7 @@ XRAY_RECORDER = {
     ...
 }
 ```
-If `AUTO_PATCH_PARENT_SEGMENT_NAME` is also specified, then a segment parent will be created 
+If `AUTO_PATCH_PARENT_SEGMENT_NAME` is also specified, then a segment parent will be created
 with the supplied name, wrapping the automatic patching so that it captures any dangling
 subsegments created on the import patching.
 
@@ -431,7 +431,7 @@ app.install(XRayMiddleware(xray_recorder))
 ```
 
 ### Serverless Support for Flask & Django & Bottle Using X-Ray
-Serverless is an application model that enables you to shift more of your operational responsibilities to AWS. As a result, you can focus only on your applications and services, instead of the infrastructure management tasks such as server provisioning, patching, operating system maintenance, and capacity provisioning. With serverless, you can deploy your web application to [AWS Lambda](https://aws.amazon.com/lambda/) and have customers interact with it through a Lambda-invoking endpoint, such as [Amazon API Gateway](https://aws.amazon.com/api-gateway/). 
+Serverless is an application model that enables you to shift more of your operational responsibilities to AWS. As a result, you can focus only on your applications and services, instead of the infrastructure management tasks such as server provisioning, patching, operating system maintenance, and capacity provisioning. With serverless, you can deploy your web application to [AWS Lambda](https://aws.amazon.com/lambda/) and have customers interact with it through a Lambda-invoking endpoint, such as [Amazon API Gateway](https://aws.amazon.com/api-gateway/).
 
 X-Ray supports the Serverless model out of the box and requires no extra configuration. The middlewares in Lambda generate `Subsegments` instead of `Segments` when an endpoint is reached. This is because `Segments` cannot be generated inside the Lambda function, but it is generated automatically by the Lambda container. Therefore, when using the middlewares with this model, it is important to make sure that your methods only generate `Subsegments`.
 
@@ -538,5 +538,3 @@ xray_add_ignored(subclass='botocore.awsrequest.AWSHTTPConnection')
 ## License
 
 The AWS X-Ray SDK for Python is licensed under the Apache 2.0 License. See LICENSE and NOTICE.txt for more information.
-
-

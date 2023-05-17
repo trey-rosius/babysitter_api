@@ -76,11 +76,11 @@ def multi_file_load_config(*filenames):
             loaded = load_config(filename)
         except botocore.exceptions.ConfigNotFound:
             continue
-        profiles.append(loaded.pop('profiles'))
+        profiles.append(loaded.pop("profiles"))
         configs.append(loaded)
     merged_config = _merge_list_of_dicts(configs)
     merged_profiles = _merge_list_of_dicts(profiles)
-    merged_config['profiles'] = merged_profiles
+    merged_config["profiles"] = merged_profiles
     return merged_config
 
 
@@ -148,14 +148,13 @@ def raw_config_parse(config_filename, parse_subsections=True):
         try:
             cp.read([path])
         except (six.moves.configparser.Error, UnicodeDecodeError):
-            raise botocore.exceptions.ConfigParseError(
-                path=_unicode_path(path))
+            raise botocore.exceptions.ConfigParseError(path=_unicode_path(path))
         else:
             for section in cp.sections():
                 config[section] = {}
                 for option in cp.options(section):
                     config_value = cp.get(section, option)
-                    if parse_subsections and config_value.startswith('\n'):
+                    if parse_subsections and config_value.startswith("\n"):
                         # Then we need to parse the inner contents as
                         # hierarchical.  We support a single level
                         # of nesting for now.
@@ -163,7 +162,8 @@ def raw_config_parse(config_filename, parse_subsections=True):
                             config_value = _parse_nested(config_value)
                         except ValueError:
                             raise botocore.exceptions.ConfigParseError(
-                                path=_unicode_path(path))
+                                path=_unicode_path(path)
+                            )
                     config[section][option] = config_value
     return config
 
@@ -176,7 +176,7 @@ def _unicode_path(path):
     filesystem_encoding = sys.getfilesystemencoding()
     if filesystem_encoding is None:
         filesystem_encoding = sys.getdefaultencoding()
-    return path.decode(filesystem_encoding, 'replace')
+    return path.decode(filesystem_encoding, "replace")
 
 
 def _parse_nested(config_value):
@@ -194,7 +194,7 @@ def _parse_nested(config_value):
         # The caller will catch ValueError
         # and raise an appropriate error
         # if this fails.
-        key, value = line.split('=', 1)
+        key, value = line.split("=", 1)
         parsed[key.strip()] = value.strip()
     return parsed
 
@@ -261,12 +261,12 @@ def build_profile_map(parsed_ini_config):
                 continue
             if len(parts) == 2:
                 profiles[parts[1]] = values
-        elif key == 'default':
+        elif key == "default":
             # default section is special and is considered a profile
             # name but we don't require you use 'profile "default"'
             # as a section.
             profiles[key] = values
         else:
             final_config[key] = values
-    final_config['profiles'] = profiles
+    final_config["profiles"] = profiles
     return final_config

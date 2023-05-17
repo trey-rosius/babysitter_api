@@ -12,19 +12,19 @@ Read more about Amazon SQS from the official website above.
 <br />
 
 When a parent creates a job, nannies can apply for that job. The parent would then be able to accept the application
-for whoever they see fit for the job. 
+for whoever they see fit for the job.
 
 <br />
 
-Booking a nanny entails, firstly, accepting the nanny's job application(changing application status), declining all other job applications, so that 
+Booking a nanny entails, firstly, accepting the nanny's job application(changing application status), declining all other job applications, so that
 the other applicants know they weren't selected, and then closing the job, so that it won't be available anymore for applying to.
 <br />
 
 Here's a breakdown of how our code would work
 - Get all applications for a job.
 - Update Job Status from OPEN to CLOSED and application status for accepted applicant from PENDING to ACCEPTED
-- Put the rest of the job applications into an SQS queue, which would update the job application status from 
-PENDING to DECLINED asynchronously. 
+- Put the rest of the job applications into an SQS queue, which would update the job application status from
+PENDING to DECLINED asynchronously.
 <br />
 
 For added functionality, it'll be good to send a push notification and an email to the applicant whose application was
@@ -54,7 +54,7 @@ In Iac(Infrastructure as Code), the first step is to create/configure a SQS Queu
 
 ```
 
-The name of our SQS queue is `UpdateJobApplicationsSQSQueue`. 
+The name of our SQS queue is `UpdateJobApplicationsSQSQueue`.
 <br />
 
 To prevent other consumers from processing the message again, Amazon SQS sets a visibility timeout, a period of time during which Amazon SQS prevents other consumers from receiving and processing the message
@@ -182,16 +182,16 @@ def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", app
             raise err
 
 
-``` 
+```
 
 <br />
 
-So, the code simply does this. 
+So, the code simply does this.
 
 - Get all applications for a job.
 - Update Job Status from OPEN to CLOSED and application status for accepted applicant from PENDING to ACCEPTED
-- Put the rest of the job applications into an SQS queue, which would update the job application status from 
-PENDING to DECLINED asynchronously. 
+- Put the rest of the job applications into an SQS queue, which would update the job application status from
+PENDING to DECLINED asynchronously.
 <br />
 
 We expect a function to receive all these messages from the SQS queue and process them.
@@ -248,13 +248,13 @@ Since we are using SQS,we must configure our Lambda function event source to use
 Remember that our lambda function is triggered with a batch of messages.
 <br />
 
-If our function fails to process any message from the batch, the entire batch returns to our queue. This same batch is then retried until either condition happens first: 
+If our function fails to process any message from the batch, the entire batch returns to our queue. This same batch is then retried until either condition happens first:
 a) your Lambda function returns a successful response
 b) record reaches maximum retry attempts, or
 c) when records expire
 
 <br />
-We would use the `batch processing` utility of the `aws-lambda-powertools` to ensure that, batch records are processed individually – only messages that failed to be processed return to the queue  for a further retry. 
+We would use the `batch processing` utility of the `aws-lambda-powertools` to ensure that, batch records are processed individually – only messages that failed to be processed return to the queue  for a further retry.
 <br />
 
 This works when two mechanisms are in place:

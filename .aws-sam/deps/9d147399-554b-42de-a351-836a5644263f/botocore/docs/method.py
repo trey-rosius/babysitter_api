@@ -18,7 +18,7 @@ from botocore.docs.example import ResponseExampleDocumenter
 from botocore.docs.example import RequestExampleDocumenter
 
 
-AWS_DOC_BASE = 'https://docs.aws.amazon.com/goto/WebAPI'
+AWS_DOC_BASE = "https://docs.aws.amazon.com/goto/WebAPI"
 
 
 def get_instance_public_methods(instance):
@@ -33,14 +33,15 @@ def get_instance_public_methods(instance):
     instance_members = inspect.getmembers(instance)
     instance_methods = {}
     for name, member in instance_members:
-        if not name.startswith('_'):
+        if not name.startswith("_"):
             if inspect.ismethod(member):
                 instance_methods[name] = member
     return instance_methods
 
 
-def document_model_driven_signature(section, name, operation_model,
-                                    include=None, exclude=None):
+def document_model_driven_signature(
+    section, name, operation_model, include=None, exclude=None
+):
     """Documents the signature of a model-driven method
 
     :param section: The section to write the documentation to.
@@ -72,14 +73,13 @@ def document_model_driven_signature(section, name, operation_model,
             if member in parameter_names:
                 parameter_names.remove(member)
 
-    signature_params = ''
+    signature_params = ""
     if parameter_names:
-        signature_params = '**kwargs'
+        signature_params = "**kwargs"
     section.style.start_sphinx_py_method(name, signature_params)
 
 
-def document_custom_signature(section, name, method,
-                              include=None, exclude=None):
+def document_custom_signature(section, name, method, include=None, exclude=None):
     """Documents the signature of a custom method
 
     :param section: The section to write the documentation to.
@@ -101,10 +101,10 @@ def document_custom_signature(section, name, method,
         args=argspec.args[1:],
         varargs=argspec.varargs,
         varkw=argspec.varkw,
-        defaults=argspec.defaults
+        defaults=argspec.defaults,
     )
-    signature_params = signature_params.lstrip('(')
-    signature_params = signature_params.rstrip(')')
+    signature_params = signature_params.lstrip("(")
+    signature_params = signature_params.rstrip(")")
     section.style.start_sphinx_py_method(name, signature_params)
 
 
@@ -117,21 +117,28 @@ def document_custom_method(section, method_name, method):
 
     :param method: The handle to the method being documented
     """
-    document_custom_signature(
-        section, method_name, method)
-    method_intro_section = section.add_new_section('method-intro')
-    method_intro_section.writeln('')
+    document_custom_signature(section, method_name, method)
+    method_intro_section = section.add_new_section("method-intro")
+    method_intro_section.writeln("")
     doc_string = inspect.getdoc(method)
     if doc_string is not None:
         method_intro_section.style.write_py_doc_string(doc_string)
 
 
-def document_model_driven_method(section, method_name, operation_model,
-                                 event_emitter, method_description=None,
-                                 example_prefix=None, include_input=None,
-                                 include_output=None, exclude_input=None,
-                                 exclude_output=None, document_output=True,
-                                 include_signature=True):
+def document_model_driven_method(
+    section,
+    method_name,
+    operation_model,
+    event_emitter,
+    method_description=None,
+    example_prefix=None,
+    include_input=None,
+    include_output=None,
+    exclude_input=None,
+    exclude_output=None,
+    document_output=True,
+    include_signature=True,
+):
     """Documents an individual method
 
     :param section: The section to write to
@@ -171,39 +178,44 @@ def document_model_driven_method(section, method_name, operation_model,
     # Add the signature if specified.
     if include_signature:
         document_model_driven_signature(
-            section, method_name, operation_model, include=include_input,
-            exclude=exclude_input)
+            section,
+            method_name,
+            operation_model,
+            include=include_input,
+            exclude=exclude_input,
+        )
 
     # Add the description for the method.
-    method_intro_section = section.add_new_section('method-intro')
+    method_intro_section = section.add_new_section("method-intro")
     method_intro_section.include_doc_string(method_description)
     if operation_model.deprecated:
         method_intro_section.style.start_danger()
         method_intro_section.writeln(
-            'This operation is deprecated and may not function as '
-            'expected. This operation should not be used going forward '
-            'and is only kept for the purpose of backwards compatiblity.')
+            "This operation is deprecated and may not function as "
+            "expected. This operation should not be used going forward "
+            "and is only kept for the purpose of backwards compatiblity."
+        )
         method_intro_section.style.end_danger()
-    service_uid = operation_model.service_model.metadata.get('uid')
+    service_uid = operation_model.service_model.metadata.get("uid")
     if service_uid is not None:
         method_intro_section.style.new_paragraph()
         method_intro_section.write("See also: ")
-        link = '%s/%s/%s' % (AWS_DOC_BASE, service_uid,
-                             operation_model.name)
-        method_intro_section.style.external_link(title="AWS API Documentation",
-                                                 link=link)
-        method_intro_section.writeln('')
+        link = "%s/%s/%s" % (AWS_DOC_BASE, service_uid, operation_model.name)
+        method_intro_section.style.external_link(
+            title="AWS API Documentation", link=link
+        )
+        method_intro_section.writeln("")
 
     # Add the example section.
-    example_section = section.add_new_section('example')
+    example_section = section.add_new_section("example")
     example_section.style.new_paragraph()
-    example_section.style.bold('Request Syntax')
+    example_section.style.bold("Request Syntax")
 
     context = {
-        'special_shape_types': {
-            'streaming_input_shape': operation_model.get_streaming_input(),
-            'streaming_output_shape': operation_model.get_streaming_output(),
-            'eventstream_output_shape': operation_model.get_event_stream_output(),
+        "special_shape_types": {
+            "streaming_input_shape": operation_model.get_streaming_input(),
+            "streaming_output_shape": operation_model.get_streaming_output(),
+            "eventstream_output_shape": operation_model.get_event_stream_output(),
         },
     }
 
@@ -211,74 +223,91 @@ def document_model_driven_method(section, method_name, operation_model,
         RequestExampleDocumenter(
             service_name=operation_model.service_model.service_name,
             operation_name=operation_model.name,
-            event_emitter=event_emitter, context=context).document_example(
-                example_section, operation_model.input_shape,
-                prefix=example_prefix, include=include_input,
-                exclude=exclude_input)
+            event_emitter=event_emitter,
+            context=context,
+        ).document_example(
+            example_section,
+            operation_model.input_shape,
+            prefix=example_prefix,
+            include=include_input,
+            exclude=exclude_input,
+        )
     else:
         example_section.style.new_paragraph()
         example_section.style.start_codeblock()
-        example_section.write(example_prefix + '()')
+        example_section.write(example_prefix + "()")
 
     # Add the request parameter documentation.
-    request_params_section = section.add_new_section('request-params')
+    request_params_section = section.add_new_section("request-params")
     if operation_model.input_shape:
         RequestParamsDocumenter(
             service_name=operation_model.service_model.service_name,
             operation_name=operation_model.name,
-            event_emitter=event_emitter, context=context).document_params(
-                request_params_section, operation_model.input_shape,
-                include=include_input, exclude=exclude_input)
+            event_emitter=event_emitter,
+            context=context,
+        ).document_params(
+            request_params_section,
+            operation_model.input_shape,
+            include=include_input,
+            exclude=exclude_input,
+        )
 
     # Add the return value documentation
-    return_section = section.add_new_section('return')
+    return_section = section.add_new_section("return")
     return_section.style.new_line()
     if operation_model.output_shape is not None and document_output:
-        return_section.write(':rtype: dict')
+        return_section.write(":rtype: dict")
         return_section.style.new_line()
-        return_section.write(':returns: ')
+        return_section.write(":returns: ")
         return_section.style.indent()
         return_section.style.new_line()
 
         # If the operation is an event stream, describe the tagged union
         event_stream_output = operation_model.get_event_stream_output()
         if event_stream_output:
-            event_section = return_section.add_new_section('event-stream')
+            event_section = return_section.add_new_section("event-stream")
             event_section.style.new_paragraph()
             event_section.write(
-                'The response of this operation contains an '
-                ':class:`.EventStream` member. When iterated the '
-                ':class:`.EventStream` will yield events based on the '
-                'structure below, where only one of the top level keys '
-                'will be present for any given event.'
+                "The response of this operation contains an "
+                ":class:`.EventStream` member. When iterated the "
+                ":class:`.EventStream` will yield events based on the "
+                "structure below, where only one of the top level keys "
+                "will be present for any given event."
             )
             event_section.style.new_line()
 
         # Add an example return value
-        return_example_section = return_section.add_new_section('example')
+        return_example_section = return_section.add_new_section("example")
         return_example_section.style.new_line()
-        return_example_section.style.bold('Response Syntax')
+        return_example_section.style.bold("Response Syntax")
         return_example_section.style.new_paragraph()
         ResponseExampleDocumenter(
             service_name=operation_model.service_model.service_name,
             operation_name=operation_model.name,
             event_emitter=event_emitter,
-            context=context).document_example(
-                return_example_section, operation_model.output_shape,
-                include=include_output, exclude=exclude_output)
+            context=context,
+        ).document_example(
+            return_example_section,
+            operation_model.output_shape,
+            include=include_output,
+            exclude=exclude_output,
+        )
 
         # Add a description for the return value
-        return_description_section = return_section.add_new_section(
-            'description')
+        return_description_section = return_section.add_new_section("description")
         return_description_section.style.new_line()
-        return_description_section.style.bold('Response Structure')
+        return_description_section.style.bold("Response Structure")
         return_description_section.style.new_paragraph()
         ResponseParamsDocumenter(
             service_name=operation_model.service_model.service_name,
             operation_name=operation_model.name,
             event_emitter=event_emitter,
-            context=context).document_params(
-                return_description_section, operation_model.output_shape,
-                include=include_output, exclude=exclude_output)
+            context=context,
+        ).document_params(
+            return_description_section,
+            operation_model.output_shape,
+            include=include_output,
+            exclude=exclude_output,
+        )
     else:
-        return_section.write(':returns: None')
+        return_section.write(":returns: None")

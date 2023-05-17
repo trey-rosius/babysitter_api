@@ -57,6 +57,7 @@ class HTMLTree(object):
     meaning that the current_node will be the most recently opened tag. When
     a tag is closed, the current_node moves up to the parent node.
     """
+
     def __init__(self, doc):
         self.doc = doc
         self.head = StemNode()
@@ -69,7 +70,7 @@ class HTMLTree(object):
             return
 
         if is_start:
-            if tag == 'li':
+            if tag == "li":
                 node = LineItemNode(attrs)
             else:
                 node = TagNode(tag, attrs)
@@ -80,9 +81,9 @@ class HTMLTree(object):
 
     def _doc_has_handler(self, tag, is_start):
         if is_start:
-            handler_name = 'start_%s' % tag
+            handler_name = "start_%s" % tag
         else:
-            handler_name = 'end_%s' % tag
+            handler_name = "end_%s" % tag
 
         return hasattr(self.doc.style, handler_name)
 
@@ -122,6 +123,7 @@ class TagNode(StemNode):
     """
     A generic Tag node. It will verify that handlers exist before writing.
     """
+
     def __init__(self, tag, attrs=None, parent=None):
         super(TagNode, self).__init__(parent)
         self.attrs = attrs
@@ -133,19 +135,19 @@ class TagNode(StemNode):
         self._write_end(doc)
 
     def _write_start(self, doc):
-        handler_name = 'start_%s' % self.tag
+        handler_name = "start_%s" % self.tag
         if hasattr(doc.style, handler_name):
             getattr(doc.style, handler_name)(self.attrs)
 
     def _write_end(self, doc):
-        handler_name = 'end_%s' % self.tag
+        handler_name = "end_%s" % self.tag
         if hasattr(doc.style, handler_name):
             getattr(doc.style, handler_name)()
 
 
 class LineItemNode(TagNode):
     def __init__(self, attrs=None, parent=None):
-        super(LineItemNode, self).__init__('li', attrs, parent)
+        super(LineItemNode, self).__init__("li", attrs, parent)
 
     def write(self, doc):
         self._lstrip(self)
@@ -174,6 +176,7 @@ class DataNode(Node):
     """
     A Node that contains only string data.
     """
+
     def __init__(self, data, parent=None):
         super(DataNode, self).__init__(parent)
         if not isinstance(data, six.string_types):
@@ -188,13 +191,13 @@ class DataNode(Node):
             return
 
         if self.data.isspace():
-            str_data = ' '
+            str_data = " "
         else:
             end_space = self.data[-1].isspace()
             words = self.data.split()
             words = doc.translate_words(words)
-            str_data = ' '.join(words)
+            str_data = " ".join(words)
             if end_space:
-                str_data += ' '
+                str_data += " "
 
         doc.handle_data(str_data)

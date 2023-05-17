@@ -8,9 +8,19 @@ class SamplingRule(object):
     """
     Data model for a single centralized sampling rule definition.
     """
-    def __init__(self, name, priority, rate, reservoir_size,
-                 host=None, method=None, path=None, service=None,
-                 service_type=None):
+
+    def __init__(
+        self,
+        name,
+        priority,
+        rate,
+        reservoir_size,
+        host=None,
+        method=None,
+        path=None,
+        service=None,
+        service_type=None,
+    ):
         self._name = name
         self._priority = priority
         self._rate = rate
@@ -36,21 +46,23 @@ class SamplingRule(object):
         if sampling_req is None:
             return False
 
-        host = sampling_req.get('host', None)
-        method = sampling_req.get('method', None)
-        path = sampling_req.get('path', None)
-        service = sampling_req.get('service', None)
-        service_type = sampling_req.get('service_type', None)
+        host = sampling_req.get("host", None)
+        method = sampling_req.get("method", None)
+        path = sampling_req.get("path", None)
+        service = sampling_req.get("service", None)
+        service_type = sampling_req.get("service_type", None)
 
-        return (not host or wildcard_match(self._host, host)) \
-            and (not method or wildcard_match(self._method, method)) \
-            and (not path or wildcard_match(self._path, path)) \
-            and (not service or wildcard_match(self._service, service)) \
+        return (
+            (not host or wildcard_match(self._host, host))
+            and (not method or wildcard_match(self._method, method))
+            and (not path or wildcard_match(self._path, path))
+            and (not service or wildcard_match(self._service, service))
             and (not service_type or wildcard_match(self._service_type, service_type))
+        )
 
     def is_default(self):
         # ``Default`` is a reserved keyword on X-Ray back-end.
-        return self.name == 'Default'
+        return self.name == "Default"
 
     def snapshot_statistics(self):
         """
@@ -60,9 +72,9 @@ class SamplingRule(object):
         with self._lock:
 
             stats = {
-                'request_count': self.request_count,
-                'borrow_count': self.borrow_count,
-                'sampled_count': self.sampled_count,
+                "request_count": self.request_count,
+                "borrow_count": self.borrow_count,
+                "sampled_count": self.sampled_count,
             }
 
             self._reset_statistics()

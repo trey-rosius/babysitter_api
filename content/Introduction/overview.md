@@ -14,7 +14,7 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 - View all applications for a job(By Parent or Admin only)
 - View All jobs per parent(Only Parents or admin). A Parent can only view their jobs
 - View All Nannies/Parents
-- 
+-
 
 #### Solutions Architecture
 

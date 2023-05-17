@@ -28,7 +28,9 @@ from aws_lambda_powertools.utilities.jmespath_utils import PowertoolsFunctions
 
 logger = logging.getLogger(__name__)
 
-STATUS_CONSTANTS = MappingProxyType({"INPROGRESS": "INPROGRESS", "COMPLETED": "COMPLETED", "EXPIRED": "EXPIRED"})
+STATUS_CONSTANTS = MappingProxyType(
+    {"INPROGRESS": "INPROGRESS", "COMPLETED": "COMPLETED", "EXPIRED": "EXPIRED"}
+)
 
 
 class DataRecord:
@@ -75,7 +77,10 @@ class DataRecord:
         bool
             Whether the record is currently expired or not
         """
-        return bool(self.expiry_timestamp and int(datetime.datetime.now().timestamp()) > self.expiry_timestamp)
+        return bool(
+            self.expiry_timestamp
+            and int(datetime.datetime.now().timestamp()) > self.expiry_timestamp
+        )
 
     @property
     def status(self) -> str:
@@ -125,7 +130,9 @@ class BasePersistenceLayer(ABC):
         self._cache: Optional[LRUDict] = None
         self.hash_function = None
 
-    def configure(self, config: IdempotencyConfig, function_name: Optional[str] = None) -> None:
+    def configure(
+        self, config: IdempotencyConfig, function_name: Optional[str] = None
+    ) -> None:
         """
         Initialize the base persistence layer from the configuration settings
 
@@ -145,12 +152,16 @@ class BasePersistenceLayer(ABC):
 
         self.event_key_jmespath = config.event_key_jmespath
         if config.event_key_jmespath:
-            self.event_key_compiled_jmespath = jmespath.compile(config.event_key_jmespath)
+            self.event_key_compiled_jmespath = jmespath.compile(
+                config.event_key_jmespath
+            )
         self.jmespath_options = config.jmespath_options
         if not self.jmespath_options:
             self.jmespath_options = {"custom_functions": PowertoolsFunctions()}
         if config.payload_validation_jmespath:
-            self.validation_key_jmespath = jmespath.compile(config.payload_validation_jmespath)
+            self.validation_key_jmespath = jmespath.compile(
+                config.payload_validation_jmespath
+            )
             self.payload_validation_enabled = True
         self.raise_on_no_idempotency_key = config.raise_on_no_idempotency_key
         self.expires_after_seconds = config.expires_after_seconds
@@ -175,12 +186,18 @@ class BasePersistenceLayer(ABC):
 
         """
         if self.event_key_jmespath:
-            data = self.event_key_compiled_jmespath.search(data, options=jmespath.Options(**self.jmespath_options))
+            data = self.event_key_compiled_jmespath.search(
+                data, options=jmespath.Options(**self.jmespath_options)
+            )
 
         if self.is_missing_idempotency_key(data=data):
             if self.raise_on_no_idempotency_key:
-                raise IdempotencyKeyError("No data found to create a hashed idempotency_key")
-            warnings.warn(f"No value found for idempotency_key. jmespath: {self.event_key_jmespath}")
+                raise IdempotencyKeyError(
+                    "No data found to create a hashed idempotency_key"
+                )
+            warnings.warn(
+                f"No value found for idempotency_key. jmespath: {self.event_key_jmespath}"
+            )
 
         generated_hash = self._generate_hash(data=data)
         return f"{self.function_name}#{generated_hash}"
@@ -226,8 +243,12 @@ class BasePersistenceLayer(ABC):
             Hashed representation of the provided data
 
         """
-        data = getattr(data, "raw_event", data)  # could be a data class depending on decorator order
-        hashed_data = self.hash_function(json.dumps(data, cls=Encoder, sort_keys=True).encode())
+        data = getattr(
+            data, "raw_event", data
+        )  # could be a data class depending on decorator order
+        hashed_data = self.hash_function(
+            json.dumps(data, cls=Encoder, sort_keys=True).encode()
+        )
         return hashed_data.hexdigest()
 
     def _validate_payload(self, data: Dict[str, Any], data_record: DataRecord) -> None:
@@ -250,7 +271,9 @@ class BasePersistenceLayer(ABC):
         if self.payload_validation_enabled:
             data_hash = self._get_hashed_payload(data=data)
             if data_record.payload_hash != data_hash:
-                raise IdempotencyValidationError("Payload does not match stored record for this event key")
+                raise IdempotencyValidationError(
+                    "Payload does not match stored record for this event key"
+                )
 
     def _get_expiry_timestamp(self) -> int:
         """
@@ -294,7 +317,9 @@ class BasePersistenceLayer(ABC):
         if cached_record:
             if not cached_record.is_expired:
                 return cached_record
-            logger.debug(f"Removing expired local cache record for idempotency key: {idempotency_key}")
+            logger.debug(
+                f"Removing expired local cache record for idempotency key: {idempotency_key}"
+            )
             self._delete_from_cache(idempotency_key=idempotency_key)
 
     def _delete_from_cache(self, idempotency_key: str):
@@ -347,7 +372,9 @@ class BasePersistenceLayer(ABC):
             payload_hash=self._get_hashed_payload(data=data),
         )
 
-        logger.debug(f"Saving in progress record for idempotency key: {data_record.idempotency_key}")
+        logger.debug(
+            f"Saving in progress record for idempotency key: {data_record.idempotency_key}"
+        )
 
         if self._retrieve_from_cache(idempotency_key=data_record.idempotency_key):
             raise IdempotencyItemAlreadyExistsError
@@ -365,7 +392,9 @@ class BasePersistenceLayer(ABC):
         exception
             The exception raised by the function
         """
-        data_record = DataRecord(idempotency_key=self._get_hashed_idempotency_key(data=data))
+        data_record = DataRecord(
+            idempotency_key=self._get_hashed_idempotency_key(data=data)
+        )
 
         logger.debug(
             f"Function raised an exception ({type(exception).__name__}). Clearing in progress record in persistence "
@@ -401,7 +430,9 @@ class BasePersistenceLayer(ABC):
 
         cached_record = self._retrieve_from_cache(idempotency_key=idempotency_key)
         if cached_record:
-            logger.debug(f"Idempotency record found in cache with idempotency key: {idempotency_key}")
+            logger.debug(
+                f"Idempotency record found in cache with idempotency key: {idempotency_key}"
+            )
             self._validate_payload(data=data, data_record=cached_record)
             return cached_record
 

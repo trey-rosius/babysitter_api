@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-__all__ = ['MIMEText']
+__all__ = ["MIMEText"]
 
 from future.backports.email.encoders import encode_7or8bit
 from future.backports.email.mime.nonmultipart import MIMENonMultipart
@@ -16,7 +16,7 @@ from future.backports.email.mime.nonmultipart import MIMENonMultipart
 class MIMEText(MIMENonMultipart):
     """Class for generating text/* type MIME documents."""
 
-    def __init__(self, _text, _subtype='plain', _charset=None):
+    def __init__(self, _text, _subtype="plain", _charset=None):
         """Create a text/* type MIME document.
 
         _text is the string for this message object.
@@ -33,12 +33,11 @@ class MIMEText(MIMENonMultipart):
         # XXX: This can be removed once #7304 is fixed.
         if _charset is None:
             try:
-                _text.encode('us-ascii')
-                _charset = 'us-ascii'
+                _text.encode("us-ascii")
+                _charset = "us-ascii"
             except UnicodeEncodeError:
-                _charset = 'utf-8'
+                _charset = "utf-8"
 
-        MIMENonMultipart.__init__(self, 'text', _subtype,
-                                  **{'charset': _charset})
+        MIMENonMultipart.__init__(self, "text", _subtype, **{"charset": _charset})
 
         self.set_payload(_text, _charset)

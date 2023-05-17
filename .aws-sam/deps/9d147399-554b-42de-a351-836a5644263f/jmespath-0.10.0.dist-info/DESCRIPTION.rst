@@ -220,5 +220,3 @@ Discuss
 
 Join us on our `Gitter channel <https://gitter.im/jmespath/chat>`__
 if you want to chat or if you have any questions.
-
-

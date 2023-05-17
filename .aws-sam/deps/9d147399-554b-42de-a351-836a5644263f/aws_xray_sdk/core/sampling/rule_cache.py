@@ -9,6 +9,7 @@ class RuleCache(object):
     Cache sampling rules and quota retrieved by ``TargetPoller``
     and ``RulePoller``. It will not return anything if it expires.
     """
+
     def __init__(self):
 
         self._last_updated = None
@@ -20,9 +21,9 @@ class RuleCache(object):
             return None
         matched_rule = None
         for rule in self.rules:
-            if(not matched_rule and rule.match(sampling_req)):
+            if not matched_rule and rule.match(sampling_req):
                 matched_rule = rule
-            if(not matched_rule and rule.is_default()):
+            if not matched_rule and rule.is_default():
                 matched_rule = rule
         return matched_rule
 
@@ -52,16 +53,16 @@ class RuleCache(object):
         # The cache should maintain the order of the rules based on
         # priority. If priority is the same we sort name by alphabet
         # as rule name is unique.
-        self.rules.sort(key=attrgetter('priority', 'name'))
+        self.rules.sort(key=attrgetter("priority", "name"))
 
     def _load_targets(self, targets_dict):
         for rule in self.rules:
             target = targets_dict.get(rule.name, None)
             if target:
-                rule.reservoir.load_quota(target['quota'],
-                                          target['TTL'],
-                                          target['interval'])
-                rule.rate = target['rate']
+                rule.reservoir.load_quota(
+                    target["quota"], target["TTL"], target["interval"]
+                )
+                rule.rate = target["rate"]
 
     def _is_expired(self, now):
         # The cache is treated as expired if it is never loaded.

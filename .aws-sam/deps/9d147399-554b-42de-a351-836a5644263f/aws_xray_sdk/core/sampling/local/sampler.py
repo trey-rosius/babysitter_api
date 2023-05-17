@@ -5,7 +5,7 @@ from random import Random
 from .sampling_rule import SamplingRule
 from ...exceptions.exceptions import InvalidSamplingManifestError
 
-local_sampling_rule = json.loads(pkgutil.get_data(__name__, 'sampling_rule.json'))
+local_sampling_rule = json.loads(pkgutil.get_data(__name__, "sampling_rule.json"))
 
 SUPPORTED_RULE_VERSION = (1, 2)
 
@@ -17,6 +17,7 @@ class LocalSampler(object):
     use it to calculate if this segment should be sampled or not
     when local rules are neccessary.
     """
+
     def __init__(self, rules=local_sampling_rule):
         """
         :param dict rules: a dict that defines custom sampling rules.
@@ -61,9 +62,9 @@ class LocalSampler(object):
         if sampling_req is None:
             return self._should_trace(self._default_rule)
 
-        host = sampling_req.get('host', None)
-        method = sampling_req.get('method', None)
-        path = sampling_req.get('path', None)
+        host = sampling_req.get("host", None)
+        method = sampling_req.get("method", None)
+        path = sampling_req.get("path", None)
 
         for rule in self._rules:
             if rule.applies(host, method, path):
@@ -72,20 +73,22 @@ class LocalSampler(object):
         return self._should_trace(self._default_rule)
 
     def load_local_rules(self, rules):
-        version = rules.get('version', None)
+        version = rules.get("version", None)
         if version not in SUPPORTED_RULE_VERSION:
-            raise InvalidSamplingManifestError('Manifest version: %s is not supported.', version)
+            raise InvalidSamplingManifestError(
+                "Manifest version: %s is not supported.", version
+            )
 
-        if 'default' not in rules:
-            raise InvalidSamplingManifestError('A default rule must be provided.')
+        if "default" not in rules:
+            raise InvalidSamplingManifestError("A default rule must be provided.")
 
-        self._default_rule = SamplingRule(rule_dict=rules['default'],
-                                          version=version,
-                                          default=True)
+        self._default_rule = SamplingRule(
+            rule_dict=rules["default"], version=version, default=True
+        )
 
         self._rules = []
-        if 'rules' in rules:
-            for rule in rules['rules']:
+        if "rules" in rules:
+            for rule in rules["rules"]:
                 self._rules.append(SamplingRule(rule, version))
 
     def _should_trace(self, sampling_rule):

@@ -14,5 +14,5 @@ Here's an illustration of the relationship between entities.
 The User entity is actually unique on 2 attributes( username + email address)
 <br />
 
-That's why we have 2 PK and SK for User entity in the above table. 
+That's why we have 2 PK and SK for User entity in the above table.
 <br>

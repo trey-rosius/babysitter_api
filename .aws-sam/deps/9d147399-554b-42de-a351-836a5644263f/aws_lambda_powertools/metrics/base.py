@@ -84,8 +84,12 @@ class MetricManager:
     ):
         self.metric_set = metric_set if metric_set is not None else {}
         self.dimension_set = dimension_set if dimension_set is not None else {}
-        self.namespace = resolve_env_var_choice(choice=namespace, env=os.getenv(constants.METRICS_NAMESPACE_ENV))
-        self.service = resolve_env_var_choice(choice=service, env=os.getenv(constants.SERVICE_NAME_ENV))
+        self.namespace = resolve_env_var_choice(
+            choice=namespace, env=os.getenv(constants.METRICS_NAMESPACE_ENV)
+        )
+        self.service = resolve_env_var_choice(
+            choice=service, env=os.getenv(constants.SERVICE_NAME_ENV)
+        )
         self._metric_units = [unit.value for unit in MetricUnit]
         self._metric_unit_options = list(MetricUnit.__members__)
         self.metadata_set = metadata_set if metadata_set is not None else {}
@@ -128,7 +132,9 @@ class MetricManager:
         self.metric_set[name] = metric
 
         if len(self.metric_set) == MAX_METRICS:
-            logger.debug(f"Exceeded maximum of {MAX_METRICS} metrics - Publishing existing metric set")
+            logger.debug(
+                f"Exceeded maximum of {MAX_METRICS} metrics - Publishing existing metric set"
+            )
             metrics = self.serialize_metric_set()
             print(json.dumps(metrics))
 
@@ -137,7 +143,10 @@ class MetricManager:
             self.metric_set.clear()
 
     def serialize_metric_set(
-        self, metrics: Optional[Dict] = None, dimensions: Optional[Dict] = None, metadata: Optional[Dict] = None
+        self,
+        metrics: Optional[Dict] = None,
+        dimensions: Optional[Dict] = None,
+        metadata: Optional[Dict] = None,
     ) -> Dict:
         """Serializes metric and dimensions set
 
@@ -186,9 +195,17 @@ class MetricManager:
         if self.namespace is None:
             raise SchemaValidationError("Must contain a metric namespace.")
 
-        logger.debug({"details": "Serializing metrics", "metrics": metrics, "dimensions": dimensions})
+        logger.debug(
+            {
+                "details": "Serializing metrics",
+                "metrics": metrics,
+                "dimensions": dimensions,
+            }
+        )
 
-        metric_names_and_units: List[Dict[str, str]] = []  # [ { "Name": "metric_name", "Unit": "Count" } ]
+        metric_names_and_units: List[
+            Dict[str, str]
+        ] = []  # [ { "Name": "metric_name", "Unit": "Count" } ]
         metric_names_and_values: Dict[str, float] = {}  # { "metric_name": 1.0 }
 
         for metric_name in metrics:

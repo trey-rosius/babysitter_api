@@ -39,16 +39,18 @@ if PY3:
 
         Return the octal representation of an integer
         """
-        return '0' + builtins.oct(number)[2:]
+        return "0" + builtins.oct(number)[2:]
 
     raw_input = input
     from imp import reload
+
     unicode = str
     unichr = chr
     xrange = range
 else:
     import __builtin__
     from collections import Mapping
+
     apply = __builtin__.apply
     chr = __builtin__.chr
     cmp = __builtin__.cmp
@@ -63,6 +65,7 @@ else:
 
 
 if PY3:
+
     def execfile(filename, myglobals=None, mylocals=None):
         """
         Read and execute a Python script from a file in the given namespaces.
@@ -78,17 +81,27 @@ if PY3:
             # Only if myglobals is given do we set mylocals to it.
             mylocals = myglobals
         if not isinstance(myglobals, Mapping):
-            raise TypeError('globals must be a mapping')
+            raise TypeError("globals must be a mapping")
         if not isinstance(mylocals, Mapping):
-            raise TypeError('locals must be a mapping')
+            raise TypeError("locals must be a mapping")
         with open(filename, "rb") as fin:
-             source = fin.read()
+            source = fin.read()
         code = compile(source, filename, "exec")
         exec_(code, myglobals, mylocals)
 
 
 if PY3:
-    __all__ = ['apply', 'chr', 'cmp', 'execfile', 'intern', 'raw_input',
-               'reload', 'unichr', 'unicode', 'xrange']
+    __all__ = [
+        "apply",
+        "chr",
+        "cmp",
+        "execfile",
+        "intern",
+        "raw_input",
+        "reload",
+        "unichr",
+        "unicode",
+        "xrange",
+    ]
 else:
     __all__ = []

@@ -9,7 +9,8 @@ def with_metaclass(meta, *bases):
     class metaclass(meta):
         def __new__(cls, name, this_bases, d):
             return meta(name, bases, d)
-    return type.__new__(metaclass, 'temporary_class', (), {})
+
+    return type.__new__(metaclass, "temporary_class", (), {})
 
 
 if PY2:
@@ -22,8 +23,10 @@ if PY2:
         # In python2, the __str__ should be __unicode__
         # and __str__ should return bytes.
         cls.__unicode__ = cls.__str__
+
         def __str__(self):
-            return self.__unicode__().encode('utf-8')
+            return self.__unicode__().encode("utf-8")
+
         cls.__str__ = __str__
         return cls
 
@@ -34,17 +37,18 @@ if PY2:
         # careful encoding the input multiple times, so we only encode
         # if we get a unicode type.
         original_repr_method = cls.__repr__
+
         def __repr__(self):
             original_repr = original_repr_method(self)
             if isinstance(original_repr, text_type):
-                original_repr = original_repr.encode('unicode_escape')
+                original_repr = original_repr.encode("unicode_escape")
             return original_repr
+
         cls.__repr__ = __repr__
         return cls
 
     def get_methods(cls):
-        for name, method in inspect.getmembers(cls,
-                                               predicate=inspect.ismethod):
+        for name, method in inspect.getmembers(cls, predicate=inspect.ismethod):
             yield name, method
 
 else:
@@ -60,6 +64,5 @@ else:
         return cls
 
     def get_methods(cls):
-        for name, method in inspect.getmembers(cls,
-                                               predicate=inspect.isfunction):
+        for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
             yield name, method

@@ -26,20 +26,21 @@ class CollectionDocumenter(BaseDocumenter):
         collections_list = []
         add_resource_type_overview(
             section=section,
-            resource_type='Collections',
+            resource_type="Collections",
             description=(
-                'Collections provide an interface to iterate over and '
-                'manipulate groups of resources. '),
-            intro_link='guide_collections')
-        self.member_map['collections'] = collections_list
+                "Collections provide an interface to iterate over and "
+                "manipulate groups of resources. "
+            ),
+            intro_link="guide_collections",
+        )
+        self.member_map["collections"] = collections_list
         for collection in collections:
             collection_section = section.add_new_section(collection.name)
             collections_list.append(collection.name)
             self._document_collection(collection_section, collection)
 
     def _document_collection(self, section, collection):
-        methods = get_instance_public_methods(
-            getattr(self._resource, collection.name))
+        methods = get_instance_public_methods(getattr(self._resource, collection.name))
         document_collection_object(section, collection)
         batch_actions = {}
         for batch_action in collection.batch_actions:
@@ -54,7 +55,7 @@ class CollectionDocumenter(BaseDocumenter):
                     event_emitter=self._resource.meta.client.meta.events,
                     batch_action_model=batch_actions[method],
                     collection_model=collection,
-                    service_model=self._resource.meta.client.meta.service_model
+                    service_model=self._resource.meta.client.meta.service_model,
                 )
             else:
                 document_collection_method(
@@ -63,12 +64,11 @@ class CollectionDocumenter(BaseDocumenter):
                     action_name=method,
                     event_emitter=self._resource.meta.client.meta.events,
                     collection_model=collection,
-                    service_model=self._resource.meta.client.meta.service_model
+                    service_model=self._resource.meta.client.meta.service_model,
                 )
 
 
-def document_collection_object(section, collection_model,
-                               include_signature=True):
+def document_collection_object(section, collection_model, include_signature=True):
     """Documents a collection resource object
 
     :param section: The section to write to
@@ -81,16 +81,24 @@ def document_collection_object(section, collection_model,
     if include_signature:
         section.style.start_sphinx_py_attr(collection_model.name)
     section.include_doc_string(
-        'A collection of %s resources.' % collection_model.resource.type)
+        "A collection of %s resources." % collection_model.resource.type
+    )
     section.include_doc_string(
-        'A %s Collection will include all resources by default, '
-        'and extreme caution should be taken when performing '
-        'actions on all resources.' % collection_model.resource.type)
+        "A %s Collection will include all resources by default, "
+        "and extreme caution should be taken when performing "
+        "actions on all resources." % collection_model.resource.type
+    )
 
 
-def document_batch_action(section, resource_name, event_emitter,
-                          batch_action_model, service_model, collection_model,
-                          include_signature=True):
+def document_batch_action(
+    section,
+    resource_name,
+    event_emitter,
+    batch_action_model,
+    service_model,
+    collection_model,
+    include_signature=True,
+):
     """Documents a collection's batch action
 
     :param section: The section to write to
@@ -112,36 +120,45 @@ def document_batch_action(section, resource_name, event_emitter,
         It is useful for generating docstrings.
     """
     operation_model = service_model.operation_model(
-        batch_action_model.request.operation)
-    ignore_params = get_resource_ignore_params(
-        batch_action_model.request.params)
+        batch_action_model.request.operation
+    )
+    ignore_params = get_resource_ignore_params(batch_action_model.request.params)
 
-    example_return_value = 'response'
+    example_return_value = "response"
     if batch_action_model.resource:
         example_return_value = xform_name(batch_action_model.resource.type)
 
     example_resource_name = xform_name(resource_name)
     if service_model.service_name == resource_name:
         example_resource_name = resource_name
-    example_prefix = '%s = %s.%s.%s' % (
-        example_return_value, example_resource_name,
-        collection_model.name, batch_action_model.name
+    example_prefix = "%s = %s.%s.%s" % (
+        example_return_value,
+        example_resource_name,
+        collection_model.name,
+        batch_action_model.name,
     )
     document_model_driven_resource_method(
-        section=section, method_name=batch_action_model.name,
+        section=section,
+        method_name=batch_action_model.name,
         operation_model=operation_model,
         event_emitter=event_emitter,
         method_description=operation_model.documentation,
         example_prefix=example_prefix,
         exclude_input=ignore_params,
         resource_action_model=batch_action_model,
-        include_signature=include_signature
+        include_signature=include_signature,
     )
 
 
-def document_collection_method(section, resource_name, action_name,
-                               event_emitter, collection_model, service_model,
-                               include_signature=True):
+def document_collection_method(
+    section,
+    resource_name,
+    action_name,
+    event_emitter,
+    collection_model,
+    service_model,
+    include_signature=True,
+):
     """Documents a collection method
 
     :param section: The section to write to
@@ -160,8 +177,7 @@ def document_collection_method(section, resource_name, action_name,
     :param include_signature: Whether or not to include the signature.
         It is useful for generating docstrings.
     """
-    operation_model = service_model.operation_model(
-        collection_model.request.operation)
+    operation_model = service_model.operation_model(collection_model.request.operation)
 
     underlying_operation_members = []
     if operation_model.input_shape:
@@ -172,70 +188,91 @@ def document_collection_method(section, resource_name, action_name,
         example_resource_name = resource_name
 
     custom_action_info_dict = {
-        'all': {
-            'method_description': (
-                'Creates an iterable of all %s resources '
-                'in the collection.' % collection_model.resource.type),
-            'example_prefix': '%s_iterator = %s.%s.all' % (
+        "all": {
+            "method_description": (
+                "Creates an iterable of all %s resources "
+                "in the collection." % collection_model.resource.type
+            ),
+            "example_prefix": "%s_iterator = %s.%s.all"
+            % (
                 xform_name(collection_model.resource.type),
-                example_resource_name, collection_model.name),
-            'exclude_input': underlying_operation_members
+                example_resource_name,
+                collection_model.name,
+            ),
+            "exclude_input": underlying_operation_members,
         },
-        'filter': {
-            'method_description': (
-                'Creates an iterable of all %s resources '
-                'in the collection filtered by kwargs passed to '
-                'method. A %s collection will include all resources by '
-                'default if no filters are provided, and extreme '
-                'caution should be taken when performing actions '
-                'on all resources.' % (
-                    collection_model.resource.type,
-                    collection_model.resource.type
-                )),
-            'example_prefix': '%s_iterator = %s.%s.filter' % (
+        "filter": {
+            "method_description": (
+                "Creates an iterable of all %s resources "
+                "in the collection filtered by kwargs passed to "
+                "method. A %s collection will include all resources by "
+                "default if no filters are provided, and extreme "
+                "caution should be taken when performing actions "
+                "on all resources."
+                % (collection_model.resource.type, collection_model.resource.type)
+            ),
+            "example_prefix": "%s_iterator = %s.%s.filter"
+            % (
                 xform_name(collection_model.resource.type),
-                example_resource_name, collection_model.name),
-            'exclude_input': get_resource_ignore_params(
-                collection_model.request.params)
+                example_resource_name,
+                collection_model.name,
+            ),
+            "exclude_input": get_resource_ignore_params(
+                collection_model.request.params
+            ),
         },
-        'limit': {
-            'method_description': (
-                'Creates an iterable up to a specified amount of '
-                '%s resources in the collection.' %
-                collection_model.resource.type),
-            'example_prefix': '%s_iterator = %s.%s.limit' % (
+        "limit": {
+            "method_description": (
+                "Creates an iterable up to a specified amount of "
+                "%s resources in the collection." % collection_model.resource.type
+            ),
+            "example_prefix": "%s_iterator = %s.%s.limit"
+            % (
                 xform_name(collection_model.resource.type),
-                example_resource_name, collection_model.name),
-            'include_input': [
+                example_resource_name,
+                collection_model.name,
+            ),
+            "include_input": [
                 DocumentedShape(
-                    name='count', type_name='integer',
+                    name="count",
+                    type_name="integer",
                     documentation=(
-                        'The limit to the number of resources '
-                        'in the iterable.'))],
-            'exclude_input': underlying_operation_members
+                        "The limit to the number of resources " "in the iterable."
+                    ),
+                )
+            ],
+            "exclude_input": underlying_operation_members,
         },
-        'page_size': {
-            'method_description': (
-                'Creates an iterable of all %s resources '
-                'in the collection, but limits the number of '
-                'items returned by each service call by the specified '
-                'amount.' % collection_model.resource.type),
-            'example_prefix': '%s_iterator = %s.%s.page_size' % (
+        "page_size": {
+            "method_description": (
+                "Creates an iterable of all %s resources "
+                "in the collection, but limits the number of "
+                "items returned by each service call by the specified "
+                "amount." % collection_model.resource.type
+            ),
+            "example_prefix": "%s_iterator = %s.%s.page_size"
+            % (
                 xform_name(collection_model.resource.type),
-                example_resource_name, collection_model.name),
-            'include_input': [
+                example_resource_name,
+                collection_model.name,
+            ),
+            "include_input": [
                 DocumentedShape(
-                    name='count', type_name='integer',
+                    name="count",
+                    type_name="integer",
                     documentation=(
-                        'The number of items returned by each '
-                        'service call'))],
-            'exclude_input': underlying_operation_members
-        }
+                        "The number of items returned by each " "service call"
+                    ),
+                )
+            ],
+            "exclude_input": underlying_operation_members,
+        },
     }
     if action_name in custom_action_info_dict:
         action_info = custom_action_info_dict[action_name]
         document_model_driven_resource_method(
-            section=section, method_name=action_name,
+            section=section,
+            method_name=action_name,
             operation_model=operation_model,
             event_emitter=event_emitter,
             resource_action_model=collection_model,

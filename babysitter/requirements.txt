@@ -1,3 +1,7 @@
 requests
-aws-lambda-powertools==1.23.0
+aws-lambda-powertools==2.15.0
 boto3
+flake8
+pre-commit
+black
+isort

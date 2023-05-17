@@ -20,7 +20,7 @@ class DjangoXRayTracedCursor(XRayTracedCursor):
     def execute(self, query, *args, **kwargs):
         if xray_recorder.stream_sql:
             _previous_meta = copy.copy(self._xray_meta)
-            self._xray_meta['sanitized_query'] = query
+            self._xray_meta["sanitized_query"] = query
         result = super(DjangoXRayTracedCursor, self).execute(query, *args, **kwargs)
         if xray_recorder.stream_sql:
             self._xray_meta = _previous_meta
@@ -29,7 +29,7 @@ class DjangoXRayTracedCursor(XRayTracedCursor):
     def executemany(self, query, *args, **kwargs):
         if xray_recorder.stream_sql:
             _previous_meta = copy.copy(self._xray_meta)
-            self._xray_meta['sanitized_query'] = query
+            self._xray_meta["sanitized_query"] = query
         result = super(DjangoXRayTracedCursor, self).executemany(query, *args, **kwargs)
         if xray_recorder.stream_sql:
             self._xray_meta = _previous_meta
@@ -38,7 +38,7 @@ class DjangoXRayTracedCursor(XRayTracedCursor):
     def callproc(self, proc, args):
         if xray_recorder.stream_sql:
             _previous_meta = copy.copy(self._xray_meta)
-            self._xray_meta['sanitized_query'] = proc
+            self._xray_meta["sanitized_query"] = proc
         result = super(DjangoXRayTracedCursor, self).callproc(proc, args)
         if xray_recorder.stream_sql:
             self._xray_meta = _previous_meta
@@ -46,37 +46,37 @@ class DjangoXRayTracedCursor(XRayTracedCursor):
 
 
 def _patch_cursor(cursor_name, conn):
-    attr = '_xray_original_{}'.format(cursor_name)
+    attr = "_xray_original_{}".format(cursor_name)
 
     if hasattr(conn, attr):
-        log.debug('django built-in db {} already patched'.format(cursor_name))
+        log.debug("django built-in db {} already patched".format(cursor_name))
         return
 
     if not hasattr(conn, cursor_name):
-        log.debug('django built-in db does not have {}'.format(cursor_name))
+        log.debug("django built-in db does not have {}".format(cursor_name))
         return
 
     setattr(conn, attr, getattr(conn, cursor_name))
 
     meta = {}
 
-    if hasattr(conn, 'vendor'):
-        meta['database_type'] = conn.vendor
+    if hasattr(conn, "vendor"):
+        meta["database_type"] = conn.vendor
 
     def cursor(self, *args, **kwargs):
 
         host = None
         user = None
 
-        if hasattr(self, 'settings_dict'):
+        if hasattr(self, "settings_dict"):
             settings = self.settings_dict
-            host = settings.get('HOST', None)
-            user = settings.get('USER', None)
+            host = settings.get("HOST", None)
+            user = settings.get("USER", None)
 
         if host:
-            meta['name'] = host
+            meta["name"] = host
         if user:
-            meta['user'] = user
+            meta["user"] = user
 
         original_cursor = getattr(self, attr)(*args, **kwargs)
         return DjangoXRayTracedCursor(original_cursor, meta)
@@ -85,5 +85,5 @@ def _patch_cursor(cursor_name, conn):
 
 
 def _patch_conn(conn):
-    _patch_cursor('cursor', conn)
-    _patch_cursor('chunked_cursor', conn)
+    _patch_cursor("cursor", conn)
+    _patch_cursor("chunked_cursor", conn)

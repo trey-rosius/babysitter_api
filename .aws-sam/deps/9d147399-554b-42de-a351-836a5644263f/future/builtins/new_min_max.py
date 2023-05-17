@@ -1,6 +1,7 @@
 import itertools
 
 from future import utils
+
 if utils.PY2:
     from __builtin__ import max as _builtin_max, min as _builtin_min
 else:
@@ -27,13 +28,13 @@ def new_min_max(_builtin_func, *args, **kwargs):
     """
 
     for key, _ in kwargs.items():
-        if key not in set(['key', 'default']):
-            raise TypeError('Illegal argument %s', key)
+        if key not in set(["key", "default"]):
+            raise TypeError("Illegal argument %s", key)
 
     if len(args) == 0:
         raise TypeError
 
-    if len(args) != 1 and kwargs.get('default', _SENTINEL) is not _SENTINEL:
+    if len(args) != 1 and kwargs.get("default", _SENTINEL) is not _SENTINEL:
         raise TypeError
 
     if len(args) == 1:
@@ -41,19 +42,21 @@ def new_min_max(_builtin_func, *args, **kwargs):
         try:
             first = next(iterator)
         except StopIteration:
-            if kwargs.get('default', _SENTINEL) is not _SENTINEL:
-                return kwargs.get('default')
+            if kwargs.get("default", _SENTINEL) is not _SENTINEL:
+                return kwargs.get("default")
             else:
-                raise ValueError('{}() arg is an empty sequence'.format(_builtin_func.__name__))
+                raise ValueError(
+                    "{}() arg is an empty sequence".format(_builtin_func.__name__)
+                )
         else:
             iterator = itertools.chain([first], iterator)
-        if kwargs.get('key') is not None:
-            return _builtin_func(iterator, key=kwargs.get('key'))
+        if kwargs.get("key") is not None:
+            return _builtin_func(iterator, key=kwargs.get("key"))
         else:
             return _builtin_func(iterator)
 
     if len(args) > 1:
-        if kwargs.get('key') is not None:
-            return _builtin_func(args, key=kwargs.get('key'))
+        if kwargs.get("key") is not None:
+            return _builtin_func(args, key=kwargs.get("key"))
         else:
             return _builtin_func(args)

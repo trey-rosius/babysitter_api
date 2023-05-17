@@ -6,7 +6,9 @@ from aws_lambda_powertools.event_handler.appsync import Router
 from resolvers.jobs.create_job import create_job as createJob
 from resolvers.jobs.book_nanny import book_nanny as bookNanny
 from resolvers.jobs.list_all_jobs import list_all_jobs as listAllJobs
-from resolvers.jobs.list_all_jobs_per_parent import list_all_jobs_per_parent as listAllJobsPerParent
+from resolvers.jobs.list_all_jobs_per_parent import (
+    list_all_jobs_per_parent as listAllJobsPerParent,
+)
 from resolvers.jobs.jobs_applied_to import jobs_applied_to as jobsAppliedTo
 
 logger = Logger(child=True)
@@ -21,7 +23,12 @@ def create_job(job=None) -> Dict[str, Decimal]:
 
 
 @router.resolver(type_name="Mutation", field_name="bookNanny")
-def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", jobApplicationStatus: str = ""):
+def book_nanny(
+    username: str = "",
+    jobId: str = "",
+    applicationId: str = "",
+    jobApplicationStatus: str = "",
+):
     return bookNanny(username, jobId, applicationId, jobApplicationStatus)
 
 

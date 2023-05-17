@@ -14,10 +14,23 @@ from .apigwv2 import (
     RequestContextV2AuthorizerJwt,
     RequestContextV2Http,
 )
-from .cloudwatch import CloudWatchLogsData, CloudWatchLogsDecode, CloudWatchLogsLogEvent, CloudWatchLogsModel
-from .dynamodb import DynamoDBStreamChangedRecordModel, DynamoDBStreamModel, DynamoDBStreamRecordModel
+from .cloudwatch import (
+    CloudWatchLogsData,
+    CloudWatchLogsDecode,
+    CloudWatchLogsLogEvent,
+    CloudWatchLogsModel,
+)
+from .dynamodb import (
+    DynamoDBStreamChangedRecordModel,
+    DynamoDBStreamModel,
+    DynamoDBStreamRecordModel,
+)
 from .event_bridge import EventBridgeModel
-from .kinesis import KinesisDataStreamModel, KinesisDataStreamRecord, KinesisDataStreamRecordPayload
+from .kinesis import (
+    KinesisDataStreamModel,
+    KinesisDataStreamRecord,
+    KinesisDataStreamRecordPayload,
+)
 from .s3 import S3Model, S3RecordModel
 from .s3_object_event import (
     S3ObjectConfiguration,

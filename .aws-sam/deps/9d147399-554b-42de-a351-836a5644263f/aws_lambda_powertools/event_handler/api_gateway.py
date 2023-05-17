@@ -17,7 +17,11 @@ from aws_lambda_powertools.event_handler.exceptions import NotFoundError, Servic
 from aws_lambda_powertools.shared import constants
 from aws_lambda_powertools.shared.functions import resolve_truthy_env_var_choice
 from aws_lambda_powertools.shared.json_encoder import Encoder
-from aws_lambda_powertools.utilities.data_classes import ALBEvent, APIGatewayProxyEvent, APIGatewayProxyEventV2
+from aws_lambda_powertools.utilities.data_classes import (
+    ALBEvent,
+    APIGatewayProxyEvent,
+    APIGatewayProxyEventV2,
+)
 from aws_lambda_powertools.utilities.data_classes.common import BaseProxyEvent
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -27,7 +31,7 @@ _DYNAMIC_ROUTE_PATTERN = r"(<\w+>)"
 _SAFE_URI = "-._~()'!*:@,;"  # https://www.ietf.org/rfc/rfc3986.txt
 # API GW/ALB decode non-safe URI chars; we must support them too
 _UNSAFE_URI = "%<>\[\]{}|^"  # noqa: W605
-_NAMED_GROUP_BOUNDARY_PATTERN = fr"(?P\1[{_SAFE_URI}{_UNSAFE_URI}\\w]+)"
+_NAMED_GROUP_BOUNDARY_PATTERN = rf"(?P\1[{_SAFE_URI}{_UNSAFE_URI}\\w]+)"
 
 
 class ProxyEventType(Enum):
@@ -83,7 +87,13 @@ class CORSConfig:
     ```
     """
 
-    _REQUIRED_HEADERS = ["Authorization", "Content-Type", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
+    _REQUIRED_HEADERS = [
+        "Authorization",
+        "Content-Type",
+        "X-Amz-Date",
+        "X-Api-Key",
+        "X-Amz-Security-Token",
+    ]
 
     def __init__(
         self,
@@ -167,7 +177,13 @@ class Route:
     """Internally used Route Configuration"""
 
     def __init__(
-        self, method: str, rule: Any, func: Callable, cors: bool, compress: bool, cache_control: Optional[str]
+        self,
+        method: str,
+        rule: Any,
+        func: Callable,
+        cors: bool,
+        compress: bool,
+        cache_control: Optional[str],
     ):
         self.method = method.upper()
         self.rule = rule
@@ -190,7 +206,9 @@ class ResponseBuilder:
 
     def _add_cache_control(self, cache_control: str):
         """Set the specified cache control headers for 200 http responses. For non-200 `no-cache` is used."""
-        self.response.headers["Cache-Control"] = cache_control if self.response.status_code == 200 else "no-cache"
+        self.response.headers["Cache-Control"] = (
+            cache_control if self.response.status_code == 200 else "no-cache"
+        )
 
     def _compress(self):
         """Compress the response body, but only if `Accept-Encoding` headers includes gzip."""
@@ -209,10 +227,14 @@ class ResponseBuilder:
             self._add_cors(cors or CORSConfig())
         if self.route.cache_control:
             self._add_cache_control(self.route.cache_control)
-        if self.route.compress and "gzip" in (event.get_header_value("accept-encoding", "") or ""):
+        if self.route.compress and "gzip" in (
+            event.get_header_value("accept-encoding", "") or ""
+        ):
             self._compress()
 
-    def build(self, event: BaseProxyEvent, cors: Optional[CORSConfig] = None) -> Dict[str, Any]:
+    def build(
+        self, event: BaseProxyEvent, cors: Optional[CORSConfig] = None
+    ) -> Dict[str, Any]:
         """Build the full response dict to be returned by the lambda"""
         self._route(event, cors)
 
@@ -243,7 +265,13 @@ class BaseRouter(ABC):
     ):
         raise NotImplementedError()
 
-    def get(self, rule: str, cors: Optional[bool] = None, compress: bool = False, cache_control: Optional[str] = None):
+    def get(
+        self,
+        rule: str,
+        cors: Optional[bool] = None,
+        compress: bool = False,
+        cache_control: Optional[str] = None,
+    ):
         """Get route decorator with GET `method`
 
         Examples
@@ -268,7 +296,13 @@ class BaseRouter(ABC):
         """
         return self.route(rule, "GET", cors, compress, cache_control)
 
-    def post(self, rule: str, cors: Optional[bool] = None, compress: bool = False, cache_control: Optional[str] = None):
+    def post(
+        self,
+        rule: str,
+        cors: Optional[bool] = None,
+        compress: bool = False,
+        cache_control: Optional[str] = None,
+    ):
         """Post route decorator with POST `method`
 
         Examples
@@ -294,7 +328,13 @@ class BaseRouter(ABC):
         """
         return self.route(rule, "POST", cors, compress, cache_control)
 
-    def put(self, rule: str, cors: Optional[bool] = None, compress: bool = False, cache_control: Optional[str] = None):
+    def put(
+        self,
+        rule: str,
+        cors: Optional[bool] = None,
+        compress: bool = False,
+        cache_control: Optional[str] = None,
+    ):
         """Put route decorator with PUT `method`
 
         Examples
@@ -321,7 +361,11 @@ class BaseRouter(ABC):
         return self.route(rule, "PUT", cors, compress, cache_control)
 
     def delete(
-        self, rule: str, cors: Optional[bool] = None, compress: bool = False, cache_control: Optional[str] = None
+        self,
+        rule: str,
+        cors: Optional[bool] = None,
+        compress: bool = False,
+        cache_control: Optional[str] = None,
     ):
         """Delete route decorator with DELETE `method`
 
@@ -348,7 +392,11 @@ class BaseRouter(ABC):
         return self.route(rule, "DELETE", cors, compress, cache_control)
 
     def patch(
-        self, rule: str, cors: Optional[bool] = None, compress: bool = False, cache_control: Optional[str] = None
+        self,
+        rule: str,
+        cors: Optional[bool] = None,
+        compress: bool = False,
+        cache_control: Optional[str] = None,
     ):
         """Patch route decorator with PATCH `method`
 
@@ -444,7 +492,9 @@ class ApiGatewayResolver(BaseRouter):
         self._strip_prefixes = strip_prefixes
 
         # Allow for a custom serializer or a concise json serialization
-        self._serializer = serializer or partial(json.dumps, separators=(",", ":"), cls=Encoder)
+        self._serializer = serializer or partial(
+            json.dumps, separators=(",", ":"), cls=Encoder
+        )
 
         if self._debug:
             # Always does a pretty print when in debug mode
@@ -462,20 +512,35 @@ class ApiGatewayResolver(BaseRouter):
 
         def register_resolver(func: Callable):
             methods = (method,) if isinstance(method, str) else method
-            logger.debug(f"Adding route using rule {rule} and methods: {','.join((m.upper() for m in methods))}")
+            logger.debug(
+                f"Adding route using rule {rule} and methods: {','.join((m.upper() for m in methods))}"
+            )
             if cors is None:
                 cors_enabled = self._cors_enabled
             else:
                 cors_enabled = cors
 
             for item in methods:
-                self._routes.append(Route(item, self._compile_regex(rule), func, cors_enabled, compress, cache_control))
+                self._routes.append(
+                    Route(
+                        item,
+                        self._compile_regex(rule),
+                        func,
+                        cors_enabled,
+                        compress,
+                        cache_control,
+                    )
+                )
                 route_key = item + rule
                 if route_key in self._route_keys:
-                    warnings.warn(f"A route like this was already registered. method: '{item}' rule: '{rule}'")
+                    warnings.warn(
+                        f"A route like this was already registered. method: '{item}' rule: '{rule}'"
+                    )
                 self._route_keys.append(route_key)
                 if cors_enabled:
-                    logger.debug(f"Registering method {item.upper()} to Allow Methods in CORS")
+                    logger.debug(
+                        f"Registering method {item.upper()} to Allow Methods in CORS"
+                    )
                     self._cors_methods.add(item.upper())
             return func
 
@@ -534,7 +599,9 @@ class ApiGatewayResolver(BaseRouter):
 
         NOTE: See #520 for context
         """
-        rule_regex: str = re.sub(_DYNAMIC_ROUTE_PATTERN, _NAMED_GROUP_BOUNDARY_PATTERN, rule)
+        rule_regex: str = re.sub(
+            _DYNAMIC_ROUTE_PATTERN, _NAMED_GROUP_BOUNDARY_PATTERN, rule
+        )
         return re.compile("^{}$".format(rule_regex))
 
     def _to_proxy_event(self, event: Dict) -> BaseProxyEvent:
@@ -558,7 +625,9 @@ class ApiGatewayResolver(BaseRouter):
             match_results: Optional[re.Match] = route.rule.match(path)
             if match_results:
                 logger.debug("Found a registered route. Calling function")
-                return self._call_route(route, match_results.groupdict())  # pass fn args
+                return self._call_route(
+                    route, match_results.groupdict()
+                )  # pass fn args
 
         logger.debug(f"No match found for path {path} and method {method}")
         return self._not_found(method)
@@ -592,9 +661,17 @@ class ApiGatewayResolver(BaseRouter):
             headers.update(self._cors.to_dict())
 
             if method == "OPTIONS":
-                logger.debug("Pre-flight request detected. Returning CORS with null response")
-                headers["Access-Control-Allow-Methods"] = ",".join(sorted(self._cors_methods))
-                return ResponseBuilder(Response(status_code=204, content_type=None, headers=headers, body=None))
+                logger.debug(
+                    "Pre-flight request detected. Returning CORS with null response"
+                )
+                headers["Access-Control-Allow-Methods"] = ",".join(
+                    sorted(self._cors_methods)
+                )
+                return ResponseBuilder(
+                    Response(
+                        status_code=204, content_type=None, headers=headers, body=None
+                    )
+                )
 
         handler = self._lookup_exception_handler(NotFoundError)
         if handler:
@@ -605,7 +682,9 @@ class ApiGatewayResolver(BaseRouter):
                 status_code=HTTPStatus.NOT_FOUND.value,
                 content_type=content_types.APPLICATION_JSON,
                 headers=headers,
-                body=self._json_dump({"statusCode": HTTPStatus.NOT_FOUND.value, "message": "Not found"}),
+                body=self._json_dump(
+                    {"statusCode": HTTPStatus.NOT_FOUND.value, "message": "Not found"}
+                ),
             )
         )
 
@@ -650,7 +729,9 @@ class ApiGatewayResolver(BaseRouter):
                 return self._exception_handlers[cls]
         return None
 
-    def _call_exception_handler(self, exp: Exception, route: Route) -> Optional[ResponseBuilder]:
+    def _call_exception_handler(
+        self, exp: Exception, route: Route
+    ) -> Optional[ResponseBuilder]:
         handler = self._lookup_exception_handler(type(exp))
         if handler:
             return ResponseBuilder(handler(exp), route)
@@ -660,7 +741,9 @@ class ApiGatewayResolver(BaseRouter):
                 Response(
                     status_code=exp.status_code,
                     content_type=content_types.APPLICATION_JSON,
-                    body=self._json_dump({"statusCode": exp.status_code, "message": exp.msg}),
+                    body=self._json_dump(
+                        {"statusCode": exp.status_code, "message": exp.msg}
+                    ),
                 ),
                 route,
             )
@@ -679,7 +762,9 @@ class ApiGatewayResolver(BaseRouter):
         if isinstance(result, Response):
             return result
 
-        logger.debug("Simple response detected, serializing return before constructing final response")
+        logger.debug(
+            "Simple response detected, serializing return before constructing final response"
+        )
         return Response(
             status_code=200,
             content_type=content_types.APPLICATION_JSON,

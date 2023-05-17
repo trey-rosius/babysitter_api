@@ -8,12 +8,18 @@ Licences:
 python-modernize licence: BSD (from python-modernize/LICENSE)
 """
 
-from lib2to3.fixer_util import (FromImport, Newline, is_import,
-                                find_root, does_tree_import, Comma)
+from lib2to3.fixer_util import (
+    FromImport,
+    Newline,
+    is_import,
+    find_root,
+    does_tree_import,
+    Comma,
+)
 from lib2to3.pytree import Leaf, Node
 from lib2to3.pygram import python_symbols as syms, python_grammar
 from lib2to3.pygram import token
-from lib2to3.fixer_util import (Node, Call, Name, syms, Comma, Number)
+from lib2to3.fixer_util import Node, Call, Name, syms, Comma, Number
 import re
 
 
@@ -32,33 +38,37 @@ def canonical_fix_name(fix, avail_fixes):
     if ".fix_" in fix:
         return fix
     else:
-        if fix.startswith('fix_'):
+        if fix.startswith("fix_"):
             fix = fix[4:]
         # Infer the full module name for the fixer.
         # First ensure that no names clash (e.g.
         # lib2to3.fixes.fix_blah and libfuturize.fixes.fix_blah):
-        found = [f for f in avail_fixes
-                 if f.endswith('fix_{0}'.format(fix))]
+        found = [f for f in avail_fixes if f.endswith("fix_{0}".format(fix))]
         if len(found) > 1:
-            raise ValueError("Ambiguous fixer name. Choose a fully qualified "
-                  "module name instead from these:\n" +
-                  "\n".join("  " + myf for myf in found))
+            raise ValueError(
+                "Ambiguous fixer name. Choose a fully qualified "
+                "module name instead from these:\n"
+                + "\n".join("  " + myf for myf in found)
+            )
         elif len(found) == 0:
             raise ValueError("Unknown fixer. Use --list-fixes or -l for a list.")
         return found[0]
 
 
-
 ## These functions are from 3to2 by Joe Amenta:
 
+
 def Star(prefix=None):
-    return Leaf(token.STAR, u'*', prefix=prefix)
+    return Leaf(token.STAR, "*", prefix=prefix)
+
 
 def DoubleStar(prefix=None):
-    return Leaf(token.DOUBLESTAR, u'**', prefix=prefix)
+    return Leaf(token.DOUBLESTAR, "**", prefix=prefix)
+
 
 def Minus(prefix=None):
-    return Leaf(token.MINUS, u'-', prefix=prefix)
+    return Leaf(token.MINUS, "-", prefix=prefix)
+
 
 def commatize(leafs):
     """
@@ -72,6 +82,7 @@ def commatize(leafs):
     del new_leafs[-1]
     return new_leafs
 
+
 def indentation(node):
     """
     Returns the indentation for this node
@@ -80,7 +91,7 @@ def indentation(node):
     while node.parent is not None and node.parent.type != syms.suite:
         node = node.parent
     if node.parent is None:
-        return u""
+        return ""
     # The first three children of a suite are NEWLINE, INDENT, (some other node)
     # INDENT.value contains the indentation for this suite
     # anything after (some other node) has the indentation as its prefix.
@@ -89,9 +100,10 @@ def indentation(node):
     elif node.prev_sibling is not None and node.prev_sibling.type == token.INDENT:
         return node.prev_sibling.value
     elif node.prev_sibling is None:
-        return u""
+        return ""
     else:
         return node.prefix
+
 
 def indentation_step(node):
     """
@@ -105,9 +117,10 @@ def indentation_step(node):
     all_indents = set(i.value for i in r.pre_order() if i.type == token.INDENT)
     if not all_indents:
         # nothing is indented anywhere, so we get to pick what we want
-        return u"    " # four spaces is a popular convention
+        return "    "  # four spaces is a popular convention
     else:
         return min(all_indents)
+
 
 def suitify(parent):
     """
@@ -124,14 +137,18 @@ def suitify(parent):
         if node.type == token.COLON:
             break
     else:
-        raise ValueError(u"No class suite and no ':'!")
+        raise ValueError("No class suite and no ':'!")
     # Move everything into a suite node
-    suite = Node(syms.suite, [Newline(), Leaf(token.INDENT, indentation(node) + indentation_step(node))])
-    one_node = parent.children[i+1]
+    suite = Node(
+        syms.suite,
+        [Newline(), Leaf(token.INDENT, indentation(node) + indentation_step(node))],
+    )
+    one_node = parent.children[i + 1]
     one_node.remove()
-    one_node.prefix = u''
+    one_node.prefix = ""
     suite.append_child(one_node)
     parent.append_child(suite)
+
 
 def NameImport(package, as_name=None, prefix=None):
     """
@@ -140,15 +157,22 @@ def NameImport(package, as_name=None, prefix=None):
     import <package> [as <as_name>]
     """
     if prefix is None:
-        prefix = u""
-    children = [Name(u"import", prefix=prefix), package]
+        prefix = ""
+    children = [Name("import", prefix=prefix), package]
     if as_name is not None:
-        children.extend([Name(u"as", prefix=u" "),
-                         Name(as_name, prefix=u" ")])
+        children.extend([Name("as", prefix=" "), Name(as_name, prefix=" ")])
     return Node(syms.import_name, children)
 
-_compound_stmts = (syms.if_stmt, syms.while_stmt, syms.for_stmt, syms.try_stmt, syms.with_stmt)
+
+_compound_stmts = (
+    syms.if_stmt,
+    syms.while_stmt,
+    syms.for_stmt,
+    syms.try_stmt,
+    syms.with_stmt,
+)
 _import_stmts = (syms.import_name, syms.import_from)
+
 
 def import_binding_scope(node):
     """
@@ -209,10 +233,11 @@ def import_binding_scope(node):
             if p is None:
                 break
 
+
 def ImportAsName(name, as_name, prefix=None):
     new_name = Name(name)
-    new_as = Name(u"as", prefix=u" ")
-    new_as_name = Name(as_name, prefix=u" ")
+    new_as = Name("as", prefix=" ")
+    new_as_name = Name(as_name, prefix=" ")
     new_node = Node(syms.import_as_name, [new_name, new_as, new_as_name])
     if prefix is not None:
         new_node.prefix = prefix
@@ -223,8 +248,11 @@ def is_docstring(node):
     """
     Returns True if the node appears to be a docstring
     """
-    return (node.type == syms.simple_stmt and
-            len(node.children) > 0 and node.children[0].type == token.STRING)
+    return (
+        node.type == syms.simple_stmt
+        and len(node.children) > 0
+        and node.children[0].type == token.STRING
+    )
 
 
 def future_import(feature, node):
@@ -233,7 +261,7 @@ def future_import(feature, node):
     """
     root = find_root(node)
 
-    if does_tree_import(u"__future__", feature, node):
+    if does_tree_import("__future__", feature, node):
         return
 
     # Look for a shebang or encoding line
@@ -254,16 +282,16 @@ def future_import(feature, node):
             # already imported
             return
 
-    import_ = FromImport(u'__future__', [Leaf(token.NAME, feature, prefix=" ")])
+    import_ = FromImport("__future__", [Leaf(token.NAME, feature, prefix=" ")])
     if shebang_encoding_idx == 0 and idx == 0:
         # If this __future__ import would go on the first line,
         # detach the shebang / encoding prefix from the current first line.
         # and attach it to our new __future__ import node.
         import_.prefix = root.children[0].prefix
-        root.children[0].prefix = u''
+        root.children[0].prefix = ""
         # End the __future__ import line with a newline and add a blank line
         # afterwards:
-    children = [import_ , Newline()]
+    children = [import_, Newline()]
     root.insert_child(idx, Node(syms.simple_stmt, children))
 
 
@@ -273,13 +301,16 @@ def future_import2(feature, node):
     """
     root = find_root(node)
 
-    if does_tree_import(u"__future__", feature, node):
+    if does_tree_import("__future__", feature, node):
         return
 
     insert_pos = 0
     for idx, node in enumerate(root.children):
-        if node.type == syms.simple_stmt and node.children and \
-           node.children[0].type == token.STRING:
+        if (
+            node.type == syms.simple_stmt
+            and node.children
+            and node.children[0].type == token.STRING
+        ):
             insert_pos = idx + 1
             break
 
@@ -289,18 +320,19 @@ def future_import2(feature, node):
             continue
 
         prefix = thing_after.prefix
-        thing_after.prefix = u""
+        thing_after.prefix = ""
         break
     else:
-        prefix = u""
+        prefix = ""
 
-    import_ = FromImport(u"__future__", [Leaf(token.NAME, feature, prefix=u" ")])
+    import_ = FromImport("__future__", [Leaf(token.NAME, feature, prefix=" ")])
 
     children = [import_, Newline()]
     root.insert_child(insert_pos, Node(syms.simple_stmt, children, prefix=prefix))
 
+
 def parse_args(arglist, scheme):
-    u"""
+    """
     Parse a list of arguments into a dict
     """
     arglist = [i for i in arglist if i.type != token.COMMA]
@@ -326,8 +358,9 @@ def parse_args(arglist, scheme):
 
 
 def is_import_stmt(node):
-    return (node.type == syms.simple_stmt and node.children and
-            is_import(node.children[0]))
+    return (
+        node.type == syms.simple_stmt and node.children and is_import(node.children[0])
+    )
 
 
 def touch_import_top(package, name_to_import, node):
@@ -354,9 +387,8 @@ def touch_import_top(package, name_to_import, node):
 
     # Look for __future__ imports and insert below them
     found = False
-    for name in ['absolute_import', 'division', 'print_function',
-                 'unicode_literals']:
-        if does_tree_import('__future__', name, root):
+    for name in ["absolute_import", "division", "print_function", "unicode_literals"]:
+        if does_tree_import("__future__", name, root):
             found = True
             break
     if found:
@@ -391,27 +423,39 @@ def touch_import_top(package, name_to_import, node):
         insert_pos = idx
 
     if package is None:
-        import_ = Node(syms.import_name, [
-            Leaf(token.NAME, u"import"),
-            Leaf(token.NAME, name_to_import, prefix=u" ")
-        ])
+        import_ = Node(
+            syms.import_name,
+            [Leaf(token.NAME, "import"), Leaf(token.NAME, name_to_import, prefix=" ")],
+        )
     else:
-        import_ = FromImport(package, [Leaf(token.NAME, name_to_import, prefix=u" ")])
-        if name_to_import == u'standard_library':
+        import_ = FromImport(package, [Leaf(token.NAME, name_to_import, prefix=" ")])
+        if name_to_import == "standard_library":
             # Add:
             #     standard_library.install_aliases()
             # after:
             #     from future import standard_library
-            install_hooks = Node(syms.simple_stmt,
-                                 [Node(syms.power,
-                                       [Leaf(token.NAME, u'standard_library'),
-                                        Node(syms.trailer, [Leaf(token.DOT, u'.'),
-                                        Leaf(token.NAME, u'install_aliases')]),
-                                        Node(syms.trailer, [Leaf(token.LPAR, u'('),
-                                                            Leaf(token.RPAR, u')')])
-                                       ])
-                                 ]
-                                )
+            install_hooks = Node(
+                syms.simple_stmt,
+                [
+                    Node(
+                        syms.power,
+                        [
+                            Leaf(token.NAME, "standard_library"),
+                            Node(
+                                syms.trailer,
+                                [
+                                    Leaf(token.DOT, "."),
+                                    Leaf(token.NAME, "install_aliases"),
+                                ],
+                            ),
+                            Node(
+                                syms.trailer,
+                                [Leaf(token.LPAR, "("), Leaf(token.RPAR, ")")],
+                            ),
+                        ],
+                    )
+                ],
+            )
             children_hooks = [install_hooks, Newline()]
         else:
             children_hooks = []
@@ -420,14 +464,17 @@ def touch_import_top(package, name_to_import, node):
 
     children_import = [import_, Newline()]
     old_prefix = root.children[insert_pos].prefix
-    root.children[insert_pos].prefix = u''
-    root.insert_child(insert_pos, Node(syms.simple_stmt, children_import, prefix=old_prefix))
+    root.children[insert_pos].prefix = ""
+    root.insert_child(
+        insert_pos, Node(syms.simple_stmt, children_import, prefix=old_prefix)
+    )
     if len(children_hooks) > 0:
         root.insert_child(insert_pos + 1, Node(syms.simple_stmt, children_hooks))
 
 
 ## The following functions are from python-modernize by Armin Ronacher:
 # (a little edited).
+
 
 def check_future_import(node):
     """If this is a future import, return set of symbols that are imported,
@@ -438,10 +485,13 @@ def check_future_import(node):
         return set()
     node = node.children[0]
     # now node is the import_from node
-    if not (node.type == syms.import_from and
-            # node.type == token.NAME and      # seems to break it
-            hasattr(node.children[1], 'value') and
-            node.children[1].value == u'__future__'):
+    if not (
+        node.type == syms.import_from
+        and
+        # node.type == token.NAME and      # seems to break it
+        hasattr(node.children[1], "value")
+        and node.children[1].value == "__future__"
+    ):
         return set()
     if node.children[3].type == token.LPAR:
         node = node.children[4]
@@ -471,7 +521,7 @@ def check_future_import(node):
         assert False, "strange import: %s" % savenode
 
 
-SHEBANG_REGEX = r'^#!.*python'
+SHEBANG_REGEX = r"^#!.*python"
 ENCODING_REGEX = r"^#.*coding[:=]\s*([-\w.]+)"
 
 

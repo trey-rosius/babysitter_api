@@ -30,21 +30,21 @@ from future.builtins import range
 from future.builtins import bytes
 
 __all__ = [
-    'body_decode',
-    'body_encode',
-    'decode',
-    'decodestring',
-    'header_encode',
-    'header_length',
-    ]
+    "body_decode",
+    "body_encode",
+    "decode",
+    "decodestring",
+    "header_encode",
+    "header_length",
+]
 
 
 from base64 import b64encode
 from binascii import b2a_base64, a2b_base64
 
-CRLF = '\r\n'
-NL = '\n'
-EMPTYSTRING = ''
+CRLF = "\r\n"
+NL = "\n"
+EMPTYSTRING = ""
 
 # See also Charset.py
 MISC_LEN = 7
@@ -61,7 +61,7 @@ def header_length(bytearray):
     return n
 
 
-def header_encode(header_bytes, charset='iso-8859-1'):
+def header_encode(header_bytes, charset="iso-8859-1"):
     """Encode a single header line with Base64 encoding in a given charset.
 
     charset names the character set to use to encode the header.  It defaults
@@ -72,7 +72,7 @@ def header_encode(header_bytes, charset='iso-8859-1'):
     if isinstance(header_bytes, str):
         header_bytes = header_bytes.encode(charset)
     encoded = b64encode(header_bytes).decode("ascii")
-    return '=?%s?b?%s?=' % (charset, encoded)
+    return "=?%s?b?%s?=" % (charset, encoded)
 
 
 def body_encode(s, maxlinelen=76, eol=NL):
@@ -93,7 +93,7 @@ def body_encode(s, maxlinelen=76, eol=NL):
     for i in range(0, len(s), max_unencoded):
         # BAW: should encode() inherit b2a_base64()'s dubious behavior in
         # adding a newline to the encoded string?
-        enc = b2a_base64(s[i:i + max_unencoded]).decode("ascii")
+        enc = b2a_base64(s[i : i + max_unencoded]).decode("ascii")
         if enc.endswith(NL) and eol != NL:
             enc = enc[:-1] + eol
         encvec.append(enc)
@@ -110,7 +110,7 @@ def decode(string):
     if not string:
         return bytes()
     elif isinstance(string, str):
-        return a2b_base64(string.encode('raw-unicode-escape'))
+        return a2b_base64(string.encode("raw-unicode-escape"))
     else:
         return a2b_base64(string)
 

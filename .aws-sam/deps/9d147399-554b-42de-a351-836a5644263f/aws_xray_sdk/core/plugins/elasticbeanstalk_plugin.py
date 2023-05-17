@@ -3,9 +3,9 @@ import json
 
 log = logging.getLogger(__name__)
 
-CONF_PATH = '/var/elasticbeanstalk/xray/environment.conf'
-SERVICE_NAME = 'elastic_beanstalk'
-ORIGIN = 'AWS::ElasticBeanstalk::Environment'
+CONF_PATH = "/var/elasticbeanstalk/xray/environment.conf"
+SERVICE_NAME = "elastic_beanstalk"
+ORIGIN = "AWS::ElasticBeanstalk::Environment"
 
 
 def initialize():

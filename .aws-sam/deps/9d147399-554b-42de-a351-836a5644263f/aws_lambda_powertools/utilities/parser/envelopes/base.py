@@ -11,7 +11,9 @@ class BaseEnvelope(ABC):
     """ABC implementation for creating a supported Envelope"""
 
     @staticmethod
-    def _parse(data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> Union[Model, None]:
+    def _parse(
+        data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> Union[Model, None]:
         """Parses envelope data against model provided
 
         Parameters

@@ -160,7 +160,9 @@ class DynamoDBProvider(BaseProvider):
         config = config or Config()
         session = boto3_session or boto3.session.Session()
 
-        self.table = session.resource("dynamodb", endpoint_url=endpoint_url, config=config).Table(table_name)
+        self.table = session.resource(
+            "dynamodb", endpoint_url=endpoint_url, config=config
+        ).Table(table_name)
 
         self.key_attr = key_attr
         self.sort_attr = sort_attr

@@ -27,13 +27,12 @@ def generate_docs(root_dir, session):
 
     :param session: The boto3 session
     """
-    services_doc_path = os.path.join(root_dir, 'reference', 'services')
+    services_doc_path = os.path.join(root_dir, "reference", "services")
     if not os.path.exists(services_doc_path):
         os.makedirs(services_doc_path)
 
     for service_name in session.get_available_services():
         docs = ServiceDocumenter(service_name, session).document_service()
-        service_doc_path = os.path.join(
-            services_doc_path, service_name + '.rst')
-        with open(service_doc_path, 'wb') as f:
+        service_doc_path = os.path.join(services_doc_path, service_name + ".rst")
+        with open(service_doc_path, "wb") as f:
             f.write(docs)

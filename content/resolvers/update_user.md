@@ -21,7 +21,7 @@ They aren't allowed to update their account status. That access point would be r
 Other attributes they can't update are Username, email, UserType.
 <br />
 
-An account can only be updated, if the primary key already exists. So we'll use 
+An account can only be updated, if the primary key already exists. So we'll use
 dynamoDB's `ConditionExpression="attribute_exists(PK)"` to ensure they account exists before updating.
 <br />
 
@@ -118,8 +118,8 @@ Then add the Resolver under Resources in `template.yaml`.
 ```
 Run the command `sam sync --stack-name babysitter` and build and synchronize the application.
 <br />
-Let's test the endpoint. Same as above, navigate to appsync console, open up the babysitter app, click on Queries and run the 
-`updateUser` Mutation. 
+Let's test the endpoint. Same as above, navigate to appsync console, open up the babysitter app, click on Queries and run the
+`updateUser` Mutation.
 <br />
 
 You'll hit an error like this.
@@ -133,18 +133,18 @@ This issue is related to the longitude and latitude values. They are float value
 by DynamoDB yet. So we have to convert them to Decimal types.
 <br />
 
-Navigate to `update_user_account.py` file and add the Decimal import 
+Navigate to `update_user_account.py` file and add the Decimal import
 `from decimal import Decimal`
 
 <br />
-Next, convert this 
+Next, convert this
 
 ```
 "longitude": user['longitude'],
  "latitude": user['latitude'],
 
 ```
-Into this 
+Into this
 
 ```
  "longitude": Decimal(f"{user['longitude']}"),
@@ -170,7 +170,7 @@ So your item dictionary now looks like this
 Here's where you'll witness the true power of SAM ACCELERATE.
 <br />
 
-When you update a function this way, you don't have to deploy the complete application using 
+When you update a function this way, you don't have to deploy the complete application using
 `sam sync --stack-name babysitter` anymore.
 <br />
 
@@ -180,10 +180,10 @@ in about 7 seconds.
 Please go ahead the try it out.
 <br />
 
->The SAM team went wild with this one.😁 
+>The SAM team went wild with this one.😁
 
 <br />
-So you can build and test out new features of your app real quick. 
+So you can build and test out new features of your app real quick.
 <br />
 
 Another sweet command is Sam sync watch.
@@ -192,7 +192,7 @@ Another sweet command is Sam sync watch.
 The `sam sync --watch` option tells AWS SAM to monitor for file changes and automatically synchronize when changes are detected.
 <br />
 
-If the changes include configuration changes, AWS SAM performs a standard synchronization equivalent to the `sam sync` command. 
+If the changes include configuration changes, AWS SAM performs a standard synchronization equivalent to the `sam sync` command.
 <br />
 
 If the changes are code only, then AWS SAM synchronizes the code with the equivalent of the `sam sync --code` command.

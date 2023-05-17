@@ -43,13 +43,13 @@ class DeleteSubmissionTask(SubmissionTask):
             DeleteObjectTask(
                 transfer_coordinator=self._transfer_coordinator,
                 main_kwargs={
-                    'client': client,
-                    'bucket': call_args.bucket,
-                    'key': call_args.key,
-                    'extra_args': call_args.extra_args,
+                    "client": client,
+                    "bucket": call_args.bucket,
+                    "key": call_args.key,
+                    "extra_args": call_args.extra_args,
                 },
-                is_final=True
-            )
+                is_final=True,
+            ),
         )
 
 

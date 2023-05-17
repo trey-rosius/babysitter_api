@@ -54,22 +54,21 @@ def build_identifiers(identifiers, parent, params=None, raw_response=None):
         source = identifier.source
         target = identifier.target
 
-        if source == 'response':
+        if source == "response":
             value = jmespath.search(identifier.path, raw_response)
-        elif source == 'requestParameter':
+        elif source == "requestParameter":
             value = jmespath.search(identifier.path, params)
-        elif source == 'identifier':
+        elif source == "identifier":
             value = getattr(parent, xform_name(identifier.name))
-        elif source == 'data':
+        elif source == "data":
             # If this is a data member then it may incur a load
             # action before returning the value.
             value = get_data_member(parent, identifier.path)
-        elif source == 'input':
+        elif source == "input":
             # This value is set by the user, so ignore it here
             continue
         else:
-            raise NotImplementedError(
-                'Unsupported source type: {0}'.format(source))
+            raise NotImplementedError("Unsupported source type: {0}".format(source))
 
         results.append((xform_name(target), value))
 
@@ -102,24 +101,26 @@ def build_empty_response(search_path, operation_name, service_model):
         # a path of ``foo.bar[0].baz``, we first find the shape for ``foo``,
         # then the shape for ``bar`` (ignoring the indexing), and finally
         # the shape for ``baz``.
-        for item in search_path.split('.'):
-            item = item.strip('[0123456789]$')
+        for item in search_path.split("."):
+            item = item.strip("[0123456789]$")
 
-            if shape.type_name == 'structure':
+            if shape.type_name == "structure":
                 shape = shape.members[item]
-            elif shape.type_name == 'list':
+            elif shape.type_name == "list":
                 shape = shape.member
             else:
                 raise NotImplementedError(
-                    'Search path hits shape type {0} from {1}'.format(
-                        shape.type_name, item))
+                    "Search path hits shape type {0} from {1}".format(
+                        shape.type_name, item
+                    )
+                )
 
     # Anything not handled here is set to None
-    if shape.type_name == 'structure':
+    if shape.type_name == "structure":
         response = {}
-    elif shape.type_name == 'list':
+    elif shape.type_name == "list":
         response = []
-    elif shape.type_name == 'map':
+    elif shape.type_name == "map":
         response = {}
 
     return response
@@ -136,6 +137,7 @@ class RawHandler(object):
     :rtype: dict
     :return: Service response
     """
+
     def __init__(self, search_path):
         self.search_path = search_path
 
@@ -149,7 +151,7 @@ class RawHandler(object):
         :param response: Low-level operation response.
         """
         # TODO: Remove the '$' check after JMESPath supports it
-        if self.search_path and self.search_path != '$':
+        if self.search_path and self.search_path != "$":
             response = jmespath.search(self.search_path, response)
 
         return response
@@ -180,8 +182,10 @@ class ResourceHandler(object):
     :rtype: ServiceResource or list
     :return: New resource instance(s).
     """
-    def __init__(self, search_path, factory, resource_model,
-                 service_context, operation_name=None):
+
+    def __init__(
+        self, search_path, factory, resource_model, service_context, operation_name=None
+    ):
         self.search_path = search_path
         self.factory = factory
         self.resource_model = resource_model
@@ -199,13 +203,14 @@ class ResourceHandler(object):
         """
         resource_name = self.resource_model.type
         json_definition = self.service_context.resource_json_definitions.get(
-            resource_name)
+            resource_name
+        )
 
         # Load the new resource class that will result from this action.
         resource_cls = self.factory.load_from_definition(
             resource_name=resource_name,
             single_resource_json_definition=json_definition,
-            service_context=self.service_context
+            service_context=self.service_context,
         )
         raw_response = response
         search_response = None
@@ -222,9 +227,11 @@ class ResourceHandler(object):
         # will have one item consumed from the front of the list for each
         # resource that is instantiated. Items which are not a list will
         # be set as the same value on each new resource instance.
-        identifiers = dict(build_identifiers(
-            self.resource_model.identifiers, parent, params,
-            raw_response))
+        identifiers = dict(
+            build_identifiers(
+                self.resource_model.identifiers, parent, params, raw_response
+            )
+        )
 
         # If any of the identifiers is a list, then the response is plural
         plural = [v for v in identifiers.values() if isinstance(v, list)]
@@ -242,13 +249,16 @@ class ResourceHandler(object):
                 if search_response:
                     response_item = search_response[i]
                 response.append(
-                    self.handle_response_item(resource_cls, parent,
-                                              identifiers, response_item))
+                    self.handle_response_item(
+                        resource_cls, parent, identifiers, response_item
+                    )
+                )
         elif all_not_none(identifiers.values()):
             # All identifiers must always exist, otherwise the resource
             # cannot be instantiated.
             response = self.handle_response_item(
-                resource_cls, parent, identifiers, search_response)
+                resource_cls, parent, identifiers, search_response
+            )
         else:
             # The response should be empty, but that may mean an
             # empty dict, list, or None based on whether we make
@@ -259,13 +269,14 @@ class ResourceHandler(object):
                 # A remote service call was made, so try and determine
                 # its shape.
                 response = build_empty_response(
-                    self.search_path, self.operation_name,
-                    self.service_context.service_model)
+                    self.search_path,
+                    self.operation_name,
+                    self.service_context.service_model,
+                )
 
         return response
 
-    def handle_response_item(self, resource_cls, parent, identifiers,
-                             resource_data):
+    def handle_response_item(self, resource_cls, parent, identifiers, resource_data):
         """
         Handles the creation of a single response item by setting
         parameters and creating the appropriate resource instance.
@@ -282,7 +293,7 @@ class ResourceHandler(object):
         :return: New resource instance.
         """
         kwargs = {
-            'client': parent.meta.client,
+            "client": parent.meta.client,
         }
 
         for name, value in identifiers.items():

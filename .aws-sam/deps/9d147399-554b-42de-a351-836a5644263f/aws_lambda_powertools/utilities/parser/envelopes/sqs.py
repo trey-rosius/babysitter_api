@@ -18,7 +18,9 @@ class SqsEnvelope(BaseEnvelope):
     all items in the list will be parsed as str and npt as JSON (and vice versa)
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Optional[Model]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Optional[Model]]:
         """Parses records found with model provided
 
         Parameters
@@ -36,4 +38,7 @@ class SqsEnvelope(BaseEnvelope):
         logger.debug(f"Parsing incoming data with SQS model {SqsModel}")
         parsed_envelope = SqsModel.parse_obj(data)
         logger.debug(f"Parsing SQS records in `body` with {model}")
-        return [self._parse(data=record.body, model=model) for record in parsed_envelope.Records]
+        return [
+            self._parse(data=record.body, model=model)
+            for record in parsed_envelope.Records
+        ]

@@ -23,8 +23,15 @@ class ResourceMeta(object):
     """
     An object containing metadata about a resource.
     """
-    def __init__(self, service_name, identifiers=None, client=None,
-                 data=None, resource_model=None):
+
+    def __init__(
+        self,
+        service_name,
+        identifiers=None,
+        client=None,
+        data=None,
+        resource_model=None,
+    ):
         #: (``string``) The service name, e.g. 's3'
         self.service_name = service_name
 
@@ -42,8 +49,9 @@ class ResourceMeta(object):
         self.resource_model = resource_model
 
     def __repr__(self):
-        return 'ResourceMeta(\'{0}\', identifiers={1})'.format(
-            self.service_name, self.identifiers)
+        return "ResourceMeta('{0}', identifiers={1})".format(
+            self.service_name, self.identifiers
+        )
 
     def __eq__(self, other):
         # Two metas are equal if their components are all equal
@@ -57,7 +65,7 @@ class ResourceMeta(object):
         Create a copy of this metadata object.
         """
         params = self.__dict__.copy()
-        service_name = params.pop('service_name')
+        service_name = params.pop("service_name")
         return ResourceMeta(service_name, **params)
 
 
@@ -91,41 +99,41 @@ class ServiceResource(object):
         self.meta = self.meta.copy()
 
         # Create a default client if none was passed
-        if kwargs.get('client') is not None:
-            self.meta.client = kwargs.get('client')
+        if kwargs.get("client") is not None:
+            self.meta.client = kwargs.get("client")
         else:
             self.meta.client = boto3.client(self.meta.service_name)
 
         # Allow setting identifiers as positional arguments in the order
         # in which they were defined in the ResourceJSON.
         for i, value in enumerate(args):
-            setattr(self, '_' + self.meta.identifiers[i], value)
+            setattr(self, "_" + self.meta.identifiers[i], value)
 
         # Allow setting identifiers via keyword arguments. Here we need
         # extra logic to ignore other keyword arguments like ``client``.
         for name, value in kwargs.items():
-            if name == 'client':
+            if name == "client":
                 continue
 
             if name not in self.meta.identifiers:
-                raise ValueError('Unknown keyword argument: {0}'.format(name))
+                raise ValueError("Unknown keyword argument: {0}".format(name))
 
-            setattr(self, '_' + name, value)
+            setattr(self, "_" + name, value)
 
         # Validate that all identifiers have been set.
         for identifier in self.meta.identifiers:
             if getattr(self, identifier) is None:
-                raise ValueError(
-                    'Required parameter {0} not set'.format(identifier))
+                raise ValueError("Required parameter {0} not set".format(identifier))
 
     def __repr__(self):
         identifiers = []
         for identifier in self.meta.identifiers:
-            identifiers.append('{0}={1}'.format(
-                identifier, repr(getattr(self, identifier))))
+            identifiers.append(
+                "{0}={1}".format(identifier, repr(getattr(self, identifier)))
+            )
         return "{0}({1})".format(
             self.__class__.__name__,
-            ', '.join(identifiers),
+            ", ".join(identifiers),
         )
 
     def __eq__(self, other):

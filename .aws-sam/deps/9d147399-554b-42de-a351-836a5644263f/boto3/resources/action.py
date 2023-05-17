@@ -43,6 +43,7 @@ class ServiceAction(object):
     :type service_context: :py:class:`~boto3.utils.ServiceContext`
     :param service_context: Context about the AWS service
     """
+
     def __init__(self, action_model, factory=None, service_context=None):
         self._action_model = action_model
 
@@ -52,9 +53,10 @@ class ServiceAction(object):
         if resource_response_model:
             self._response_handler = ResourceHandler(
                 search_path=resource_response_model.path,
-                factory=factory, resource_model=resource_response_model,
+                factory=factory,
+                resource_model=resource_response_model,
                 service_context=service_context,
-                operation_name=action_model.request.operation
+                operation_name=action_model.request.operation,
             )
         else:
             self._response_handler = RawHandler(action_model.path)
@@ -77,12 +79,13 @@ class ServiceAction(object):
         params = create_request_parameters(parent, self._action_model.request)
         params.update(kwargs)
 
-        logger.debug('Calling %s:%s with %r', parent.meta.service_name,
-                     operation_name, params)
+        logger.debug(
+            "Calling %s:%s with %r", parent.meta.service_name, operation_name, params
+        )
 
         response = getattr(parent.meta.client, operation_name)(*args, **params)
 
-        logger.debug('Response: %r', response)
+        logger.debug("Response: %r", response)
 
         return self._response_handler(parent, params, response)
 
@@ -105,6 +108,7 @@ class BatchAction(ServiceAction):
     :type service_context: :py:class:`~boto3.utils.ServiceContext`
     :param service_context: Context about the AWS service
     """
+
     def __call__(self, parent, *args, **kwargs):
         """
         Perform the batch action's operation on every page of results
@@ -137,8 +141,8 @@ class BatchAction(ServiceAction):
                     client = resource.meta.client
 
                 create_request_parameters(
-                    resource, self._action_model.request,
-                    params=params, index=index)
+                    resource, self._action_model.request, params=params, index=index
+                )
 
             if not params:
                 # There are no items, no need to make a call.
@@ -146,15 +150,13 @@ class BatchAction(ServiceAction):
 
             params.update(kwargs)
 
-            logger.debug('Calling %s:%s with %r',
-                         service_name, operation_name, params)
+            logger.debug("Calling %s:%s with %r", service_name, operation_name, params)
 
             response = getattr(client, operation_name)(*args, **params)
 
-            logger.debug('Response: %r', response)
+            logger.debug("Response: %r", response)
 
-            responses.append(
-                self._response_handler(parent, params, response))
+            responses.append(self._response_handler(parent, params, response))
 
         return responses
 
@@ -173,6 +175,7 @@ class WaiterAction(object):
                                  resource. It usually begins with a
                                  ``wait_until_``
     """
+
     def __init__(self, waiter_model, waiter_resource_name):
         self._waiter_model = waiter_model
         self._waiter_resource_name = waiter_resource_name
@@ -193,21 +196,24 @@ class WaiterAction(object):
         params = create_request_parameters(parent, self._waiter_model)
         params.update(kwargs)
 
-        logger.debug('Calling %s:%s with %r',
-                     parent.meta.service_name,
-                     self._waiter_resource_name, params)
+        logger.debug(
+            "Calling %s:%s with %r",
+            parent.meta.service_name,
+            self._waiter_resource_name,
+            params,
+        )
 
         client = parent.meta.client
         waiter = client.get_waiter(client_waiter_name)
         response = waiter.wait(**params)
 
-        logger.debug('Response: %r', response)
+        logger.debug("Response: %r", response)
 
 
 class CustomModeledAction(object):
     """A custom, modeled action to inject into a resource."""
-    def __init__(self, action_name, action_model,
-                 function, event_emitter):
+
+    def __init__(self, action_name, action_model, function, event_emitter):
         """
         :type action_name: str
         :param action_name: The name of the action to inject, e.g.
@@ -239,6 +245,6 @@ class CustomModeledAction(object):
             event_emitter=self.emitter,
             action_model=action,
             service_model=service_context.service_model,
-            include_signature=False
+            include_signature=False,
         )
         inject_attribute(class_attributes, self.name, self.function)

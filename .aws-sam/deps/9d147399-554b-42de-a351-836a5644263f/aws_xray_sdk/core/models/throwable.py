@@ -14,6 +14,7 @@ class Throwable(object):
     `cause` section. The information includes the stack trace,
     working directory and message from the original exception.
     """
+
     def __init__(self, exception, stack, remote=False):
         """
         :param Exception exception: the catched exception.
@@ -22,7 +23,7 @@ class Throwable(object):
         :param bool remote: If False it means it's a client error
             instead of a downstream service.
         """
-        self.id = binascii.b2a_hex(os.urandom(8)).decode('utf-8')
+        self.id = binascii.b2a_hex(os.urandom(8)).decode("utf-8")
 
         try:
             message = str(exception)
@@ -44,20 +45,20 @@ class Throwable(object):
             log.warning("can not parse stack trace string, ignore stack field.")
 
         if exception:
-            setattr(exception, '_recorded', True)
-            setattr(exception, '_cause_id', self.id)
-			
-    def to_dict(self):  
+            setattr(exception, "_recorded", True)
+            setattr(exception, "_cause_id", self.id)
+
+    def to_dict(self):
         """
         Convert Throwable object to dict with required properties that
-        have non-empty values. 
-        """  
+        have non-empty values.
+        """
         throwable_dict = {}
-        
-        for key, value in vars(self).items():  
+
+        for key, value in vars(self).items():
             if isinstance(value, bool) or value:
-                throwable_dict[key] = value       
-        
+                throwable_dict[key] = value
+
         return throwable_dict
 
     def _normalize_stack_trace(self, stack):
@@ -70,12 +71,12 @@ class Throwable(object):
             path = entry[0]
             line = entry[1]
             label = entry[2]
-            if 'aws_xray_sdk/' in path:
+            if "aws_xray_sdk/" in path:
                 continue
 
             normalized = {}
-            normalized['path'] = os.path.basename(path).replace('\"', ' ').strip()
-            normalized['line'] = line
-            normalized['label'] = label.strip()
+            normalized["path"] = os.path.basename(path).replace('"', " ").strip()
+            normalized["line"] = line
+            normalized["label"] = label.strip()
 
             self.stack.append(normalized)

@@ -9,7 +9,6 @@ DEFAULT_INTERVAL = 5 * 60  # 5 minutes on sampling rules fetch
 
 
 class RulePoller(object):
-
     def __init__(self, cache, connector):
 
         self._cache = cache
@@ -50,7 +49,9 @@ class RulePoller(object):
                 self._cache.load_rules(new_rules)
                 self._cache.last_updated = now
         except Exception:
-            log.error("Encountered an issue while polling sampling rules.", exc_info=True)
+            log.error(
+                "Encountered an issue while polling sampling rules.", exc_info=True
+            )
 
     def _reset_time_to_wait(self):
         """

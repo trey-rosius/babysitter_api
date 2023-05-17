@@ -30,7 +30,9 @@ class PowertoolsFunctions(Functions):
         return uncompressed.decode()
 
 
-def extract_data_from_envelope(data: Union[Dict, str], envelope: str, jmespath_options: Optional[Dict] = None) -> Any:
+def extract_data_from_envelope(
+    data: Union[Dict, str], envelope: str, jmespath_options: Optional[Dict] = None
+) -> Any:
     """Searches and extracts data using JMESPath
 
     Envelope being the JMESPath expression to extract the data you're after
@@ -71,8 +73,12 @@ def extract_data_from_envelope(data: Union[Dict, str], envelope: str, jmespath_o
         jmespath_options = {"custom_functions": PowertoolsFunctions()}
 
     try:
-        logger.debug(f"Envelope detected: {envelope}. JMESPath options: {jmespath_options}")
-        return jmespath.search(envelope, data, options=jmespath.Options(**jmespath_options))
+        logger.debug(
+            f"Envelope detected: {envelope}. JMESPath options: {jmespath_options}"
+        )
+        return jmespath.search(
+            envelope, data, options=jmespath.Options(**jmespath_options)
+        )
     except (LexerError, TypeError, UnicodeError) as e:
         message = f"Failed to unwrap event from envelope using expression. Error: {e} Exp: {envelope}, Data: {data}"  # noqa: B306, E501
         raise InvalidEnvelopeExpressionError(message)

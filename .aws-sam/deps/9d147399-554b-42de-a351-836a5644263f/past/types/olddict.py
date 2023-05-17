@@ -34,6 +34,7 @@ class olddict(with_metaclass(BaseOldDict, _builtin_dict)):
     """
     A backport of the Python 3 dict object to Py2
     """
+
     iterkeys = _builtin_dict.keys
     viewkeys = _builtin_dict.keys
 
@@ -93,4 +94,4 @@ class olddict(with_metaclass(BaseOldDict, _builtin_dict)):
         return super(oldbytes, self)
 
 
-__all__ = ['olddict']
+__all__ = ["olddict"]

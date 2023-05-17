@@ -24,16 +24,16 @@ from libfuturize.fixer_util import touch_import_top
 #     from future.types import (bytes, dict, int, range, str)
 # We don't need isinstance any more.
 
-replaced_builtin_fns = '''filter map zip
+replaced_builtin_fns = """filter map zip
                        ascii chr hex input next oct
-                       bytes range str raw_input'''.split()
-                       # This includes raw_input as a workaround for the
-                       # lib2to3 fixer for raw_input on Py3 (only), allowing
-                       # the correct import to be included. (Py3 seems to run
-                       # the fixers the wrong way around, perhaps ignoring the
-                       # run_order class attribute below ...)
+                       bytes range str raw_input""".split()
+# This includes raw_input as a workaround for the
+# lib2to3 fixer for raw_input on Py3 (only), allowing
+# the correct import to be included. (Py3 seems to run
+# the fixers the wrong way around, perhaps ignoring the
+# run_order class attribute below ...)
 
-expression = '|'.join(["name='{0}'".format(name) for name in replaced_builtin_fns])
+expression = "|".join(["name='{0}'".format(name) for name in replaced_builtin_fns])
 
 
 class FixFutureBuiltins(fixer_base.BaseFix):
@@ -51,9 +51,11 @@ class FixFutureBuiltins(fixer_base.BaseFix):
               power<
                   'map' trailer< '(' [arglist=any] ')' >
               >
-              """.format(expression)
+              """.format(
+        expression
+    )
 
     def transform(self, node, results):
         name = results["name"]
-        touch_import_top(u'builtins', name.value, node)
+        touch_import_top("builtins", name.value, node)
         # name.replace(Name(u"input", prefix=name.prefix))

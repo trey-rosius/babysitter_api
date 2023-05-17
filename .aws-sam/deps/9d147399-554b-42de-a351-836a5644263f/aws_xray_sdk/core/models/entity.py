@@ -15,10 +15,10 @@ from ..exceptions.exceptions import AlreadyEndedException
 log = logging.getLogger(__name__)
 
 # Valid characters can be found at http://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html
-_common_invalid_name_characters = '?;*()!$~^<>'
-_valid_annotation_key_characters = string.ascii_letters + string.digits + '_'
+_common_invalid_name_characters = "?;*()!$~^<>"
+_valid_annotation_key_characters = string.ascii_letters + string.digits + "_"
 
-ORIGIN_TRACE_HEADER_ATTR_KEY = '_origin_trace_header'
+ORIGIN_TRACE_HEADER_ATTR_KEY = "_origin_trace_header"
 
 
 class Entity(object):
@@ -35,12 +35,18 @@ class Entity(object):
 
         # required attributes
         self.name = name
-        self.name = ''.join([c for c in name if c not in _common_invalid_name_characters])
+        self.name = "".join(
+            [c for c in name if c not in _common_invalid_name_characters]
+        )
         self.start_time = time.time()
         self.parent_id = None
 
         if self.name != name:
-            log.warning("Removing Segment/Subsugment Name invalid characters from {}.".format(name))
+            log.warning(
+                "Removing Segment/Subsugment Name invalid characters from {}.".format(
+                    name
+                )
+            )
 
         # sampling
         self.sampled = True
@@ -114,13 +120,13 @@ class Entity(object):
             self.apply_status_code(value)
 
         if key in http.request_keys:
-            if 'request' not in self.http:
-                self.http['request'] = {}
-            self.http['request'][key] = value
+            if "request" not in self.http:
+                self.http["request"] = {}
+            self.http["request"][key] = value
         elif key in http.response_keys:
-            if 'response' not in self.http:
-                self.http['response'] = {}
-            self.http['response'][key] = value
+            if "response" not in self.http:
+                self.http["response"] = {}
+            self.http["response"][key] = value
         else:
             log.warning("ignoring unsupported key %s in http meta.", key)
 
@@ -136,7 +142,9 @@ class Entity(object):
         self._check_ended()
 
         if not isinstance(key, string_types):
-            log.warning("ignoring non string type annotation key with type %s.", type(key))
+            log.warning(
+                "ignoring non string type annotation key with type %s.", type(key)
+            )
             return
 
         if not isinstance(value, annotation_value_types):
@@ -144,12 +152,14 @@ class Entity(object):
             return
 
         if any(character not in _valid_annotation_key_characters for character in key):
-            log.warning("ignoring annnotation with unsupported characters in key: '%s'.", key)
+            log.warning(
+                "ignoring annnotation with unsupported characters in key: '%s'.", key
+            )
             return
 
         self.annotations[key] = value
 
-    def put_metadata(self, key, value, namespace='default'):
+    def put_metadata(self, key, value, namespace="default"):
         """
         Add metadata to segment or subsegment. Metadata is not indexed
         but can be later retrieved by BatchGetTraces API.
@@ -165,8 +175,10 @@ class Entity(object):
             log.warning("ignoring non string type metadata namespace")
             return
 
-        if namespace.startswith('AWS.'):
-            log.warning("Prefix 'AWS.' is reserved, drop metadata with namespace %s", namespace)
+        if namespace.startswith("AWS."):
+            log.warning(
+                "Prefix 'AWS.' is reserved, drop metadata with namespace %s", namespace
+            )
             return
 
         if self.metadata.get(namespace, None):
@@ -224,24 +236,26 @@ class Entity(object):
         self._check_ended()
         self.add_fault_flag()
 
-        if hasattr(exception, '_recorded'):
-            setattr(self, 'cause', getattr(exception, '_cause_id'))
+        if hasattr(exception, "_recorded"):
+            setattr(self, "cause", getattr(exception, "_cause_id"))
             return
 
         if not isinstance(self.cause, dict):
-            log.warning("The current cause object is not a dict but an id: {}. Resetting the cause and recording the "
-                        "current exception".format(self.cause))
+            log.warning(
+                "The current cause object is not a dict but an id: {}. Resetting the cause and recording the "
+                "current exception".format(self.cause)
+            )
             self.cause = {}
 
-        if 'exceptions' in self.cause:
-            exceptions = self.cause['exceptions']
+        if "exceptions" in self.cause:
+            exceptions = self.cause["exceptions"]
         else:
             exceptions = []
 
         exceptions.append(Throwable(exception, stack, remote))
 
-        self.cause['exceptions'] = exceptions
-        self.cause['working_directory'] = os.getcwd()
+        self.cause["exceptions"] = exceptions
+        self.cause["working_directory"] = os.getcwd()
 
     def save_origin_trace_header(self, trace_header):
         """
@@ -267,43 +281,47 @@ class Entity(object):
     def to_dict(self):
         """
         Convert Entity(Segment/Subsegment) object to dict
-        with required properties that have non-empty values. 
+        with required properties that have non-empty values.
         """
         entity_dict = {}
 
         for key, value in vars(self).items():
             if isinstance(value, bool) or value:
-                if key == 'subsegments':
+                if key == "subsegments":
                     # child subsegments are stored as List
                     subsegments = []
                     for subsegment in value:
                         subsegments.append(subsegment.to_dict())
                     entity_dict[key] = subsegments
-                elif key == 'cause':
+                elif key == "cause":
                     if isinstance(self.cause, dict):
                         entity_dict[key] = {}
-                        entity_dict[key]['working_directory'] = self.cause['working_directory']
+                        entity_dict[key]["working_directory"] = self.cause[
+                            "working_directory"
+                        ]
                         # exceptions are stored as List
                         throwables = []
-                        for throwable in value['exceptions']:
+                        for throwable in value["exceptions"]:
                             throwables.append(throwable.to_dict())
-                        entity_dict[key]['exceptions'] = throwables
+                        entity_dict[key]["exceptions"] = throwables
                     else:
                         entity_dict[key] = self.cause
-                elif key == 'metadata':
+                elif key == "metadata":
                     entity_dict[key] = metadata_to_dict(value)
-                elif key != 'sampled' and key != ORIGIN_TRACE_HEADER_ATTR_KEY:
+                elif key != "sampled" and key != ORIGIN_TRACE_HEADER_ATTR_KEY:
                     entity_dict[key] = value
 
         return entity_dict
 
     def _check_ended(self):
         if not self.in_progress:
-            raise AlreadyEndedException("Already ended segment and subsegment cannot be modified.")
+            raise AlreadyEndedException(
+                "Already ended segment and subsegment cannot be modified."
+            )
 
     def _generate_random_id(self):
         """
         Generate a random 16-digit hex str.
         This is used for generating segment/subsegment id.
         """
-        return binascii.b2a_hex(os.urandom(8)).decode('utf-8')
+        return binascii.b2a_hex(os.urandom(8)).decode("utf-8")

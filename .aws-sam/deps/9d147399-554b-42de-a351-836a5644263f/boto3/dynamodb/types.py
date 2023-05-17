@@ -18,21 +18,21 @@ from boto3.compat import collections_abc
 from botocore.compat import six
 
 
-STRING = 'S'
-NUMBER = 'N'
-BINARY = 'B'
-STRING_SET = 'SS'
-NUMBER_SET = 'NS'
-BINARY_SET = 'BS'
-NULL = 'NULL'
-BOOLEAN = 'BOOL'
-MAP = 'M'
-LIST = 'L'
+STRING = "S"
+NUMBER = "N"
+BINARY = "B"
+STRING_SET = "SS"
+NUMBER_SET = "NS"
+BINARY_SET = "BS"
+NULL = "NULL"
+BOOLEAN = "BOOL"
+MAP = "M"
+LIST = "L"
 
 
 DYNAMODB_CONTEXT = Context(
-    Emin=-128, Emax=126, prec=38,
-    traps=[Clamped, Overflow, Inexact, Rounded, Underflow])
+    Emin=-128, Emax=126, prec=38, traps=[Clamped, Overflow, Inexact, Rounded, Underflow]
+)
 
 
 BINARY_TYPES = (bytearray, six.binary_type)
@@ -45,10 +45,13 @@ class Binary(object):
     binary data for item in DynamoDB. It is essentially a wrapper around
     binary. Unicode and Python 3 string types are not allowed.
     """
+
     def __init__(self, value):
         if not isinstance(value, BINARY_TYPES):
-            raise TypeError('Value must be of the following types: %s.' %
-                            ', '.join([str(t) for t in BINARY_TYPES]))
+            raise TypeError(
+                "Value must be of the following types: %s."
+                % ", ".join([str(t) for t in BINARY_TYPES])
+            )
         self.value = value
 
     def __eq__(self, other):
@@ -60,7 +63,7 @@ class Binary(object):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'Binary(%r)' % self.value
+        return "Binary(%r)" % self.value
 
     def __str__(self):
         return self.value
@@ -74,6 +77,7 @@ class Binary(object):
 
 class TypeSerializer(object):
     """This class serializes Python data types to DynamoDB types."""
+
     def serialize(self, value):
         """The method to serialize the Python data types.
 
@@ -103,7 +107,7 @@ class TypeSerializer(object):
             dictionaries can be directly passed to botocore methods.
         """
         dynamodb_type = self._get_dynamodb_type(value)
-        serializer = getattr(self, '_serialize_%s' % dynamodb_type.lower())
+        serializer = getattr(self, "_serialize_%s" % dynamodb_type.lower())
         return {dynamodb_type: serializer(value)}
 
     def _get_dynamodb_type(self, value):
@@ -159,8 +163,7 @@ class TypeSerializer(object):
         if isinstance(value, (six.integer_types, Decimal)):
             return True
         elif isinstance(value, float):
-            raise TypeError(
-                'Float types are not supported. Use Decimal types instead.')
+            raise TypeError("Float types are not supported. Use Decimal types instead.")
         return False
 
     def _is_string(self, value):
@@ -206,8 +209,8 @@ class TypeSerializer(object):
 
     def _serialize_n(self, value):
         number = str(DYNAMODB_CONTEXT.create_decimal(value))
-        if number in ['Infinity', 'NaN']:
-            raise TypeError('Infinity and NaN not supported')
+        if number in ["Infinity", "NaN"]:
+            raise TypeError("Infinity and NaN not supported")
         return number
 
     def _serialize_s(self, value):
@@ -236,6 +239,7 @@ class TypeSerializer(object):
 
 class TypeDeserializer(object):
     """This class deserializes DynamoDB types to Python types."""
+
     def deserialize(self, value):
         """The method to deserialize the DynamoDB data types.
 
@@ -259,15 +263,15 @@ class TypeDeserializer(object):
         """
 
         if not value:
-            raise TypeError('Value must be a nonempty dictionary whose key '
-                            'is a valid dynamodb type.')
+            raise TypeError(
+                "Value must be a nonempty dictionary whose key "
+                "is a valid dynamodb type."
+            )
         dynamodb_type = list(value.keys())[0]
         try:
-            deserializer = getattr(
-                self, '_deserialize_%s' % dynamodb_type.lower())
+            deserializer = getattr(self, "_deserialize_%s" % dynamodb_type.lower())
         except AttributeError:
-            raise TypeError(
-                'Dynamodb type %s is not supported' % dynamodb_type)
+            raise TypeError("Dynamodb type %s is not supported" % dynamodb_type)
         return deserializer(value[dynamodb_type])
 
     def _deserialize_null(self, value):

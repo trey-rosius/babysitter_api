@@ -1,4 +1,4 @@
-from aws_lambda_powertools import Logger,Tracer
+from aws_lambda_powertools import Logger, Tracer
 import boto3
 import os
 from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
@@ -17,14 +17,13 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 def apply_to_job(application: dict = {}):
     item = {
         "id": scalar_types_utils.make_id(),
-        "jobId": application['jobId'],
-        "username": application['username'],
-        "jobApplicationStatus":application['jobApplicationStatus'],
-        "createdOn":scalar_types_utils.aws_timestamp()
-
+        "jobId": application["jobId"],
+        "username": application["username"],
+        "jobApplicationStatus": application["jobApplicationStatus"],
+        "createdOn": scalar_types_utils.aws_timestamp(),
     }
 
-    logger.debug(f'job application input :{item}')
+    logger.debug(f"job application input :{item}")
 
     try:
 
@@ -36,13 +35,11 @@ def apply_to_job(application: dict = {}):
                 "GSI1SK": f"APPLICATION#{item['id']}",
                 "GSI2PK": f"USER#{item['username']}",
                 "GSI2SK": f"JOB#{item['jobId']}",
-                **item
+                **item,
             }
         )
 
         return item
-
-
 
     except ClientError as err:
         logger.debug(f"Error occurred during job creation {err.response['Error']}")

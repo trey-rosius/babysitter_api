@@ -27,8 +27,9 @@ class SDKConfig(object):
         "AWS_XRAY_SDK_ENABLED" - If set to 'false' disables the SDK and causes the explained above
             to occur.
     """
-    XRAY_ENABLED_KEY = 'AWS_XRAY_SDK_ENABLED'
-    DISABLED_ENTITY_NAME = 'dummy'
+
+    XRAY_ENABLED_KEY = "AWS_XRAY_SDK_ENABLED"
+    DISABLED_ENTITY_NAME = "dummy"
 
     __SDK_ENABLED = None
 
@@ -40,11 +41,13 @@ class SDKConfig(object):
 
         :return: bool - True if it is enabled, False otherwise.
         """
-        env_var_str = os.getenv(cls.XRAY_ENABLED_KEY, 'true')
+        env_var_str = os.getenv(cls.XRAY_ENABLED_KEY, "true")
         try:
             return bool(strtobool(env_var_str))
         except ValueError:
-            log.warning("Invalid literal passed into environment variable `AWS_XRAY_SDK_ENABLED`. Defaulting to True...")
+            log.warning(
+                "Invalid literal passed into environment variable `AWS_XRAY_SDK_ENABLED`. Defaulting to True..."
+            )
             return True  # If an invalid parameter is passed in, we return True.
 
     @classmethod
@@ -75,4 +78,6 @@ class SDKConfig(object):
                 cls.__SDK_ENABLED = value
             else:
                 cls.__SDK_ENABLED = True
-                log.warning("Invalid parameter type passed into set_sdk_enabled(). Defaulting to True...")
+                log.warning(
+                    "Invalid parameter type passed into set_sdk_enabled(). Defaulting to True..."
+                )

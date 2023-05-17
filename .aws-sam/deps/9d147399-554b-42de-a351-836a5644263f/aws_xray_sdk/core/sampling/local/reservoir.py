@@ -8,6 +8,7 @@ class Reservoir(object):
     a single second. This class is implemented to be
     thread-safe to achieve accurate sampling.
     """
+
     def __init__(self, traces_per_sec=0):
         """
         :param int traces_per_sec: number of guranteed

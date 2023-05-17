@@ -4,6 +4,7 @@ import types
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.ext.util import strip_url
 from future.standard_library import install_aliases
+
 install_aliases()
 from urllib.parse import urlparse, uses_netloc
 from sqlalchemy.engine.base import Connection
@@ -22,14 +23,17 @@ def decorate_all_functions(function_decorator):
                         pass  # not needed in Python 3
                     setattr(c, name, function_decorator(c, obj))
         return cls
+
     return decorator
 
 
 def xray_on_call(cls, func):
     def wrapper(*args, **kw):
         from ..query import XRayQuery, XRaySession
+
         try:
             from ...flask_sqlalchemy.query import XRaySignallingSession
+
             has_sql_alchemy = True
         except ImportError:
             has_sql_alchemy = False
@@ -44,20 +48,22 @@ def xray_on_call(cls, func):
                     sql = parse_bind(arg.bind)
                 if has_sql_alchemy and isinstance(arg, XRaySignallingSession):
                     sql = parse_bind(arg.bind)
-        if class_name == 'sqlalchemy.orm.query':
+        if class_name == "sqlalchemy.orm.query":
             for arg in args:
                 if isinstance(arg, XRayQuery):
                     try:
                         sql = parse_bind(arg.session.bind)
                         if xray_recorder.stream_sql:
-                            sql['sanitized_query'] = str(arg)
+                            sql["sanitized_query"] = str(arg)
                     except Exception:
                         sql = None
         if sql is not None:
-            if getattr(c._local, 'entities', None) is not None:
+            if getattr(c._local, "entities", None) is not None:
                 # Strip URL of ? and following text
-                sub_name = strip_url(sql['url'])
-                subsegment = xray_recorder.begin_subsegment(sub_name, namespace='remote')
+                sub_name = strip_url(sql["url"])
+                subsegment = xray_recorder.begin_subsegment(
+                    sub_name, namespace="remote"
+                )
             else:
                 subsegment = None
 
@@ -66,10 +72,15 @@ def xray_on_call(cls, func):
         finally:
             if subsegment is not None:
                 subsegment.set_sql(sql)
-                subsegment.put_annotation("sqlalchemy", class_name+'.'+func.__name__)
+                subsegment.put_annotation(
+                    "sqlalchemy", class_name + "." + func.__name__
+                )
                 xray_recorder.end_subsegment()
         return res
+
     return wrapper
+
+
 # URL Parse output
 # scheme	0	URL scheme specifier	scheme parameter
 # netloc	1	Network location part	empty string
@@ -107,12 +118,12 @@ def parse_bind(bind):
             safe_url = u.geturl()
         else:
             # Strip password from URL
-            host_info = u.netloc.rpartition('@')[-1]
-            parts = u._replace(netloc='{}@{}'.format(u.username, host_info))
+            host_info = u.netloc.rpartition("@")[-1]
+            parts = u._replace(netloc="{}@{}".format(u.username, host_info))
             safe_url = parts.geturl()
         sql = {}
-        sql['database_type'] = u.scheme
-        sql['url'] = safe_url
+        sql["database_type"] = u.scheme
+        sql["url"] = safe_url
         if u.username is not None:
-            sql['user'] = "{}".format(u.username)
+            sql["user"] = "{}".format(u.username)
     return sql

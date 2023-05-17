@@ -17,8 +17,8 @@ from boto3.session import Session
 from boto3.compat import _warn_deprecated_python
 
 
-__author__ = 'Amazon Web Services'
-__version__ = '1.20.24'
+__author__ = "Amazon Web Services"
+__version__ = "1.20.24"
 
 
 # The default Boto3 session; autoloaded when needed.
@@ -35,7 +35,7 @@ def setup_default_session(**kwargs):
     DEFAULT_SESSION = Session(**kwargs)
 
 
-def set_stream_logger(name='boto3', level=logging.DEBUG, format_string=None):
+def set_stream_logger(name="boto3", level=logging.DEBUG, format_string=None):
     """
     Add a stream handler for the given name and level to the logging module.
     By default, this logs all boto3 messages to ``stdout``.
@@ -109,4 +109,4 @@ class NullHandler(logging.Handler):
         pass
 
 
-logging.getLogger('boto3').addHandler(NullHandler())
+logging.getLogger("boto3").addHandler(NullHandler())
