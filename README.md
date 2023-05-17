@@ -1,4 +1,12 @@
+## Serverless GraphQL API A Nanny APP
+
+This project has been well documented and is currently being served on EduCloud Academy.
+
+https://www.educloud.academy/
+
+Follow that link to learn more about accelerating your cloud skills through hands on labs
 ### content structure
+
 
 ```
 content
