@@ -8,5 +8,7 @@ else:
     try:
         from tkFont import *
     except ImportError:
-        raise ImportError('The tkFont module is missing. Does your Py2 '
-                          'installation include tkinter?')
+        raise ImportError(
+            "The tkFont module is missing. Does your Py2 "
+            "installation include tkinter?"
+        )

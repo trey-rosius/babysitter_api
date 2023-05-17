@@ -16,10 +16,17 @@ class XRayQuery(Query):
 
 @decorate_all_functions(xray_on_call)
 class XRaySessionMaker(sessionmaker):
-    def __init__(self, bind=None, class_=XRaySession, autoflush=True,
-                 autocommit=False,
-                 expire_on_commit=True,
-                 info=None, **kw):
-        kw['query_cls'] = XRayQuery
-        super().__init__(bind, class_, autoflush, autocommit, expire_on_commit,
-                         info, **kw)
+    def __init__(
+        self,
+        bind=None,
+        class_=XRaySession,
+        autoflush=True,
+        autocommit=False,
+        expire_on_commit=True,
+        info=None,
+        **kw
+    ):
+        kw["query_cls"] = XRayQuery
+        super().__init__(
+            bind, class_, autoflush, autocommit, expire_on_commit, info, **kw
+        )

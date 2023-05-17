@@ -5,6 +5,7 @@ class AtomicCounter(object):
     """
     A helper class that implements a thread-safe counter.
     """
+
     def __init__(self, initial=0):
 
         self.value = initial

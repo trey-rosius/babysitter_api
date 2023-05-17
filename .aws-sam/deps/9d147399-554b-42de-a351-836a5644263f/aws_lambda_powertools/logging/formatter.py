@@ -58,7 +58,9 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
     def __init__(
         self,
         json_serializer: Optional[Callable[[Dict], str]] = None,
-        json_deserializer: Optional[Callable[[Union[Dict, str, bool, int, float]], str]] = None,
+        json_deserializer: Optional[
+            Callable[[Union[Dict, str, bool, int, float]], str]
+        ] = None,
         json_default: Optional[Callable[[Any], Any]] = None,
         datefmt: Optional[str] = None,
         log_record_order: Optional[List[str]] = None,
@@ -98,11 +100,20 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
         """
         self.json_deserializer = json_deserializer or json.loads
         self.json_default = json_default or str
-        self.json_serializer = json_serializer or partial(json.dumps, default=self.json_default, separators=(",", ":"))
+        self.json_serializer = json_serializer or partial(
+            json.dumps, default=self.json_default, separators=(",", ":")
+        )
         self.datefmt = datefmt
         self.utc = utc
-        self.log_record_order = log_record_order or ["level", "location", "message", "timestamp"]
-        self.log_format = dict.fromkeys(self.log_record_order)  # Set the insertion order for the log messages
+        self.log_record_order = log_record_order or [
+            "level",
+            "location",
+            "message",
+            "timestamp",
+        ]
+        self.log_format = dict.fromkeys(
+            self.log_record_order
+        )  # Set the insertion order for the log messages
         self.update_formatter = self.append_keys  # alias to old method
 
         if self.utc:
@@ -121,13 +132,18 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
         """Format logging record as structured JSON str"""
         formatted_log = self._extract_log_keys(log_record=record)
         formatted_log["message"] = self._extract_log_message(log_record=record)
-        formatted_log["exception"], formatted_log["exception_name"] = self._extract_log_exception(log_record=record)
+        (
+            formatted_log["exception"],
+            formatted_log["exception_name"],
+        ) = self._extract_log_exception(log_record=record)
         formatted_log["xray_trace_id"] = self._get_latest_trace_id()
         formatted_log = self._strip_none_records(records=formatted_log)
 
         return self.serialize(log=formatted_log)
 
-    def formatTime(self, record: logging.LogRecord, datefmt: Optional[str] = None) -> str:
+    def formatTime(
+        self, record: logging.LogRecord, datefmt: Optional[str] = None
+    ) -> str:
         record_ts = self.converter(record.created)  # type: ignore
         if datefmt:
             return time.strftime(datefmt, record_ts)
@@ -136,7 +152,9 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
         # so we create a custom one (%F) and replace logging record ts
         # Reason 2 is that std logging doesn't support msec after TZ
         msecs = "%03d" % record.msecs
-        custom_fmt = self.default_time_format.replace(self.custom_ms_time_directive, msecs)
+        custom_fmt = self.default_time_format.replace(
+            self.custom_ms_time_directive, msecs
+        )
         return time.strftime(custom_fmt, record_ts)
 
     def append_keys(self, **additional_keys):
@@ -157,9 +175,13 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
     @staticmethod
     def _get_latest_trace_id():
         xray_trace_id = os.getenv(constants.XRAY_TRACE_ID_ENV)
-        return xray_trace_id.split(";")[0].replace("Root=", "") if xray_trace_id else None
+        return (
+            xray_trace_id.split(";")[0].replace("Root=", "") if xray_trace_id else None
+        )
 
-    def _extract_log_message(self, log_record: logging.LogRecord) -> Union[Dict[str, Any], str, bool, Iterable]:
+    def _extract_log_message(
+        self, log_record: logging.LogRecord
+    ) -> Union[Dict[str, Any], str, bool, Iterable]:
         """Extract message from log record and attempt to JSON decode it if str
 
         Parameters
@@ -187,7 +209,9 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
 
         return message
 
-    def _extract_log_exception(self, log_record: logging.LogRecord) -> Union[Tuple[str, str], Tuple[None, None]]:
+    def _extract_log_exception(
+        self, log_record: logging.LogRecord
+    ) -> Union[Tuple[str, str], Tuple[None, None]]:
         """Format traceback information, if available
 
         Parameters
@@ -219,7 +243,9 @@ class LambdaPowertoolsFormatter(BasePowertoolsFormatter):
             Structured log as dictionary
         """
         record_dict = log_record.__dict__.copy()
-        record_dict["asctime"] = self.formatTime(record=log_record, datefmt=self.datefmt)
+        record_dict["asctime"] = self.formatTime(
+            record=log_record, datefmt=self.datefmt
+        )
         extras = {k: v for k, v in record_dict.items() if k not in RESERVED_LOG_ATTRS}
 
         formatted_log = {}

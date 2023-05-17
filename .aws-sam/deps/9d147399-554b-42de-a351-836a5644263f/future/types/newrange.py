@@ -27,7 +27,8 @@ else:
     from collections.abc import Sequence, Iterator
 from itertools import islice
 
-from future.backports.misc import count   # with step parameter on Py2.6
+from future.backports.misc import count  # with step parameter on Py2.6
+
 # For backward compatibility with python-future versions < 0.14.4:
 _count = count
 
@@ -47,15 +48,15 @@ class newrange(Sequence):
         elif len(args) == 3:
             start, stop, step = args
         else:
-            raise TypeError('range() requires 1-3 int arguments')
+            raise TypeError("range() requires 1-3 int arguments")
 
         try:
             start, stop, step = int(start), int(stop), int(step)
         except ValueError:
-            raise TypeError('an integer is required')
+            raise TypeError("an integer is required")
 
         if step == 0:
-            raise ValueError('range() arg 3 must not be zero')
+            raise ValueError("range() arg 3 must not be zero")
         elif step < 0:
             stop = min(stop, start)
         else:
@@ -80,14 +81,15 @@ class newrange(Sequence):
 
     def __repr__(self):
         if self._step == 1:
-            return 'range(%d, %d)' % (self._start, self._stop)
-        return 'range(%d, %d, %d)' % (self._start, self._stop, self._step)
+            return "range(%d, %d)" % (self._start, self._stop)
+        return "range(%d, %d, %d)" % (self._start, self._stop, self._step)
 
     def __eq__(self, other):
-        return (isinstance(other, newrange) and
-                (self._len == 0 == other._len or
-                 (self._start, self._step, self._len) ==
-                 (other._start, other._step, self._len)))
+        return isinstance(other, newrange) and (
+            self._len == 0 == other._len
+            or (self._start, self._step, self._len)
+            == (other._start, other._step, self._len)
+        )
 
     def __len__(self):
         return self._len
@@ -98,11 +100,11 @@ class newrange(Sequence):
         try:
             diff = value - self._start
         except TypeError:
-            raise ValueError('%r is not in range' % value)
+            raise ValueError("%r is not in range" % value)
         quotient, remainder = divmod(diff, self._step)
         if remainder == 0 and 0 <= quotient < self._len:
             return abs(quotient)
-        raise ValueError('%r is not in range' % value)
+        raise ValueError("%r is not in range" % value)
 
     def count(self, value):
         """Return the number of ocurrences of integer `value`
@@ -132,7 +134,7 @@ class newrange(Sequence):
             # negative indexes access from the end
             index = self._len + index
         if index < 0 or index >= self._len:
-            raise IndexError('range object index out of range')
+            raise IndexError("range object index out of range")
         return self._start + index * self._step
 
     def __getitem_slice(self, slce):
@@ -141,9 +143,7 @@ class newrange(Sequence):
         """
         scaled_indices = (self._step * n for n in slce.indices(self._len))
         start_offset, stop_offset, new_step = scaled_indices
-        return newrange(self._start + start_offset,
-                        self._start + stop_offset,
-                        new_step)
+        return newrange(self._start + start_offset, self._start + stop_offset, new_step)
 
     def __iter__(self):
         """Return an iterator which enumerates the elements of the
@@ -152,8 +152,8 @@ class newrange(Sequence):
 
 
 class range_iterator(Iterator):
-    """An iterator for a :class:`range`.
-    """
+    """An iterator for a :class:`range`."""
+
     def __init__(self, range_):
         self._stepper = islice(count(range_.start, range_.step), len(range_))
 
@@ -167,4 +167,4 @@ class range_iterator(Iterator):
         return next(self._stepper)
 
 
-__all__ = ['newrange']
+__all__ = ["newrange"]

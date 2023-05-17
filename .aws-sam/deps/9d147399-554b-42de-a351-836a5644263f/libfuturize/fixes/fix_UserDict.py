@@ -11,7 +11,8 @@ from lib2to3 import fixer_base
 from lib2to3.fixer_util import Name, attr_chain
 from lib2to3.fixes.fix_imports import alternates, build_pattern, FixImports
 
-MAPPING = {'UserDict':  'collections',
+MAPPING = {
+    "UserDict": "collections",
 }
 
 # def alternates(members):
@@ -66,8 +67,9 @@ class FixUserdict(FixImports):
         if results:
             # Module usage could be in the trailer of an attribute lookup, so we
             # might have nested matches when "bare_with_attr" is present.
-            if "bare_with_attr" not in results and \
-                    any(match(obj) for obj in attr_chain(node, "parent")):
+            if "bare_with_attr" not in results and any(
+                match(obj) for obj in attr_chain(node, "parent")
+            ):
                 return False
             return results
         return False

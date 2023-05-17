@@ -20,7 +20,7 @@ The list-producing functions this brings in are::
 from __future__ import division, absolute_import, print_function
 
 from itertools import chain, starmap
-import itertools       # since zip_longest doesn't exist on Py2
+import itertools  # since zip_longest doesn't exist on Py2
 from past.types import basestring
 from past.utils import PY3
 
@@ -258,11 +258,13 @@ if PY3:
     map = oldmap
     range = oldrange
     from functools import reduce
+
     zip = oldzip
-    __all__ = ['filter', 'map', 'range', 'reduce', 'zip']
+    __all__ = ["filter", "map", "range", "reduce", "zip"]
 
 else:
     import __builtin__
+
     # Python 2-builtin ranges produce lists
     filter = __builtin__.filter
     map = __builtin__.map

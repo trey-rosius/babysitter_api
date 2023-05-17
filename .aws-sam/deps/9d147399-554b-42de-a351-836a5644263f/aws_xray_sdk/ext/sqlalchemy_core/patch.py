@@ -23,36 +23,47 @@ def _sql_meta(engine_instance, args):
         # Add Scheme to uses_netloc or // will be missing from url.
         uses_netloc.append(url.scheme)
         if url.password is None:
-            metadata['url'] = url.geturl()
+            metadata["url"] = url.geturl()
             name = url.netloc
         else:
             # Strip password from URL
-            host_info = url.netloc.rpartition('@')[-1]
-            parts = url._replace(netloc='{}@{}'.format(url.username, host_info))
-            metadata['url'] = parts.geturl()
+            host_info = url.netloc.rpartition("@")[-1]
+            parts = url._replace(netloc="{}@{}".format(url.username, host_info))
+            metadata["url"] = parts.geturl()
             name = host_info
-        metadata['user'] = url.username
-        metadata['database_type'] = engine_instance.engine.name
+        metadata["user"] = url.username
+        metadata["database_type"] = engine_instance.engine.name
         try:
-            version = getattr(engine_instance.dialect, '{}_version'.format(engine_instance.engine.driver))
-            version_str = '.'.join(map(str, version))
-            metadata['driver_version'] = "{}-{}".format(engine_instance.engine.driver, version_str)
+            version = getattr(
+                engine_instance.dialect,
+                "{}_version".format(engine_instance.engine.driver),
+            )
+            version_str = ".".join(map(str, version))
+            metadata["driver_version"] = "{}-{}".format(
+                engine_instance.engine.driver, version_str
+            )
         except AttributeError:
-            metadata['driver_version'] = engine_instance.engine.driver
+            metadata["driver_version"] = engine_instance.engine.driver
         if engine_instance.dialect.server_version_info is not None:
-            metadata['database_version'] = '.'.join(map(str, engine_instance.dialect.server_version_info))
+            metadata["database_version"] = ".".join(
+                map(str, engine_instance.dialect.server_version_info)
+            )
         if xray_recorder.stream_sql:
             try:
                 if isinstance(args[0], ClauseElement):
-                    metadata['sanitized_query'] = str(args[0].compile(engine_instance.engine))
+                    metadata["sanitized_query"] = str(
+                        args[0].compile(engine_instance.engine)
+                    )
                 else:
-                    metadata['sanitized_query'] = str(args[0])
+                    metadata["sanitized_query"] = str(args[0])
             except Exception:
-                logging.getLogger(__name__).exception('Error getting the sanitized query')
+                logging.getLogger(__name__).exception(
+                    "Error getting the sanitized query"
+                )
     except Exception:
         metadata = None
         name = None
-        logging.getLogger(__name__).exception('Error parsing sql metadata.')
+        logging.getLogger(__name__).exception("Error parsing sql metadata.")
     return name, metadata
 
 
@@ -67,7 +78,7 @@ def _xray_traced_sqlalchemy_session(wrapped, instance, args, kwargs):
 def _process_request(wrapped, engine_instance, args, kwargs):
     name, sql = _sql_meta(engine_instance, args)
     if sql is not None:
-        subsegment = xray_recorder.begin_subsegment(name, namespace='remote')
+        subsegment = xray_recorder.begin_subsegment(name, namespace="remote")
     else:
         subsegment = None
     try:
@@ -87,15 +98,11 @@ def _process_request(wrapped, engine_instance, args, kwargs):
 
 def patch():
     wrapt.wrap_function_wrapper(
-        'sqlalchemy.engine.base',
-        'Connection.execute',
-        _xray_traced_sqlalchemy_execute
+        "sqlalchemy.engine.base", "Connection.execute", _xray_traced_sqlalchemy_execute
     )
 
     wrapt.wrap_function_wrapper(
-        'sqlalchemy.orm.session',
-        'Session.execute',
-        _xray_traced_sqlalchemy_session
+        "sqlalchemy.orm.session", "Session.execute", _xray_traced_sqlalchemy_session
     )
 
 
@@ -104,7 +111,8 @@ def unpatch():
     Unpatch any previously patched modules.
     This operation is idempotent.
     """
-    _PATCHED_MODULES.discard('sqlalchemy_core')
+    _PATCHED_MODULES.discard("sqlalchemy_core")
     import sqlalchemy
-    unwrap(sqlalchemy.engine.base.Connection, 'execute')
-    unwrap(sqlalchemy.orm.session.Session, 'execute')
+
+    unwrap(sqlalchemy.engine.base.Connection, "execute")
+    unwrap(sqlalchemy.orm.session.Session, "execute")

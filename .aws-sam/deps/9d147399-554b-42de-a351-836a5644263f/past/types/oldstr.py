@@ -34,20 +34,21 @@ def unescape(s):
     abc
     def
     """
-    return s.encode().decode('unicode_escape')
+    return s.encode().decode("unicode_escape")
 
 
 class oldstr(with_metaclass(BaseOldStr, _builtin_bytes)):
     """
     A forward port of the Python 2 8-bit string object to Py3
     """
+
     # Python 2 strings have no __iter__ method:
     @property
     def __iter__(self):
         raise AttributeError
 
     def __dir__(self):
-        return [thing for thing in dir(_builtin_bytes) if thing != '__iter__']
+        return [thing for thing in dir(_builtin_bytes) if thing != "__iter__"]
 
     # def __new__(cls, *args, **kwargs):
     #     """
@@ -106,18 +107,18 @@ class oldstr(with_metaclass(BaseOldStr, _builtin_bytes)):
     #     return super(newbytes, cls).__new__(cls, value)
 
     def __repr__(self):
-        s = super(oldstr, self).__repr__()   # e.g. b'abc' on Py3, b'abc' on Py3
+        s = super(oldstr, self).__repr__()  # e.g. b'abc' on Py3, b'abc' on Py3
         return s[1:]
 
     def __str__(self):
-        s = super(oldstr, self).__str__()   # e.g. "b'abc'" or "b'abc\\ndef'
+        s = super(oldstr, self).__str__()  # e.g. "b'abc'" or "b'abc\\ndef'
         # TODO: fix this:
         assert s[:2] == "b'" and s[-1] == "'"
-        return unescape(s[2:-1])            # e.g. 'abc'    or 'abc\ndef'
+        return unescape(s[2:-1])  # e.g. 'abc'    or 'abc\ndef'
 
     def __getitem__(self, y):
         if isinstance(y, Integral):
-            return super(oldstr, self).__getitem__(slice(y, y+1))
+            return super(oldstr, self).__getitem__(slice(y, y + 1))
         else:
             return super(oldstr, self).__getitem__(y)
 
@@ -132,4 +133,4 @@ class oldstr(with_metaclass(BaseOldStr, _builtin_bytes)):
         return bytes(self)
 
 
-__all__ = ['oldstr']
+__all__ = ["oldstr"]

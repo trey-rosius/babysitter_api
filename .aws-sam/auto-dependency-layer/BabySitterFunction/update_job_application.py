@@ -2,11 +2,13 @@ import json
 import os
 import boto3
 from typing import Any, List, Literal, Union
-from aws_lambda_powertools.utilities.batch import (BatchProcessor,
-                                                   EventType,
-                                                   FailureResponse,
-                                                   SuccessResponse,
-                                                   batch_processor)
+from aws_lambda_powertools.utilities.batch import (
+    BatchProcessor,
+    EventType,
+    FailureResponse,
+    SuccessResponse,
+    batch_processor,
+)
 from aws_lambda_powertools.utilities.data_classes.sqs_event import SQSRecord
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger, Tracer
@@ -19,13 +21,14 @@ dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 processor = BatchProcessor(event_type=EventType.SQS)
 
+
 @tracer.capture_method
 def record_handler(record: SQSRecord):
     """
     Handle messages from SQS Queue containing job applications.
     Update each job application status to DECLINED
     """
-    payload:str = record.body
+    payload: str = record.body
 
     logger.info(f"payload has {len(payload)} records")
 
@@ -34,20 +37,16 @@ def record_handler(record: SQSRecord):
         item = json.loads(payload)
         response = table.update_item(
             Key={
-                'PK': f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
-                'SK': f"JOB#{item['jobId']}#APPLICATION#{item['id']}"
+                "PK": f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
+                "SK": f"JOB#{item['jobId']}#APPLICATION#{item['id']}",
             },
             ConditionExpression="attribute_exists(PK)",
             UpdateExpression="set jobApplicationStatus= :jobApplicationStatus",
-
-            ExpressionAttributeValues={
-                ':jobApplicationStatus': 'DECLINED'
-            },
-            ReturnValues="ALL_NEW"
+            ExpressionAttributeValues={":jobApplicationStatus": "DECLINED"},
+            ReturnValues="ALL_NEW",
         )
 
-        logger.debug({' update response': response['Attributes']})
-
+        logger.debug({" update response": response["Attributes"]})
 
 
 @logger.inject_lambda_context
@@ -56,7 +55,9 @@ def record_handler(record: SQSRecord):
 def lambda_handler(event, context: LambdaContext):
     batch = event["Records"]
     with processor(records=batch, processor=processor):
-        processed_messages: List[Union[SuccessResponse, FailureResponse]] = processor.process()
+        processed_messages: List[
+            Union[SuccessResponse, FailureResponse]
+        ] = processor.process()
 
     for messages in processed_messages:
         for message in messages:

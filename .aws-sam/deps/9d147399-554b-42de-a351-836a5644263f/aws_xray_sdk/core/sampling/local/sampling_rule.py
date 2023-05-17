@@ -8,13 +8,14 @@ class SamplingRule(object):
     One SamolingRule represents one rule defined from local rule json file
     or from a dictionary. It can be either a custom rule or default rule.
     """
-    FIXED_TARGET = 'fixed_target'
-    RATE = 'rate'
 
-    HOST = 'host'
-    METHOD = 'http_method'
-    PATH = 'url_path'
-    SERVICE_NAME = 'service_name'
+    FIXED_TARGET = "fixed_target"
+    RATE = "rate"
+
+    HOST = "host"
+    METHOD = "http_method"
+    PATH = "url_path"
+    SERVICE_NAME = "service_name"
 
     def __init__(self, rule_dict, version=2, default=False):
         """
@@ -46,9 +47,11 @@ class SamplingRule(object):
         the incoming request based on some of the request's parameters.
         Any None parameters provided will be considered an implicit match.
         """
-        return (not host or wildcard_match(self.host, host)) \
-            and (not method or wildcard_match(self.method, method)) \
+        return (
+            (not host or wildcard_match(self.host, host))
+            and (not method or wildcard_match(self.method, method))
             and (not path or wildcard_match(self.path, path))
+        )
 
     @property
     def fixed_target(self):
@@ -102,14 +105,21 @@ class SamplingRule(object):
 
     def _validate(self):
         if self.fixed_target < 0 or self.rate < 0:
-            raise InvalidSamplingManifestError('All rules must have non-negative values for '
-                                               'fixed_target and rate')
+            raise InvalidSamplingManifestError(
+                "All rules must have non-negative values for " "fixed_target and rate"
+            )
 
         if self._default:
             if self.host or self.method or self.path:
-                raise InvalidSamplingManifestError('The default rule must not specify values for '
-                                                   'url_path, %s, or http_method', self._host_key)
+                raise InvalidSamplingManifestError(
+                    "The default rule must not specify values for "
+                    "url_path, %s, or http_method",
+                    self._host_key,
+                )
         else:
             if not self.host or not self.method or not self.path:
-                raise InvalidSamplingManifestError('All non-default rules must have values for '
-                                                   'url_path, %s, and http_method', self._host_key)
+                raise InvalidSamplingManifestError(
+                    "All non-default rules must have values for "
+                    "url_path, %s, and http_method",
+                    self._host_key,
+                )

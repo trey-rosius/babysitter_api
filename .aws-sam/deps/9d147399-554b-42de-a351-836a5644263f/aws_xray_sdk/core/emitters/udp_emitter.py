@@ -7,9 +7,9 @@ from ..exceptions.exceptions import InvalidDaemonAddressException
 log = logging.getLogger(__name__)
 
 
-PROTOCOL_HEADER = "{\"format\":\"json\",\"version\":1}"
-PROTOCOL_DELIMITER = '\n'
-DEFAULT_DAEMON_ADDRESS = '127.0.0.1:2000'
+PROTOCOL_HEADER = '{"format":"json","version":1}'
+PROTOCOL_DELIMITER = "\n"
+DEFAULT_DAEMON_ADDRESS = "127.0.0.1:2000"
 
 
 class UDPEmitter(object):
@@ -19,6 +19,7 @@ class UDPEmitter(object):
     exception on the actual data transfer between the socket and the daemon,
     it logs the exception and continue.
     """
+
     def __init__(self, daemon_address=DEFAULT_DAEMON_ADDRESS):
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,9 +34,11 @@ class UDPEmitter(object):
         :param entity: a trace entity to send to the X-Ray daemon
         """
         try:
-            message = "%s%s%s" % (PROTOCOL_HEADER,
-                                  PROTOCOL_DELIMITER,
-                                  entity.serialize())
+            message = "%s%s%s" % (
+                PROTOCOL_HEADER,
+                PROTOCOL_DELIMITER,
+                entity.serialize(),
+            )
 
             log.debug("sending: %s to %s:%s." % (message, self._ip, self._port))
             self._send_data(message)
@@ -60,11 +63,13 @@ class UDPEmitter(object):
         return self._port
 
     def _send_data(self, data):
-        self._socket.sendto(data.encode('utf-8'), (self._ip, self._port))
+        self._socket.sendto(data.encode("utf-8"), (self._ip, self._port))
 
     def _parse_address(self, daemon_address):
         try:
-            val = daemon_address.split(':')
+            val = daemon_address.split(":")
             return val[0], int(val[1])
         except Exception:
-            raise InvalidDaemonAddressException('Invalid daemon address %s specified.' % daemon_address)
+            raise InvalidDaemonAddressException(
+                "Invalid daemon address %s specified." % daemon_address
+            )

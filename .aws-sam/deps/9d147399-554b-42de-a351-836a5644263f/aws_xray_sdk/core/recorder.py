@@ -23,20 +23,15 @@ from .utils import stacktrace
 
 log = logging.getLogger(__name__)
 
-TRACING_NAME_KEY = 'AWS_XRAY_TRACING_NAME'
-DAEMON_ADDR_KEY = 'AWS_XRAY_DAEMON_ADDRESS'
-CONTEXT_MISSING_KEY = 'AWS_XRAY_CONTEXT_MISSING'
+TRACING_NAME_KEY = "AWS_XRAY_TRACING_NAME"
+DAEMON_ADDR_KEY = "AWS_XRAY_DAEMON_ADDRESS"
+CONTEXT_MISSING_KEY = "AWS_XRAY_CONTEXT_MISSING"
 
-XRAY_META = {
-    'xray': {
-        'sdk': 'X-Ray for Python',
-        'sdk_version': VERSION
-    }
-}
+XRAY_META = {"xray": {"sdk": "X-Ray for Python", "sdk_version": VERSION}}
 
 SERVICE_INFO = {
-    'runtime': platform.python_implementation(),
-    'runtime_version': platform.python_version()
+    "runtime": platform.python_implementation(),
+    "runtime_version": platform.python_version(),
 }
 
 
@@ -50,6 +45,7 @@ class AWSXRayRecorder(object):
 
     in your module to access it
     """
+
     def __init__(self):
 
         self._streaming = DefaultStreaming()
@@ -57,11 +53,13 @@ class AWSXRayRecorder(object):
         if context:
             # Special handling when running on AWS Lambda.
             from .sampling.local.sampler import LocalSampler
+
             self._context = context
             self.streaming_threshold = 0
             self._sampler = LocalSampler()
         else:
             from .sampling.sampler import DefaultSampler
+
             self._context = Context()
             self._sampler = DefaultSampler()
 
@@ -75,16 +73,26 @@ class AWSXRayRecorder(object):
         self._origin = None
         self._stream_sql = True
 
-        if type(self.sampler).__name__ == 'DefaultSampler':
+        if type(self.sampler).__name__ == "DefaultSampler":
             self.sampler.load_settings(DaemonConfig(), self.context)
 
-    def configure(self, sampling=None, plugins=None,
-                  context_missing=None, sampling_rules=None,
-                  daemon_address=None, service=None,
-                  context=None, emitter=None, streaming=None,
-                  dynamic_naming=None, streaming_threshold=None,
-                  max_trace_back=None, sampler=None,
-                  stream_sql=True):
+    def configure(
+        self,
+        sampling=None,
+        plugins=None,
+        context_missing=None,
+        sampling_rules=None,
+        daemon_address=None,
+        service=None,
+        context=None,
+        emitter=None,
+        streaming=None,
+        dynamic_naming=None,
+        streaming_threshold=None,
+        max_trace_back=None,
+        sampler=None,
+        stream_sql=True,
+    ):
         """Configure global X-Ray recorder.
 
         Configure needs to run before patching thrid party libraries
@@ -154,7 +162,9 @@ class AWSXRayRecorder(object):
         if context:
             self.context = context
         if context_missing:
-            self.context.context_missing = os.getenv(CONTEXT_MISSING_KEY, context_missing)
+            self.context.context_missing = os.getenv(
+                CONTEXT_MISSING_KEY, context_missing
+            )
         if dynamic_naming:
             self.dynamic_naming = dynamic_naming
         if streaming:
@@ -178,9 +188,10 @@ class AWSXRayRecorder(object):
             self._aws_metadata = copy.deepcopy(XRAY_META)
             self._origin = None
 
-        if type(self.sampler).__name__ == 'DefaultSampler':
-            self.sampler.load_settings(DaemonConfig(daemon_address),
-                                       self.context, self._origin)
+        if type(self.sampler).__name__ == "DefaultSampler":
+            self.sampler.load_settings(
+                DaemonConfig(daemon_address), self.context, self._origin
+            )
 
     def in_segment(self, name=None, **segment_kwargs):
         """
@@ -200,8 +211,7 @@ class AWSXRayRecorder(object):
         """
         return SubsegmentContextManager(self, name=name, **subsegment_kwargs)
 
-    def begin_segment(self, name=None, traceid=None,
-                      parent_id=None, sampling=None):
+    def begin_segment(self, name=None, traceid=None, parent_id=None, sampling=None):
         """
         Begin a segment on the current thread and return it. The recorder
         only keeps one segment at a time. Create the second one without
@@ -236,8 +246,7 @@ class AWSXRayRecorder(object):
         if not decision:
             segment = DummySegment(seg_name)
         else:
-            segment = Segment(name=seg_name, traceid=traceid,
-                              parent_id=parent_id)
+            segment = Segment(name=seg_name, traceid=traceid, parent_id=parent_id)
             self._populate_runtime_context(segment, decision)
 
         self.context.put_segment(segment)
@@ -273,7 +282,7 @@ class AWSXRayRecorder(object):
         else:
             return entity
 
-    def begin_subsegment(self, name, namespace='local'):
+    def begin_subsegment(self, name, namespace="local"):
         """
         Begin a new subsegment.
         If there is open subsegment, the newly created subsegment will be the
@@ -353,7 +362,7 @@ class AWSXRayRecorder(object):
         if entity and entity.sampled:
             entity.put_annotation(key, value)
 
-    def put_metadata(self, key, value, namespace='default'):
+    def put_metadata(self, key, value, namespace="default"):
         """
         Add metadata to the current active trace entity.
         Metadata is not indexed but can be later retrieved
@@ -422,8 +431,9 @@ class AWSXRayRecorder(object):
         """
         return self.in_subsegment(name=name)
 
-    def record_subsegment(self, wrapped, instance, args, kwargs, name,
-                          namespace, meta_processor):
+    def record_subsegment(
+        self, wrapped, instance, args, kwargs, name, namespace, meta_processor
+    ):
 
         subsegment = self.begin_subsegment(name, namespace)
 
@@ -460,7 +470,7 @@ class AWSXRayRecorder(object):
 
     def _populate_runtime_context(self, segment, sampling_decision):
         if self._origin:
-            setattr(segment, 'origin', self._origin)
+            setattr(segment, "origin", self._origin)
 
         segment.set_aws(copy.deepcopy(self._aws_metadata))
         segment.set_service(SERVICE_INFO)
@@ -500,7 +510,7 @@ class AWSXRayRecorder(object):
 
     def _is_subsegment(self, entity):
 
-        return (hasattr(entity, 'type') and entity.type == 'subsegment')
+        return hasattr(entity, "type") and entity.type == "subsegment"
 
     @property
     def enabled(self):

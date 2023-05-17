@@ -59,4 +59,8 @@ class InvalidSchemaFormatError(Exception):
     """When JSON Schema is in invalid format"""
 
 
-__all__ = ["SchemaValidationError", "InvalidSchemaFormatError", "InvalidEnvelopeExpressionError"]
+__all__ = [
+    "SchemaValidationError",
+    "InvalidSchemaFormatError",
+    "InvalidEnvelopeExpressionError",
+]

@@ -15,7 +15,7 @@ from lib2to3.fixes.fix_urllib import FixUrllib
 from libfuturize.fixer_util import touch_import_top, find_root
 
 
-class FixFutureStandardLibraryUrllib(FixUrllib):     # not a subclass of FixImports
+class FixFutureStandardLibraryUrllib(FixUrllib):  # not a subclass of FixImports
     run_order = 8
 
     def transform(self, node, results):
@@ -24,5 +24,5 @@ class FixFutureStandardLibraryUrllib(FixUrllib):     # not a subclass of FixImpo
         root = find_root(node)
         result = super(FixFutureStandardLibraryUrllib, self).transform(node, results)
         # TODO: add a blank line between any __future__ imports and this?
-        touch_import_top(u'future', u'standard_library', root)
+        touch_import_top("future", "standard_library", root)
         return result

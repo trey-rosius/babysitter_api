@@ -13,11 +13,10 @@
 
 import logging
 
-logger = logging.getLogger('bcdocs')
+logger = logging.getLogger("bcdocs")
 
 
 class BaseStyle(object):
-
     def __init__(self, doc, indent_width=2):
         self.doc = doc
         self.indent_width = indent_width
@@ -33,7 +32,7 @@ class BaseStyle(object):
         self._indent = value
 
     def new_paragraph(self):
-        return '\n%s' % self.spaces()
+        return "\n%s" % self.spaces()
 
     def indent(self):
         self._indent += 1
@@ -43,7 +42,7 @@ class BaseStyle(object):
             self._indent -= 1
 
     def spaces(self):
-        return ' ' * (self._indent * self.indent_width)
+        return " " * (self._indent * self.indent_width)
 
     def bold(self, s):
         return s
@@ -65,7 +64,6 @@ class BaseStyle(object):
 
 
 class ReSTStyle(BaseStyle):
-
     def __init__(self, doc, indent_width=2):
         BaseStyle.__init__(self, doc, indent_width)
         self.do_p = True
@@ -73,10 +71,10 @@ class ReSTStyle(BaseStyle):
         self.list_depth = 0
 
     def new_paragraph(self):
-        self.doc.write('\n\n%s' % self.spaces())
+        self.doc.write("\n\n%s" % self.spaces())
 
     def new_line(self):
-        self.doc.write('\n%s' % self.spaces())
+        self.doc.write("\n%s" % self.spaces())
 
     def _start_inline(self, markup):
         self.doc.write(markup)
@@ -88,7 +86,7 @@ class ReSTStyle(BaseStyle):
         # problems in the ReST inline markup so we remove it here
         # by popping the last item written off the stack, striping
         # the whitespace and then pushing it back on the stack.
-        last_write = self.doc.pop_write().rstrip(' ')
+        last_write = self.doc.pop_write().rstrip(" ")
 
         # Sometimes, for whatever reason, a tag like <b/> is present. This
         # is problematic because if we simply translate that directly then
@@ -98,13 +96,13 @@ class ReSTStyle(BaseStyle):
             return
 
         self.doc.push_write(last_write)
-        self.doc.write(markup + ' ')
+        self.doc.write(markup + " ")
 
     def start_bold(self, attrs=None):
-        self._start_inline('**')
+        self._start_inline("**")
 
     def end_bold(self):
-        self._end_inline('**')
+        self._end_inline("**")
 
     def start_b(self, attrs=None):
         self.doc.do_translation = True
@@ -123,28 +121,28 @@ class ReSTStyle(BaseStyle):
     def ref(self, title, link=None):
         if link is None:
             link = title
-        self.doc.write(':doc:`%s <%s>`' % (title, link))
+        self.doc.write(":doc:`%s <%s>`" % (title, link))
 
     def _heading(self, s, border_char):
         border = border_char * len(s)
         self.new_paragraph()
-        self.doc.write('%s\n%s\n%s' % (border, s, border))
+        self.doc.write("%s\n%s\n%s" % (border, s, border))
         self.new_paragraph()
 
     def h1(self, s):
-        self._heading(s, '*')
+        self._heading(s, "*")
 
     def h2(self, s):
-        self._heading(s, '=')
+        self._heading(s, "=")
 
     def h3(self, s):
-        self._heading(s, '-')
+        self._heading(s, "-")
 
     def start_italics(self, attrs=None):
-        self._start_inline('*')
+        self._start_inline("*")
 
     def end_italics(self):
-        self._end_inline('*')
+        self._end_inline("*")
 
     def italics(self, s):
         if s:
@@ -154,19 +152,19 @@ class ReSTStyle(BaseStyle):
 
     def start_p(self, attrs=None):
         if self.do_p:
-            self.doc.write('\n\n%s' % self.spaces())
+            self.doc.write("\n\n%s" % self.spaces())
 
     def end_p(self):
         if self.do_p:
-            self.doc.write('\n\n%s' % self.spaces())
+            self.doc.write("\n\n%s" % self.spaces())
 
     def start_code(self, attrs=None):
         self.doc.do_translation = True
-        self._start_inline('``')
+        self._start_inline("``")
 
     def end_code(self):
         self.doc.do_translation = False
-        self._end_inline('``')
+        self._end_inline("``")
 
     def code(self, s):
         if s:
@@ -176,7 +174,7 @@ class ReSTStyle(BaseStyle):
 
     def start_note(self, attrs=None):
         self.new_paragraph()
-        self.doc.write('.. note::')
+        self.doc.write(".. note::")
         self.indent()
         self.new_paragraph()
 
@@ -186,7 +184,7 @@ class ReSTStyle(BaseStyle):
 
     def start_important(self, attrs=None):
         self.new_paragraph()
-        self.doc.write('.. warning::')
+        self.doc.write(".. warning::")
         self.indent()
         self.new_paragraph()
 
@@ -196,7 +194,7 @@ class ReSTStyle(BaseStyle):
 
     def start_danger(self, attrs=None):
         self.new_paragraph()
-        self.doc.write('.. danger::')
+        self.doc.write(".. danger::")
         self.indent()
         self.new_paragraph()
 
@@ -207,25 +205,25 @@ class ReSTStyle(BaseStyle):
     def start_a(self, attrs=None):
         if attrs:
             for attr_key, attr_value in attrs:
-                if attr_key == 'href':
+                if attr_key == "href":
                     self.a_href = attr_value
-                    self.doc.write('`')
+                    self.doc.write("`")
         else:
             # There are some model documentation that
             # looks like this: <a>DescribeInstances</a>.
             # In this case we just write out an empty
             # string.
-            self.doc.write(' ')
+            self.doc.write(" ")
         self.doc.do_translation = True
 
     def link_target_definition(self, refname, link):
-        self.doc.writeln('.. _%s: %s' % (refname, link))
+        self.doc.writeln(".. _%s: %s" % (refname, link))
 
     def sphinx_reference_label(self, label, text=None):
         if text is None:
             text = label
-        if self.doc.target == 'html':
-            self.doc.write(':ref:`%s <%s>`' % (text, label))
+        if self.doc.target == "html":
+            self.doc.write(":ref:`%s <%s>`" % (text, label))
         else:
             self.doc.write(text)
 
@@ -233,25 +231,25 @@ class ReSTStyle(BaseStyle):
         self.doc.do_translation = False
         if self.a_href:
             last_write = self.doc.pop_write()
-            last_write = last_write.rstrip(' ')
-            if last_write and last_write != '`':
-                if ':' in last_write:
-                    last_write = last_write.replace(':', r'\:')
+            last_write = last_write.rstrip(" ")
+            if last_write and last_write != "`":
+                if ":" in last_write:
+                    last_write = last_write.replace(":", r"\:")
                 self.doc.push_write(last_write)
-                self.doc.push_write(' <%s>`__' % self.a_href)
-            elif last_write == '`':
+                self.doc.push_write(" <%s>`__" % self.a_href)
+            elif last_write == "`":
                 # Look at start_a().  It will do a self.doc.write('`')
                 # which is the start of the link title.  If that is the
                 # case then there was no link text.  We should just
                 # use an inline link.  The syntax of this is
                 # `<http://url>`_
-                self.doc.push_write('`<%s>`__' % self.a_href)
+                self.doc.push_write("`<%s>`__" % self.a_href)
             else:
                 self.doc.push_write(self.a_href)
                 self.doc.hrefs[self.a_href] = self.a_href
-                self.doc.write('`__')
+                self.doc.write("`__")
             self.a_href = None
-        self.doc.write(' ')
+        self.doc.write(" ")
 
     def start_i(self, attrs=None):
         self.doc.do_translation = True
@@ -264,7 +262,7 @@ class ReSTStyle(BaseStyle):
     def start_li(self, attrs=None):
         self.new_line()
         self.do_p = False
-        self.doc.write('* ')
+        self.doc.write("* ")
 
     def end_li(self):
         self.do_p = True
@@ -314,7 +312,7 @@ class ReSTStyle(BaseStyle):
         self.doc.keep_data = True
 
     def start_codeblock(self, attrs=None):
-        self.doc.write('::')
+        self.doc.write("::")
         self.indent()
         self.new_paragraph()
 
@@ -334,42 +332,42 @@ class ReSTStyle(BaseStyle):
         self.end_codeblock()
 
     def toctree(self):
-        if self.doc.target == 'html':
-            self.doc.write('\n.. toctree::\n')
-            self.doc.write('  :maxdepth: 1\n')
-            self.doc.write('  :titlesonly:\n\n')
+        if self.doc.target == "html":
+            self.doc.write("\n.. toctree::\n")
+            self.doc.write("  :maxdepth: 1\n")
+            self.doc.write("  :titlesonly:\n\n")
         else:
             self.start_ul()
 
     def tocitem(self, item, file_name=None):
-        if self.doc.target == 'man':
+        if self.doc.target == "man":
             self.li(item)
         else:
             if file_name:
-                self.doc.writeln('  %s' % file_name)
+                self.doc.writeln("  %s" % file_name)
             else:
-                self.doc.writeln('  %s' % item)
+                self.doc.writeln("  %s" % item)
 
     def hidden_toctree(self):
-        if self.doc.target == 'html':
-            self.doc.write('\n.. toctree::\n')
-            self.doc.write('  :maxdepth: 1\n')
-            self.doc.write('  :hidden:\n\n')
+        if self.doc.target == "html":
+            self.doc.write("\n.. toctree::\n")
+            self.doc.write("  :maxdepth: 1\n")
+            self.doc.write("  :hidden:\n\n")
 
     def hidden_tocitem(self, item):
-        if self.doc.target == 'html':
+        if self.doc.target == "html":
             self.tocitem(item)
 
     def table_of_contents(self, title=None, depth=None):
-        self.doc.write('.. contents:: ')
+        self.doc.write(".. contents:: ")
         if title is not None:
             self.doc.writeln(title)
         if depth is not None:
-            self.doc.writeln('   :depth: %s' % depth)
+            self.doc.writeln("   :depth: %s" % depth)
 
     def start_sphinx_py_class(self, class_name):
         self.new_paragraph()
-        self.doc.write('.. py:class:: %s' % class_name)
+        self.doc.write(".. py:class:: %s" % class_name)
         self.indent()
         self.new_paragraph()
 
@@ -379,9 +377,9 @@ class ReSTStyle(BaseStyle):
 
     def start_sphinx_py_method(self, method_name, parameters=None):
         self.new_paragraph()
-        content = '.. py:method:: %s' % method_name
+        content = ".. py:method:: %s" % method_name
         if parameters is not None:
-            content += '(%s)' % parameters
+            content += "(%s)" % parameters
         self.doc.write(content)
         self.indent()
         self.new_paragraph()
@@ -392,7 +390,7 @@ class ReSTStyle(BaseStyle):
 
     def start_sphinx_py_attr(self, attr_name):
         self.new_paragraph()
-        self.doc.write('.. py:attribute:: %s' % attr_name)
+        self.doc.write(".. py:attribute:: %s" % attr_name)
         self.indent()
         self.new_paragraph()
 
@@ -406,13 +404,13 @@ class ReSTStyle(BaseStyle):
             self.doc.writeln(docstring_line)
 
     def external_link(self, title, link):
-        if self.doc.target == 'html':
-            self.doc.write('`%s <%s>`_' % (title, link))
+        if self.doc.target == "html":
+            self.doc.write("`%s <%s>`_" % (title, link))
         else:
             self.doc.write(title)
 
     def internal_link(self, title, page):
-        if self.doc.target == 'html':
-            self.doc.write(':doc:`%s <%s>`' % (title, page))
+        if self.doc.target == "html":
+            self.doc.write(":doc:`%s <%s>`" % (title, page))
         else:
             self.doc.write(title)

@@ -14,7 +14,7 @@ else:
 
 
 def is_classmethod(func):
-    return getattr(func, '__self__', None) is not None
+    return getattr(func, "__self__", None) is not None
 
 
 def is_instance_method(parent_class, func_name, func):

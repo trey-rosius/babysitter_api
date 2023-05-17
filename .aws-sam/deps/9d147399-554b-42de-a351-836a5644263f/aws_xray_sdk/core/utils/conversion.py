@@ -2,6 +2,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def metadata_to_dict(obj):
     """
     Convert object to dict with all serializable properties like:
@@ -25,7 +26,7 @@ def metadata_to_dict(obj):
         elif hasattr(obj, "__dict__"):
             metadata = {}
             for key, value in vars(obj).items():
-                if not callable(value) and not key.startswith('_'):
+                if not callable(value) and not key.startswith("_"):
                     metadata[key] = metadata_to_dict(value)
             return metadata
         else:

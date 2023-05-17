@@ -14,29 +14,21 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 @tracer.capture_method
 def get_user_account(username: str = ""):
-    logger.debug(f'username is:{username}')
+    logger.debug(f"username is:{username}")
 
     try:
         response = table.get_item(
-            Key={
-                'PK': f'USER#{username}',
-                'SK': f'USER#{username}'
-            }
+            Key={"PK": f"USER#{username}", "SK": f"USER#{username}"}
         )
         logger.debug("users dict {}".format(response))
-        if response['Item'] is None:
+        if response["Item"] is None:
             logger.debug("response is null")
             return {}
         else:
             logger.debug("response is not null")
-            user = UserEntity(response['Item'])
+            user = UserEntity(response["Item"])
 
             return user.user_dict()
-
-
-
-
-
 
     except ClientError as err:
         logger.debug(f"Error occured during get users item {err.response['Error']}")

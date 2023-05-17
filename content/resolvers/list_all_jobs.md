@@ -1,15 +1,15 @@
 #### List All Jobs
 As a nanny, you'll definitely wish to see all available jobs around you.And better still,
-received notifications, when there's an available job around you. 
+received notifications, when there's an available job around you.
 <br />
 
-In this section, we'll only implement the retrieval of all available jobs. In an updated version 
-of the api, i'll love to use the user's current location(longitude and latitude), alongside each 
-jobs current location and get only jobs which are in close proximity to the user. 
+In this section, we'll only implement the retrieval of all available jobs. In an updated version
+of the api, i'll love to use the user's current location(longitude and latitude), alongside each
+jobs current location and get only jobs which are in close proximity to the user.
 <br />
 
-We already get these attributes when creating both users and jobs. So all that's left is the 
-calculation. For precision, maybe we won't use the user's saved current location and instead go 
+We already get these attributes when creating both users and jobs. So all that's left is the
+calculation. For precision, maybe we won't use the user's saved current location and instead go
 with their location at that exact point in time.
 
 <br />
@@ -17,7 +17,7 @@ with their location at that exact point in time.
 We created a GSI called `getJobByStatus` to retrieve jobs based on it's status.
 <br />
 
-Here's how the code looks like 
+Here's how the code looks like
 ```
         response = table.query(
             IndexName="getJobsByStatus",
@@ -34,7 +34,7 @@ Here's how the code looks like
 
 
 ```
-We've created a `job entity` class which maps the attributes from dynamodb to a dictionary in the class. 
+We've created a `job entity` class which maps the attributes from dynamodb to a dictionary in the class.
 
 ```
 class Job:

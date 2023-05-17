@@ -12,12 +12,13 @@ class TargetPoller(object):
     centralized sampling rules and retrieve the new allocated
     sampling quota and TTL from X-Ray service.
     """
+
     def __init__(self, cache, rule_poller, connector):
         self._cache = cache
         self._rule_poller = rule_poller
         self._connector = connector
         self._random = Random()
-        self._interval = 10 # default 10 seconds interval on sampling targets fetch
+        self._interval = 10  # default 10 seconds interval on sampling targets fetch
 
     def start(self):
         poller_thread = threading.Thread(target=self._worker)
@@ -35,13 +36,15 @@ class TargetPoller(object):
     def _do_work(self):
         candidates = self._get_candidates(self._cache.rules)
         if not candidates:
-            log.debug('There is no sampling rule statistics to report. Skipping')
+            log.debug("There is no sampling rule statistics to report. Skipping")
             return None
         targets, rule_freshness = self._connector.fetch_sampling_target(candidates)
         self._cache.load_targets(targets)
 
         if rule_freshness > self._cache.last_updated:
-            log.info('Performing out-of-band sampling rule polling to fetch updated rules.')
+            log.info(
+                "Performing out-of-band sampling rule polling to fetch updated rules."
+            )
             self._rule_poller.wake_up()
 
     def _get_candidates(self, all_rules):

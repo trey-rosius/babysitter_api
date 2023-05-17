@@ -67,6 +67,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
     """
     A backport of the Python 3 str object to Py2
     """
+
     no_convert_msg = "Can't convert '{0}' object to str implicitly"
 
     def __new__(cls, *args, **kwargs):
@@ -94,8 +95,8 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
             return args[0]
         elif isinstance(args[0], unicode):
             value = args[0]
-        elif isinstance(args[0], bytes):   # i.e. Py2 bytes or newbytes
-            if 'encoding' in kwargs or len(args) > 1:
+        elif isinstance(args[0], bytes):  # i.e. Py2 bytes or newbytes
+            if "encoding" in kwargs or len(args) > 1:
                 value = args[0].decode(*args[1:], **kwargs)
             else:
                 value = args[0].__str__()
@@ -132,13 +133,13 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
             raise TypeError(errmsg.format(type(key)))
         return issubset(list(newkey), list(self))
 
-    @no('newbytes')
+    @no("newbytes")
     def __add__(self, other):
         return newstr(super(newstr, self).__add__(other))
 
-    @no('newbytes')
+    @no("newbytes")
     def __radd__(self, left):
-        " left + self "
+        "left + self"
         try:
             return newstr(left) + self
         except:
@@ -151,7 +152,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         return newstr(super(newstr, self).__rmul__(other))
 
     def join(self, iterable):
-        errmsg = 'sequence item {0}: expected unicode string, found bytes'
+        errmsg = "sequence item {0}: expected unicode string, found bytes"
         for i, item in enumerate(iterable):
             # Here we use type() rather than isinstance() because
             # __instancecheck__ is being overridden. E.g.
@@ -164,22 +165,22 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         else:
             return newstr(super(newstr, newstr(self)).join(iterable))
 
-    @no('newbytes')
+    @no("newbytes")
     def find(self, sub, *args):
         return super(newstr, self).find(sub, *args)
 
-    @no('newbytes')
+    @no("newbytes")
     def rfind(self, sub, *args):
         return super(newstr, self).rfind(sub, *args)
 
-    @no('newbytes', (1, 2))
+    @no("newbytes", (1, 2))
     def replace(self, old, new, *args):
         return newstr(super(newstr, self).replace(old, new, *args))
 
     def decode(self, *args):
         raise AttributeError("decode method has been disabled in newstr")
 
-    def encode(self, encoding='utf-8', errors='strict'):
+    def encode(self, encoding="utf-8", errors="strict"):
         """
         Returns bytes
 
@@ -191,6 +192,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         codecs.register_error that can handle UnicodeEncodeErrors.
         """
         from future.types.newbytes import newbytes
+
         # Py2 unicode.encode() takes encoding and errors as optional parameter,
         # not keyword arguments as in Python 3 str.
 
@@ -204,11 +206,12 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         # exception anyway after the function is called because the unicode
         # string it has to return isn't encodable strictly as ASCII.
 
-        if errors == 'surrogateescape':
-            if encoding == 'utf-16':
+        if errors == "surrogateescape":
+            if encoding == "utf-16":
                 # Known to fail here. See test_encoding_works_normally()
-                raise NotImplementedError('FIXME: surrogateescape handling is '
-                                          'not yet implemented properly')
+                raise NotImplementedError(
+                    "FIXME: surrogateescape handling is " "not yet implemented properly"
+                )
             # Encode char by char, building up list of byte-strings
             mybytes = []
             for c in self:
@@ -217,10 +220,10 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
                     mybytes.append(newbytes([code - 0xDC00]))
                 else:
                     mybytes.append(c.encode(encoding=encoding))
-            return newbytes(b'').join(mybytes)
+            return newbytes(b"").join(mybytes)
         return newbytes(super(newstr, self).encode(encoding, errors))
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def startswith(self, prefix, *args):
         if isinstance(prefix, Iterable):
             for thing in prefix:
@@ -228,7 +231,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
                     raise TypeError(self.no_convert_msg.format(type(thing)))
         return super(newstr, self).startswith(prefix, *args)
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def endswith(self, prefix, *args):
         # Note we need the decorator above as well as the isnewbytes()
         # check because prefix can be either a bytes object or e.g. a
@@ -240,31 +243,31 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
                     raise TypeError(self.no_convert_msg.format(type(thing)))
         return super(newstr, self).endswith(prefix, *args)
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def split(self, sep=None, maxsplit=-1):
         # Py2 unicode.split() takes maxsplit as an optional parameter,
         # not as a keyword argument as in Python 3 str.
         parts = super(newstr, self).split(sep, maxsplit)
         return [newstr(part) for part in parts]
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def rsplit(self, sep=None, maxsplit=-1):
         # Py2 unicode.rsplit() takes maxsplit as an optional parameter,
         # not as a keyword argument as in Python 3 str.
         parts = super(newstr, self).rsplit(sep, maxsplit)
         return [newstr(part) for part in parts]
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def partition(self, sep):
         parts = super(newstr, self).partition(sep)
         return tuple(newstr(part) for part in parts)
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def rpartition(self, sep):
         parts = super(newstr, self).rpartition(sep)
         return tuple(newstr(part) for part in parts)
 
-    @no('newbytes', 1)
+    @no("newbytes", 1)
     def index(self, sub, *args):
         """
         Like newstr.find() but raise ValueError when the substring is not
@@ -272,7 +275,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         """
         pos = self.find(sub, *args)
         if pos == -1:
-            raise ValueError('substring not found')
+            raise ValueError("substring not found")
         return pos
 
     def splitlines(self, keepends=False):
@@ -289,49 +292,70 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         return [newstr(part) for part in parts]
 
     def __eq__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__eq__(other)
         else:
             return NotImplemented
 
     def __hash__(self):
-        if (isinstance(self, unicode) or
-            isinstance(self, bytes) and not isnewbytes(self)):
+        if (
+            isinstance(self, unicode)
+            or isinstance(self, bytes)
+            and not isnewbytes(self)
+        ):
             return super(newstr, self).__hash__()
         else:
             raise NotImplementedError()
 
     def __ne__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__ne__(other)
         else:
             return True
 
-    unorderable_err = 'unorderable types: str() and {0}'
+    unorderable_err = "unorderable types: str() and {0}"
 
     def __lt__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__lt__(other)
         raise TypeError(self.unorderable_err.format(type(other)))
 
     def __le__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__le__(other)
         raise TypeError(self.unorderable_err.format(type(other)))
 
     def __gt__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__gt__(other)
         raise TypeError(self.unorderable_err.format(type(other)))
 
     def __ge__(self, other):
-        if (isinstance(other, unicode) or
-            isinstance(other, bytes) and not isnewbytes(other)):
+        if (
+            isinstance(other, unicode)
+            or isinstance(other, bytes)
+            and not isnewbytes(other)
+        ):
             return super(newstr, self).__ge__(other)
         raise TypeError(self.unorderable_err.format(type(other)))
 
@@ -340,7 +364,7 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         A trick to cause the ``hasattr`` builtin-fn to return False for
         the 'decode' method on Py2.
         """
-        if name in ['decode', u'decode']:
+        if name in ["decode", "decode"]:
             raise AttributeError("decode method has been disabled in newstr")
         return super(newstr, self).__getattribute__(name)
 
@@ -367,21 +391,29 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
         if y is None:
             assert z is None
             if not isinstance(x, dict):
-                raise TypeError('if you give only one argument to maketrans it must be a dict')
+                raise TypeError(
+                    "if you give only one argument to maketrans it must be a dict"
+                )
             result = {}
             for (key, value) in x.items():
                 if len(key) > 1:
-                    raise ValueError('keys in translate table must be strings or integers')
+                    raise ValueError(
+                        "keys in translate table must be strings or integers"
+                    )
                 result[ord(key)] = value
         else:
             if not isinstance(x, unicode) and isinstance(y, unicode):
-                raise TypeError('x and y must be unicode strings')
+                raise TypeError("x and y must be unicode strings")
             if not len(x) == len(y):
-                raise ValueError('the first two maketrans arguments must have equal length')
+                raise ValueError(
+                    "the first two maketrans arguments must have equal length"
+                )
             result = {}
             for (xi, yi) in zip(x, y):
                 if len(xi) > 1:
-                    raise ValueError('keys in translate table must be strings or integers')
+                    raise ValueError(
+                        "keys in translate table must be strings or integers"
+                    )
                 result[ord(xi)] = ord(yi)
 
         if z is not None:
@@ -411,16 +443,16 @@ class newstr(with_metaclass(BaseNewStr, unicode)):
                     l.append(chr(val))
             else:
                 l.append(c)
-        return ''.join(l)
+        return "".join(l)
 
     def isprintable(self):
-        raise NotImplementedError('fixme')
+        raise NotImplementedError("fixme")
 
     def isidentifier(self):
-        raise NotImplementedError('fixme')
+        raise NotImplementedError("fixme")
 
     def format_map(self):
-        raise NotImplementedError('fixme')
+        raise NotImplementedError("fixme")
 
 
-__all__ = ['newstr']
+__all__ = ["newstr"]

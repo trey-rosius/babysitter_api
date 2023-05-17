@@ -3,13 +3,16 @@ from flask import request
 
 from aws_xray_sdk.core.models import http
 from aws_xray_sdk.core.utils import stacktrace
-from aws_xray_sdk.ext.util import calculate_sampling_decision, \
-    calculate_segment_name, construct_xray_header, prepare_response_header
+from aws_xray_sdk.ext.util import (
+    calculate_sampling_decision,
+    calculate_segment_name,
+    construct_xray_header,
+    prepare_response_header,
+)
 from aws_xray_sdk.core.lambda_launcher import check_in_lambda, LambdaContext
 
 
 class XRayMiddleware(object):
-
     def __init__(self, app, recorder):
         self.app = app
         self.app.logger.info("initializing xray middleware")
@@ -33,10 +36,10 @@ class XRayMiddleware(object):
         name = calculate_segment_name(req.host, self._recorder)
 
         sampling_req = {
-            'host': req.host,
-            'method': req.method,
-            'path': req.path,
-            'service': name,
+            "host": req.host,
+            "method": req.method,
+            "path": req.path,
+            "service": name,
         }
         sampling_decision = calculate_sampling_decision(
             trace_header=xray_header,
@@ -57,9 +60,11 @@ class XRayMiddleware(object):
         segment.save_origin_trace_header(xray_header)
         segment.put_http_meta(http.URL, req.base_url)
         segment.put_http_meta(http.METHOD, req.method)
-        segment.put_http_meta(http.USER_AGENT, headers.get('User-Agent'))
+        segment.put_http_meta(http.USER_AGENT, headers.get("User-Agent"))
 
-        client_ip = headers.get('X-Forwarded-For') or headers.get('HTTP_X_FORWARDED_FOR')
+        client_ip = headers.get("X-Forwarded-For") or headers.get(
+            "HTTP_X_FORWARDED_FOR"
+        )
         if client_ip:
             segment.put_http_meta(http.CLIENT_IP, client_ip)
             segment.put_http_meta(http.X_FORWARDED_FOR, True)
@@ -77,7 +82,7 @@ class XRayMiddleware(object):
         resp_header_str = prepare_response_header(origin_header, segment)
         response.headers[http.XRAY_HEADER] = resp_header_str
 
-        cont_len = response.headers.get('Content-Length')
+        cont_len = response.headers.get("Content-Length")
         if cont_len:
             segment.put_http_meta(http.CONTENT_LENGTH, int(cont_len))
 
@@ -110,7 +115,7 @@ def _patch_render(recorder):
 
     _render = flask.templating._render
 
-    @recorder.capture('template_render')
+    @recorder.capture("template_render")
     def _traced_render(template, context, app):
         if template.name:
             recorder.current_subsegment().name = template.name

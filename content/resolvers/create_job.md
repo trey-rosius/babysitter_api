@@ -1,5 +1,5 @@
 #### Create Job Endpoint
-This endpoint is reserved for PARENTS only.It allows parents to put up job offers, which can be applied to 
+This endpoint is reserved for PARENTS only.It allows parents to put up job offers, which can be applied to
 by nanny's.
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/post.png)
@@ -83,7 +83,7 @@ def createJob(job=None):
 
 
 ```
-The `create_job` method receives a job dictionary, containing job attributes and puts them into our 
+The `create_job` method receives a job dictionary, containing job attributes and puts them into our
 dynamodb table.
 <br />
 

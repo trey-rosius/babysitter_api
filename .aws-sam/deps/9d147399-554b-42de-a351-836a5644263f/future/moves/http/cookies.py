@@ -6,4 +6,4 @@ if PY3:
 else:
     __future_module__ = True
     from Cookie import *
-    from Cookie import Morsel    # left out of __all__ on Py2.7!
+    from Cookie import Morsel  # left out of __all__ on Py2.7!

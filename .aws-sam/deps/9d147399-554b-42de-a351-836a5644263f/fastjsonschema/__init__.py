@@ -80,18 +80,22 @@ from functools import partial, update_wrapper
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
 from .draft07 import CodeGeneratorDraft07
-from .exceptions import JsonSchemaException, JsonSchemaValueException, JsonSchemaDefinitionException
+from .exceptions import (
+    JsonSchemaException,
+    JsonSchemaValueException,
+    JsonSchemaDefinitionException,
+)
 from .ref_resolver import RefResolver
 from .version import VERSION
 
 __all__ = (
-    'VERSION',
-    'JsonSchemaException',
-    'JsonSchemaValueException',
-    'JsonSchemaDefinitionException',
-    'validate',
-    'compile',
-    'compile_to_code',
+    "VERSION",
+    "JsonSchemaException",
+    "JsonSchemaValueException",
+    "JsonSchemaDefinitionException",
+    "validate",
+    "compile",
+    "compile_to_code",
 )
 
 
@@ -114,7 +118,7 @@ def validate(definition, data, handlers={}, formats={}, use_default=True):
     return compile(definition, handlers, formats, use_default)(data)
 
 
-#TODO: Change use_default to False when upgrading to version 3.
+# TODO: Change use_default to False when upgrading to version 3.
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
 def compile(definition, handlers={}, formats={}, use_default=True):
     """
@@ -210,9 +214,12 @@ def compile_to_code(definition, handlers={}, formats={}, use_default=True):
     """
     _, code_generator = _factory(definition, handlers, formats, use_default)
     return (
-        'VERSION = "' + VERSION + '"\n' +
-        code_generator.global_state_code + '\n' +
-        code_generator.func_code
+        'VERSION = "'
+        + VERSION
+        + '"\n'
+        + code_generator.global_state_code
+        + "\n"
+        + code_generator.func_code
     )
 
 
@@ -230,9 +237,9 @@ def _factory(definition, handlers, formats={}, use_default=True):
 def _get_code_generator_class(schema):
     # Schema in from draft-06 can be just the boolean value.
     if isinstance(schema, dict):
-        schema_version = schema.get('$schema', '')
-        if 'draft-04' in schema_version:
+        schema_version = schema.get("$schema", "")
+        if "draft-04" in schema_version:
             return CodeGeneratorDraft04
-        if 'draft-06' in schema_version:
+        if "draft-06" in schema_version:
             return CodeGeneratorDraft06
     return CodeGeneratorDraft07

@@ -12,7 +12,9 @@ from .exceptions import MiddlewareInvalidArgumentError
 logger = logging.getLogger(__name__)
 
 
-def lambda_handler_decorator(decorator: Optional[Callable] = None, trace_execution: Optional[bool] = None):
+def lambda_handler_decorator(
+    decorator: Optional[Callable] = None, trace_execution: Optional[bool] = None
+):
     """Decorator factory for decorating Lambda handlers.
 
     You can use lambda_handler_decorator to create your own middlewares,
@@ -103,10 +105,13 @@ def lambda_handler_decorator(decorator: Optional[Callable] = None, trace_executi
     """
 
     if decorator is None:
-        return functools.partial(lambda_handler_decorator, trace_execution=trace_execution)
+        return functools.partial(
+            lambda_handler_decorator, trace_execution=trace_execution
+        )
 
     trace_execution = resolve_truthy_env_var_choice(
-        env=os.getenv(constants.MIDDLEWARE_FACTORY_TRACE_ENV, "false"), choice=trace_execution
+        env=os.getenv(constants.MIDDLEWARE_FACTORY_TRACE_ENV, "false"),
+        choice=trace_execution,
     )
 
     @functools.wraps(decorator)
@@ -124,10 +129,14 @@ def lambda_handler_decorator(decorator: Optional[Callable] = None, trace_executi
         @functools.wraps(func)
         def wrapper(event, context):
             try:
-                middleware = functools.partial(decorator, func, event, context, **kwargs)
+                middleware = functools.partial(
+                    decorator, func, event, context, **kwargs
+                )
                 if trace_execution:
                     tracer = Tracer(auto_patch=False)
-                    with tracer.provider.in_subsegment(name=f"## {decorator.__qualname__}"):
+                    with tracer.provider.in_subsegment(
+                        name=f"## {decorator.__qualname__}"
+                    ):
                         response = middleware()
                 else:
                     response = middleware()

@@ -88,7 +88,10 @@ class PartialSQSProcessor(BasePartialProcessor):
         """
         Format messages to use in batch deletion
         """
-        return [{"Id": msg["messageId"], "ReceiptHandle": msg["receiptHandle"]} for msg in self.success_messages]
+        return [
+            {"Id": msg["messageId"], "ReceiptHandle": msg["receiptHandle"]}
+            for msg in self.success_messages
+        ]
 
     def _process_record(self, record) -> Tuple:
         """
@@ -119,7 +122,9 @@ class PartialSQSProcessor(BasePartialProcessor):
         # If all messages were successful, fall back to the default SQS -
         # Lambda behaviour which deletes messages if Lambda responds successfully
         if not self.fail_messages:
-            logger.debug(f"All {len(self.success_messages)} records successfully processed")
+            logger.debug(
+                f"All {len(self.success_messages)} records successfully processed"
+            )
             return
 
         queue_url = self._get_queue_url()
@@ -127,12 +132,18 @@ class PartialSQSProcessor(BasePartialProcessor):
 
         delete_message_response = None
         if entries_to_remove:
-            delete_message_response = self.client.delete_message_batch(QueueUrl=queue_url, Entries=entries_to_remove)
+            delete_message_response = self.client.delete_message_batch(
+                QueueUrl=queue_url, Entries=entries_to_remove
+            )
 
         if self.suppress_exception:
-            logger.debug(f"{len(self.fail_messages)} records failed processing, but exceptions are suppressed")
+            logger.debug(
+                f"{len(self.fail_messages)} records failed processing, but exceptions are suppressed"
+            )
         else:
-            logger.debug(f"{len(self.fail_messages)} records failed processing, raising exception")
+            logger.debug(
+                f"{len(self.fail_messages)} records failed processing, raising exception"
+            )
             raise SQSBatchProcessingError(
                 msg=f"Not all records processed successfully. {len(self.exceptions)} individual errors logged "
                 f"separately below.",
@@ -193,7 +204,9 @@ def sqs_batch_processor(
     config = config or Config()
     session = boto3_session or boto3.session.Session()
 
-    processor = PartialSQSProcessor(config=config, suppress_exception=suppress_exception, boto3_session=session)
+    processor = PartialSQSProcessor(
+        config=config, suppress_exception=suppress_exception, boto3_session=session
+    )
 
     records = event["Records"]
 

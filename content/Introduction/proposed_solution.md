@@ -6,7 +6,7 @@ This Repo would contain all the code for the babysitter serverless GraphQL API.
 - [x] User
 - [x] Job
 - [x] Application
-- [ ] Ratings 
+- [ ] Ratings
 
 #### User
 
@@ -24,16 +24,16 @@ This Repo would contain all the code for the babysitter serverless GraphQL API.
 - Location
 - Number of Kids
 - Cost
-- etc 
+- etc
 
 #### Applications
- - Somebody offering Nanny duties should be able to apply 
+ - Somebody offering Nanny duties should be able to apply
  to a job posted by a Parent.
- 
-#### Rate/Feedback 
+
+#### Rate/Feedback
  - Rate/Leave feedback on a nanny after job completion by a parent.
  - Rate/Leave Feedback on a parent after a job completion by a nanny.
- 
+
 
 #### User Profiles
 

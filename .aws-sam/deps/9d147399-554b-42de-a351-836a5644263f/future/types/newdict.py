@@ -38,6 +38,7 @@ class newdict(with_metaclass(BaseNewDict, _builtin_dict)):
     """
     A backport of the Python 3 dict object to Py2
     """
+
     def items(self):
         """
         On Python 2.7+:
@@ -108,4 +109,4 @@ class newdict(with_metaclass(BaseNewDict, _builtin_dict)):
         return dict(self)
 
 
-__all__ = ['newdict']
+__all__ = ["newdict"]

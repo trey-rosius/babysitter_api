@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 def patch_template():
 
-    attr = '_xray_original_render'
+    attr = "_xray_original_render"
 
     if getattr(Template, attr, None):
         log.debug("already patched")
@@ -18,15 +18,15 @@ def patch_template():
 
     setattr(Template, attr, Template.render)
 
-    @xray_recorder.capture('template_render')
+    @xray_recorder.capture("template_render")
     def xray_render(self, context):
-        template_name = self.name or getattr(context, 'template_name', None)
+        template_name = self.name or getattr(context, "template_name", None)
         if template_name:
             name = str(template_name)
             # SafeString are not properly serialized by jsonpickle,
             # turn them back to str by adding a non-safe str.
             if isinstance(name, SafeString):
-                name += ''
+                name += ""
             subsegment = xray_recorder.current_subsegment()
             if subsegment:
                 subsegment.name = name

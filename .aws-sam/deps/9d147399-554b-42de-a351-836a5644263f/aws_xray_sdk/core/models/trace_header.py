@@ -2,10 +2,10 @@ import logging
 
 log = logging.getLogger(__name__)
 
-ROOT = 'Root'
-PARENT = 'Parent'
-SAMPLE = 'Sampled'
-SELF = 'Self'
+ROOT = "Root"
+PARENT = "Parent"
+SAMPLE = "Sampled"
+SELF = "Self"
 
 HEADER_DELIMITER = ";"
 
@@ -18,6 +18,7 @@ class TraceHeader(object):
     by the X-Ray SDK and included in the response. Learn more about
     `Tracing Header <http://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader>`_.
     """
+
     def __init__(self, root=None, parent=None, sampled=None, data=None):
         """
         :param str root: trace id
@@ -31,11 +32,11 @@ class TraceHeader(object):
         self._data = data
 
         if sampled is not None:
-            if sampled == '?':
+            if sampled == "?":
                 self._sampled = sampled
-            if sampled is True or sampled == '1' or sampled == 1:
+            if sampled is True or sampled == "1" or sampled == 1:
                 self._sampled = 1
-            if sampled is False or sampled == '0' or sampled == 0:
+            if sampled is False or sampled == "0" or sampled == 0:
                 self._sampled = 0
 
     @classmethod
@@ -53,7 +54,7 @@ class TraceHeader(object):
             data = {}
 
             for param in params:
-                entry = param.split('=')
+                entry = param.split("=")
                 key = entry[0]
                 if key in (ROOT, PARENT, SAMPLE):
                     header_dict[key] = entry[1]
@@ -79,14 +80,14 @@ class TraceHeader(object):
         """
         h_parts = []
         if self.root:
-            h_parts.append(ROOT + '=' + self.root)
+            h_parts.append(ROOT + "=" + self.root)
         if self.parent:
-            h_parts.append(PARENT + '=' + self.parent)
+            h_parts.append(PARENT + "=" + self.parent)
         if self.sampled is not None:
-            h_parts.append(SAMPLE + '=' + str(self.sampled))
+            h_parts.append(SAMPLE + "=" + str(self.sampled))
         if self.data:
             for key in self.data:
-                h_parts.append(key + '=' + self.data[key])
+                h_parts.append(key + "=" + self.data[key])
 
         return HEADER_DELIMITER.join(h_parts)
 

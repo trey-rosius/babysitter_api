@@ -1,6 +1,9 @@
 from typing import Any, Dict, List, Optional, Union
 
-from aws_lambda_powertools.utilities.data_classes.common import DictWrapper, get_header_value
+from aws_lambda_powertools.utilities.data_classes.common import (
+    DictWrapper,
+    get_header_value,
+)
 
 
 def get_identity_object(identity: Optional[dict]) -> Any:
@@ -149,7 +152,10 @@ class AppSyncResolverEvent(DictWrapper):
 
         info: Optional[dict] = data.get("info")
         if not info:
-            info = {"fieldName": self.get("fieldName"), "parentTypeName": self.get("typeName")}
+            info = {
+                "fieldName": self.get("fieldName"),
+                "parentTypeName": self.get("typeName"),
+            }
 
         self._info = AppSyncResolverEventInfo(info)
 
@@ -212,7 +218,10 @@ class AppSyncResolverEvent(DictWrapper):
         return self.get("stash")
 
     def get_header_value(
-        self, name: str, default_value: Optional[str] = None, case_sensitive: Optional[bool] = False
+        self,
+        name: str,
+        default_value: Optional[str] = None,
+        case_sensitive: Optional[bool] = False,
     ) -> Optional[str]:
         """Get header value by name
 
@@ -229,4 +238,6 @@ class AppSyncResolverEvent(DictWrapper):
         str, optional
             Header value
         """
-        return get_header_value(self.request_headers, name, default_value, case_sensitive)
+        return get_header_value(
+            self.request_headers, name, default_value, case_sensitive
+        )

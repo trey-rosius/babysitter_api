@@ -16,5 +16,5 @@ from libfuturize.fixer_util import touch_import_top
 class FixXrangeWithImport(FixXrange):
     def transform(self, node, results):
         result = super(FixXrangeWithImport, self).transform(node, results)
-        touch_import_top('builtins', 'range', node)
+        touch_import_top("builtins", "range", node)
         return result

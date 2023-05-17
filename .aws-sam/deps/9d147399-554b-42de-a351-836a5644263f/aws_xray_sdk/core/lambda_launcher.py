@@ -10,10 +10,10 @@ from .context import Context
 log = logging.getLogger(__name__)
 
 
-LAMBDA_TRACE_HEADER_KEY = '_X_AMZN_TRACE_ID'
-LAMBDA_TASK_ROOT_KEY = 'LAMBDA_TASK_ROOT'
-TOUCH_FILE_DIR = '/tmp/.aws-xray/'
-TOUCH_FILE_PATH = '/tmp/.aws-xray/initialized'
+LAMBDA_TRACE_HEADER_KEY = "_X_AMZN_TRACE_ID"
+LAMBDA_TASK_ROOT_KEY = "LAMBDA_TASK_ROOT"
+TOUCH_FILE_DIR = "/tmp/.aws-xray/"
+TOUCH_FILE_PATH = "/tmp/.aws-xray/initialized"
 
 
 def check_in_lambda():
@@ -27,15 +27,18 @@ def check_in_lambda():
     try:
         os.mkdir(TOUCH_FILE_DIR)
     except OSError:
-        log.debug('directory %s already exists', TOUCH_FILE_DIR)
+        log.debug("directory %s already exists", TOUCH_FILE_DIR)
 
     try:
-        f = open(TOUCH_FILE_PATH, 'w+')
+        f = open(TOUCH_FILE_PATH, "w+")
         f.close()
         # utime force second parameter in python2.7
         os.utime(TOUCH_FILE_PATH, None)
     except (IOError, OSError):
-        log.warning("Unable to write to %s. Failed to signal SDK initialization." % TOUCH_FILE_PATH)
+        log.warning(
+            "Unable to write to %s. Failed to signal SDK initialization."
+            % TOUCH_FILE_PATH
+        )
 
     return LambdaContext()
 
@@ -47,6 +50,7 @@ class LambdaContext(Context):
     but instead every time ``get_trace_entity()`` gets called it refresh the facade
     segment based on environment variables set by Lambda worker.
     """
+
     def __init__(self):
 
         self._local = threading.local()
@@ -55,13 +59,13 @@ class LambdaContext(Context):
         """
         No-op.
         """
-        log.warning('Cannot create segments inside Lambda function. Discarded.')
+        log.warning("Cannot create segments inside Lambda function. Discarded.")
 
     def end_segment(self, end_time=None):
         """
         No-op.
         """
-        log.warning('Cannot end segment inside Lambda function. Ignored.')
+        log.warning("Cannot end segment inside Lambda function. Ignored.")
 
     def put_subsegment(self, subsegment):
         """
@@ -72,7 +76,10 @@ class LambdaContext(Context):
 
         if not self._is_subsegment(current_entity) and current_entity.initializing:
             if global_sdk_config.sdk_enabled():
-                log.warning("Subsegment %s discarded due to Lambda worker still initializing" % subsegment.name)
+                log.warning(
+                    "Subsegment %s discarded due to Lambda worker still initializing"
+                    % subsegment.name
+                )
             return
 
         current_entity.add_subsegment(subsegment)
@@ -80,7 +87,7 @@ class LambdaContext(Context):
 
     def get_trace_entity(self):
         self._refresh_context()
-        if getattr(self._local, 'entities', None):
+        if getattr(self._local, "entities", None):
             return self._local.entities[-1]
         else:
             return self._local.segment
@@ -97,7 +104,7 @@ class LambdaContext(Context):
         if not global_sdk_config.sdk_enabled():
             trace_header._sampled = False
 
-        segment = getattr(self._local, 'segment', None)
+        segment = getattr(self._local, "segment", None)
 
         if segment:
             # Ensure customers don't have leaked subsegments across invocations
@@ -137,10 +144,10 @@ class LambdaContext(Context):
             sampled = True
 
         segment = FacadeSegment(
-            name='facade',
+            name="facade",
             traceid=trace_header.root,
             entityid=trace_header.parent,
             sampled=sampled,
         )
-        setattr(self._local, 'segment', segment)
-        setattr(self._local, 'entities', [])
+        setattr(self._local, "segment", segment)
+        setattr(self._local, "entities", [])

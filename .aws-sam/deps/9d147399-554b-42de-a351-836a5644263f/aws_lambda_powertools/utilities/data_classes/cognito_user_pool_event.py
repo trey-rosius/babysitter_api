@@ -489,7 +489,11 @@ class ClaimsOverrideDetails(DictWrapper):
     @property
     def group_configuration(self) -> Optional[GroupOverrideDetails]:
         group_override_details = self.get("groupOverrideDetails")
-        return None if group_override_details is None else GroupOverrideDetails(group_override_details)
+        return (
+            None
+            if group_override_details is None
+            else GroupOverrideDetails(group_override_details)
+        )
 
     @group_configuration.setter
     def group_configuration(self, value: Dict[str, Any]):

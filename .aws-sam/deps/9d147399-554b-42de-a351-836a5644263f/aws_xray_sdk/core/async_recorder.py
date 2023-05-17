@@ -2,7 +2,11 @@ import time
 
 from aws_xray_sdk.core.recorder import AWSXRayRecorder
 from aws_xray_sdk.core.utils import stacktrace
-from aws_xray_sdk.core.models.subsegment import SubsegmentContextManager, is_already_recording, subsegment_decorator
+from aws_xray_sdk.core.models.subsegment import (
+    SubsegmentContextManager,
+    is_already_recording,
+    subsegment_decorator,
+)
 from aws_xray_sdk.core.models.segment import SegmentContextManager
 
 
@@ -13,8 +17,8 @@ class AsyncSegmentContextManager(SegmentContextManager):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return self.__exit__(exc_type, exc_val, exc_tb)
 
-class AsyncSubsegmentContextManager(SubsegmentContextManager):
 
+class AsyncSubsegmentContextManager(SubsegmentContextManager):
     @subsegment_decorator
     async def __call__(self, wrapped, instance, args, kwargs):
         if is_already_recording(wrapped):
@@ -27,9 +31,12 @@ class AsyncSubsegmentContextManager(SubsegmentContextManager):
             func_name = wrapped.__name__
 
         return await self.recorder.record_subsegment_async(
-            wrapped, instance, args, kwargs,
+            wrapped,
+            instance,
+            args,
+            kwargs,
             name=func_name,
-            namespace='local',
+            namespace="local",
             meta_processor=None,
         )
 
@@ -69,8 +76,9 @@ class AsyncAWSXRayRecorder(AWSXRayRecorder):
         """
         return AsyncSubsegmentContextManager(self, name=name, **subsegment_kwargs)
 
-    async def record_subsegment_async(self, wrapped, instance, args, kwargs, name,
-                                      namespace, meta_processor):
+    async def record_subsegment_async(
+        self, wrapped, instance, args, kwargs, name, namespace, meta_processor
+    ):
 
         subsegment = self.begin_subsegment(name, namespace)
 

@@ -15,7 +15,9 @@ class DynamoDBStreamEnvelope(BaseEnvelope):
     length of the list is the record's amount in the original event.
     """
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> List[Dict[str, Optional[Model]]]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> List[Dict[str, Optional[Model]]]:
         """Parses DynamoDB Stream records found in either NewImage and OldImage with model provided
 
         Parameters
@@ -30,7 +32,9 @@ class DynamoDBStreamEnvelope(BaseEnvelope):
         List
             List of dictionaries with NewImage and OldImage records parsed with model provided
         """
-        logger.debug(f"Parsing incoming data with DynamoDB Stream model {DynamoDBStreamModel}")
+        logger.debug(
+            f"Parsing incoming data with DynamoDB Stream model {DynamoDBStreamModel}"
+        )
         parsed_envelope = DynamoDBStreamModel.parse_obj(data)
         logger.debug(f"Parsing DynamoDB Stream new and old records with {model}")
         return [

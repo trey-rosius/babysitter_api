@@ -30,7 +30,7 @@ Users are separated into 3 user groups
 - Nanny
 
 Some Mutations can only be executed by Users of a particular group, while other
-Mutations can be executed by Users of any group. 
+Mutations can be executed by Users of any group.
 <br />
 <br />
 For example, in the Mutation below, only an admin can change a User's account

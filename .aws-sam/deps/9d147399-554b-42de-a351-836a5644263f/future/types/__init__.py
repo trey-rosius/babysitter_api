@@ -137,7 +137,6 @@ def disallow_types(argnums, disallowed_types):
     """
 
     def decorator(function):
-
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
             # These imports are just for this decorator, and are defined here
@@ -163,7 +162,9 @@ def disallow_types(argnums, disallowed_types):
                     raise TypeError(errmsg.format(mytype))
 
             return function(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -208,13 +209,14 @@ def issubset(list1, list2):
     """
     n = len(list1)
     for startpos in range(len(list2) - n + 1):
-        if list2[startpos:startpos+n] == list1:
+        if list2[startpos : startpos + n] == list1:
             return True
     return False
 
 
 if utils.PY3:
     import builtins
+
     bytes = builtins.bytes
     dict = builtins.dict
     int = builtins.int
@@ -224,15 +226,17 @@ if utils.PY3:
     str = builtins.str
 
     # The identity mapping
-    newtypes = {bytes: bytes,
-                dict: dict,
-                int: int,
-                list: list,
-                object: object,
-                range: range,
-                str: str}
+    newtypes = {
+        bytes: bytes,
+        dict: dict,
+        int: int,
+        list: list,
+        object: object,
+        range: range,
+        str: str,
+    }
 
-    __all__ = ['newtypes']
+    __all__ = ["newtypes"]
 
 else:
 
@@ -244,14 +248,24 @@ else:
     from .newobject import newobject
     from .newstr import newstr
 
-    newtypes = {bytes: newbytes,
-                dict: newdict,
-                int: newint,
-                long: newint,
-                list: newlist,
-                object: newobject,
-                range: newrange,
-                str: newbytes,
-                unicode: newstr}
+    newtypes = {
+        bytes: newbytes,
+        dict: newdict,
+        int: newint,
+        long: newint,
+        list: newlist,
+        object: newobject,
+        range: newrange,
+        str: newbytes,
+        unicode: newstr,
+    }
 
-    __all__ = ['newbytes', 'newdict', 'newint', 'newlist', 'newrange', 'newstr', 'newtypes']
+    __all__ = [
+        "newbytes",
+        "newdict",
+        "newint",
+        "newlist",
+        "newrange",
+        "newstr",
+        "newtypes",
+    ]

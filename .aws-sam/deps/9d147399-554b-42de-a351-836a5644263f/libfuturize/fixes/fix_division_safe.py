@@ -16,20 +16,29 @@ nothing.
 import re
 from lib2to3.fixer_util import Leaf, Node, Comma
 from lib2to3 import fixer_base
-from libfuturize.fixer_util import (token, future_import, touch_import_top,
-                                    wrap_in_fn_call)
+from libfuturize.fixer_util import (
+    token,
+    future_import,
+    touch_import_top,
+    wrap_in_fn_call,
+)
 
 
 def match_division(node):
-    u"""
+    """
     __future__.division redefines the meaning of a single slash for division,
     so we match that and only that.
     """
     slash = token.SLASH
-    return node.type == slash and not node.next_sibling.type == slash and \
-                                  not node.prev_sibling.type == slash
+    return (
+        node.type == slash
+        and not node.next_sibling.type == slash
+        and not node.prev_sibling.type == slash
+    )
 
-const_re = re.compile('^[0-9]*[.][0-9]*$')
+
+const_re = re.compile("^[0-9]*[.][0-9]*$")
+
 
 def is_floaty(node):
     return _is_floaty(node.prev_sibling) or _is_floaty(node.next_sibling)
@@ -45,13 +54,13 @@ def _is_floaty(expr):
     elif isinstance(expr, Node):
         # If the expression is a node, let's see if it's a direct cast to float
         if isinstance(expr.children[0], Leaf):
-            return expr.children[0].value == u'float'
+            return expr.children[0].value == "float"
     return False
 
 
 class FixDivisionSafe(fixer_base.BaseFix):
     # BM_compatible = True
-    run_order = 4    # this seems to be ignored?
+    run_order = 4  # this seems to be ignored?
 
     _accept_type = token.SLASH
 
@@ -67,7 +76,7 @@ class FixDivisionSafe(fixer_base.BaseFix):
         self.skip = "division" in tree.future_features
 
     def match(self, node):
-        u"""
+        """
         Since the tree needs to be fixed once and only once if and only if it
         matches, we can start discarding matches after the first.
         """
@@ -83,11 +92,15 @@ class FixDivisionSafe(fixer_base.BaseFix):
                     matched = True
 
                     # Strip any leading space for the first number:
-                    children[0].prefix = u''
+                    children[0].prefix = ""
 
-                    children = [wrap_in_fn_call("old_div",
-                                                children + [Comma(), child.next_sibling.clone()],
-                                                prefix=node.prefix)]
+                    children = [
+                        wrap_in_fn_call(
+                            "old_div",
+                            children + [Comma(), child.next_sibling.clone()],
+                            prefix=node.prefix,
+                        )
+                    ]
                     skip = True
                 else:
                     children.append(child.clone())
@@ -99,6 +112,6 @@ class FixDivisionSafe(fixer_base.BaseFix):
     def transform(self, node, results):
         if self.skip:
             return
-        future_import(u"division", node)
-        touch_import_top(u'past.utils', u'old_div', node)
+        future_import("division", node)
+        touch_import_top("past.utils", "old_div", node)
         return results

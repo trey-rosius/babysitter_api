@@ -16,12 +16,11 @@ from botocore.compat import OrderedDict
 from botocore.docs.bcdoc.docstringparser import DocStringParser
 from botocore.docs.bcdoc.style import ReSTStyle
 
-LOG = logging.getLogger('bcdocs')
+LOG = logging.getLogger("bcdocs")
 
 
 class ReSTDocument(object):
-
-    def __init__(self, target='man'):
+    def __init__(self, target="man"):
         self.style = ReSTStyle(self)
         self.target = target
         self.parser = DocStringParser(self)
@@ -46,7 +45,7 @@ class ReSTDocument(object):
         """
         Write content on a newline.
         """
-        self._write('%s%s\n' % (self.style.spaces(), content))
+        self._write("%s%s\n" % (self.style.spaces(), content))
 
     def peek_write(self):
         """
@@ -75,7 +74,7 @@ class ReSTDocument(object):
             self.style.new_paragraph()
             for refname, link in self.hrefs.items():
                 self.style.link_target_definition(refname, link)
-        return ''.join(self._writes).encode('utf-8')
+        return "".join(self._writes).encode("utf-8")
 
     def translate_words(self, words):
         return [self.translation_map.get(w, w) for w in words]
@@ -93,7 +92,7 @@ class ReSTDocument(object):
                 end = len(self._writes)
                 self._last_doc_string = (start, end)
             except Exception:
-                LOG.debug('Error parsing doc string', exc_info=True)
+                LOG.debug("Error parsing doc string", exc_info=True)
                 LOG.debug(doc_string)
 
     def remove_last_doc_string(self):
@@ -104,7 +103,7 @@ class ReSTDocument(object):
 
 
 class DocumentStructure(ReSTDocument):
-    def __init__(self, name, section_names=None, target='man', context=None):
+    def __init__(self, name, section_names=None, target="man", context=None):
         """Provides a Hierarichial structure to a ReSTDocument
 
         You can write to it similiar to as you can to a ReSTDocument but
@@ -172,8 +171,7 @@ class DocumentStructure(ReSTDocument):
             to the document structure it was instantiated from.
         """
         # Add a new section
-        section = self.__class__(name=name, target=self.target,
-                                 context=context)
+        section = self.__class__(name=name, target=self.target, context=context)
         section.path = self.path + [name]
         # Indent the section apporpriately as well
         section.style.indentation = self.style.indentation
@@ -209,7 +207,7 @@ class DocumentStructure(ReSTDocument):
         return value
 
     def getvalue(self):
-        return ''.join(self._writes).encode('utf-8')
+        return "".join(self._writes).encode("utf-8")
 
     def remove_all_sections(self):
         self._structure = OrderedDict()

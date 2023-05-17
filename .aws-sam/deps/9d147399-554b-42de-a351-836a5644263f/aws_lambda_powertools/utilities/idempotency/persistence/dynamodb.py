@@ -74,7 +74,9 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
         self._boto_config = boto_config or Config()
         self._boto3_session = boto3_session or boto3.session.Session()
         if sort_key_attr == key_attr:
-            raise ValueError(f"key_attr [{key_attr}] and sort_key_attr [{sort_key_attr}] cannot be the same!")
+            raise ValueError(
+                f"key_attr [{key_attr}] and sort_key_attr [{sort_key_attr}] cannot be the same!"
+            )
 
         self._table = None
         self.table_name = table_name
@@ -95,7 +97,9 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
         """
         if self._table:
             return self._table
-        ddb_resource = self._boto3_session.resource("dynamodb", config=self._boto_config)
+        ddb_resource = self._boto3_session.resource(
+            "dynamodb", config=self._boto_config
+        )
         self._table = ddb_resource.Table(self.table_name)
         return self._table
 
@@ -108,7 +112,10 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
 
     def _get_key(self, idempotency_key: str) -> dict:
         if self.sort_key_attr:
-            return {self.key_attr: self.static_pk_value, self.sort_key_attr: idempotency_key}
+            return {
+                self.key_attr: self.static_pk_value,
+                self.sort_key_attr: idempotency_key,
+            }
         return {self.key_attr: idempotency_key}
 
     def _item_to_data_record(self, item: Dict[str, Any]) -> DataRecord:
@@ -135,7 +142,9 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
         )
 
     def _get_record(self, idempotency_key) -> DataRecord:
-        response = self.table.get_item(Key=self._get_key(idempotency_key), ConsistentRead=True)
+        response = self.table.get_item(
+            Key=self._get_key(idempotency_key), ConsistentRead=True
+        )
 
         try:
             item = response["Item"]
@@ -155,20 +164,31 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
 
         now = datetime.datetime.now()
         try:
-            logger.debug(f"Putting record for idempotency key: {data_record.idempotency_key}")
+            logger.debug(
+                f"Putting record for idempotency key: {data_record.idempotency_key}"
+            )
             self.table.put_item(
                 Item=item,
                 ConditionExpression="attribute_not_exists(#id) OR #now < :now",
-                ExpressionAttributeNames={"#id": self.key_attr, "#now": self.expiry_attr},
+                ExpressionAttributeNames={
+                    "#id": self.key_attr,
+                    "#now": self.expiry_attr,
+                },
                 ExpressionAttributeValues={":now": int(now.timestamp())},
             )
         except self.table.meta.client.exceptions.ConditionalCheckFailedException:
-            logger.debug(f"Failed to put record for already existing idempotency key: {data_record.idempotency_key}")
+            logger.debug(
+                f"Failed to put record for already existing idempotency key: {data_record.idempotency_key}"
+            )
             raise IdempotencyItemAlreadyExistsError
 
     def _update_record(self, data_record: DataRecord):
-        logger.debug(f"Updating record for idempotency key: {data_record.idempotency_key}")
-        update_expression = "SET #response_data = :response_data, #expiry = :expiry, #status = :status"
+        logger.debug(
+            f"Updating record for idempotency key: {data_record.idempotency_key}"
+        )
+        update_expression = (
+            "SET #response_data = :response_data, #expiry = :expiry, #status = :status"
+        )
         expression_attr_values = {
             ":expiry": data_record.expiry_timestamp,
             ":response_data": data_record.response_data,
@@ -195,5 +215,7 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
         self.table.update_item(**kwargs)
 
     def _delete_record(self, data_record: DataRecord) -> None:
-        logger.debug(f"Deleting record for idempotency key: {data_record.idempotency_key}")
+        logger.debug(
+            f"Deleting record for idempotency key: {data_record.idempotency_key}"
+        )
         self.table.delete_item(Key=self._get_key(data_record.idempotency_key))

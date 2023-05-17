@@ -8,6 +8,7 @@ Adds this import:
 from lib2to3 import fixer_base
 from libfuturize.fixer_util import future_import
 
+
 class FixUnicodeLiteralsImport(fixer_base.BaseFix):
     BM_compatible = True
     PATTERN = "file_input"
@@ -15,4 +16,4 @@ class FixUnicodeLiteralsImport(fixer_base.BaseFix):
     run_order = 9
 
     def transform(self, node, results):
-        future_import(u"unicode_literals", node)
+        future_import("unicode_literals", node)

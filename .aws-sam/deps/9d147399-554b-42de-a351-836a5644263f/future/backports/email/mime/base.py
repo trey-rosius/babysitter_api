@@ -6,7 +6,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from future.backports.email import message
 
-__all__ = ['MIMEBase']
+__all__ = ["MIMEBase"]
 
 
 class MIMEBase(message.Message):
@@ -20,6 +20,6 @@ class MIMEBase(message.Message):
         keyword arguments.
         """
         message.Message.__init__(self)
-        ctype = '%s/%s' % (_maintype, _subtype)
-        self.add_header('Content-Type', ctype, **_params)
-        self['MIME-Version'] = '1.0'
+        ctype = "%s/%s" % (_maintype, _subtype)
+        self.add_header("Content-Type", ctype, **_params)
+        self["MIME-Version"] = "1.0"

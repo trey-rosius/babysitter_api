@@ -11,9 +11,16 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, overload
 
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
-from aws_lambda_powertools.utilities.batch.exceptions import BatchProcessingError, ExceptionInfo
-from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import DynamoDBRecord
-from aws_lambda_powertools.utilities.data_classes.kinesis_stream_event import KinesisStreamRecord
+from aws_lambda_powertools.utilities.batch.exceptions import (
+    BatchProcessingError,
+    ExceptionInfo,
+)
+from aws_lambda_powertools.utilities.data_classes.dynamo_db_stream_event import (
+    DynamoDBRecord,
+)
+from aws_lambda_powertools.utilities.data_classes.kinesis_stream_event import (
+    KinesisStreamRecord,
+)
 from aws_lambda_powertools.utilities.data_classes.sqs_event import SQSRecord
 
 logger = logging.getLogger(__name__)
@@ -34,11 +41,17 @@ has_pydantic = "pydantic" in sys.modules
 # We need them as subclasses as we must access their message ID or sequence number metadata via dot notation
 if has_pydantic:
     from aws_lambda_powertools.utilities.parser.models import DynamoDBStreamRecordModel
-    from aws_lambda_powertools.utilities.parser.models import KinesisDataStreamRecord as KinesisDataStreamRecordModel
+    from aws_lambda_powertools.utilities.parser.models import (
+        KinesisDataStreamRecord as KinesisDataStreamRecordModel,
+    )
     from aws_lambda_powertools.utilities.parser.models import SqsRecordModel
 
     BatchTypeModels = Optional[
-        Union[Type[SqsRecordModel], Type[DynamoDBStreamRecordModel], Type[KinesisDataStreamRecordModel]]
+        Union[
+            Type[SqsRecordModel],
+            Type[DynamoDBStreamRecordModel],
+            Type[KinesisDataStreamRecordModel],
+        ]
     ]
 
 # When using processor with default arguments, records will carry EventSourceDataClassTypes
@@ -155,7 +168,11 @@ class BasePartialProcessor(ABC):
 
 @lambda_handler_decorator
 def batch_processor(
-    handler: Callable, event: Dict, context: Dict, record_handler: Callable, processor: BasePartialProcessor
+    handler: Callable,
+    event: Dict,
+    context: Dict,
+    record_handler: Callable,
+    processor: BasePartialProcessor,
 ):
     """
     Middleware to handle batch event processing
@@ -310,7 +327,9 @@ class BatchProcessor(BasePartialProcessor):
 
     DEFAULT_RESPONSE: Dict[str, List[Optional[dict]]] = {"batchItemFailures": []}
 
-    def __init__(self, event_type: EventType, model: Optional["BatchTypeModels"] = None):
+    def __init__(
+        self, event_type: EventType, model: Optional["BatchTypeModels"] = None
+    ):
         """Process batch and partially report failed items
 
         Parameters
@@ -362,7 +381,9 @@ class BatchProcessor(BasePartialProcessor):
         record: dict
             A batch record to be processed.
         """
-        data = self._to_batch_type(record=record, event_type=self.event_type, model=self.model)
+        data = self._to_batch_type(
+            record=record, event_type=self.event_type, model=self.model
+        )
         try:
             result = self.handler(record=data)
             return self.success_handler(record=record, result=result)
@@ -413,23 +434,42 @@ class BatchProcessor(BasePartialProcessor):
     def _collect_kinesis_failures(self):
         if self.model:
             # Pydantic model uses int but Lambda poller expects str
-            return {"itemIdentifier": msg.kinesis.sequenceNumber for msg in self.fail_messages}
-        return {"itemIdentifier": msg.kinesis.sequence_number for msg in self.fail_messages}
+            return {
+                "itemIdentifier": msg.kinesis.sequenceNumber
+                for msg in self.fail_messages
+            }
+        return {
+            "itemIdentifier": msg.kinesis.sequence_number for msg in self.fail_messages
+        }
 
     def _collect_dynamodb_failures(self):
         if self.model:
-            return {"itemIdentifier": msg.dynamodb.SequenceNumber for msg in self.fail_messages}
-        return {"itemIdentifier": msg.dynamodb.sequence_number for msg in self.fail_messages}
+            return {
+                "itemIdentifier": msg.dynamodb.SequenceNumber
+                for msg in self.fail_messages
+            }
+        return {
+            "itemIdentifier": msg.dynamodb.sequence_number for msg in self.fail_messages
+        }
 
     @overload
-    def _to_batch_type(self, record: dict, event_type: EventType, model: "BatchTypeModels") -> "BatchTypeModels":
+    def _to_batch_type(
+        self, record: dict, event_type: EventType, model: "BatchTypeModels"
+    ) -> "BatchTypeModels":
         ...  # pragma: no cover
 
     @overload
-    def _to_batch_type(self, record: dict, event_type: EventType) -> EventSourceDataClassTypes:
+    def _to_batch_type(
+        self, record: dict, event_type: EventType
+    ) -> EventSourceDataClassTypes:
         ...  # pragma: no cover
 
-    def _to_batch_type(self, record: dict, event_type: EventType, model: Optional["BatchTypeModels"] = None):
+    def _to_batch_type(
+        self,
+        record: dict,
+        event_type: EventType,
+        model: Optional["BatchTypeModels"] = None,
+    ):
         if model is not None:
             return model.parse_obj(record)
         return self._DATA_CLASS_MAPPING[event_type](record)

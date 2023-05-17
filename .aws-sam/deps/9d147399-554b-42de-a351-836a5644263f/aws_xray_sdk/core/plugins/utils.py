@@ -1,12 +1,12 @@
 import importlib
 from ..exceptions.exceptions import MissingPluginNames
 
-module_prefix = 'aws_xray_sdk.core.plugins.'
+module_prefix = "aws_xray_sdk.core.plugins."
 
 PLUGIN_MAPPING = {
-    'elasticbeanstalkplugin': 'elasticbeanstalk_plugin',
-    'ec2plugin': 'ec2_plugin',
-    'ecsplugin': 'ecs_plugin'
+    "elasticbeanstalkplugin": "elasticbeanstalk_plugin",
+    "ec2plugin": "ec2_plugin",
+    "ecsplugin": "ecs_plugin",
 }
 
 
@@ -22,7 +22,7 @@ def get_plugin_modules(plugins):
 
     for plugin in plugins:
         short_name = PLUGIN_MAPPING.get(plugin.lower(), plugin.lower())
-        full_path = '%s%s' % (module_prefix, short_name)
+        full_path = "%s%s" % (module_prefix, short_name)
         modules.append(importlib.import_module(full_path))
 
     return tuple(modules)

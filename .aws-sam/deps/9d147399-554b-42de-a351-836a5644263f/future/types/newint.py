@@ -34,6 +34,7 @@ class newint(with_metaclass(BaseNewInt, long)):
     """
     A backport of the Python 3 int object to Py2
     """
+
     def __new__(cls, x=0, base=10):
         """
         From the Py3 int docstring:
@@ -61,14 +62,12 @@ class newint(with_metaclass(BaseNewInt, long)):
             val = x
         else:
             if not isint(val):
-                raise TypeError('__int__ returned non-int ({0})'.format(
-                    type(val)))
+                raise TypeError("__int__ returned non-int ({0})".format(type(val)))
 
         if base != 10:
             # Explicit base
             if not (istext(val) or isbytes(val) or isinstance(val, bytearray)):
-                raise TypeError(
-                    "int() can't convert non-string with explicit base")
+                raise TypeError("int() can't convert non-string with explicit base")
             try:
                 return super(newint, cls).__new__(cls, val, base)
             except TypeError:
@@ -85,15 +84,17 @@ class newint(with_metaclass(BaseNewInt, long)):
             try:
                 return super(newint, cls).__new__(cls, newbytes(val))
             except:
-                raise TypeError("newint argument must be a string or a number,"
-                                "not '{0}'".format(type(val)))
+                raise TypeError(
+                    "newint argument must be a string or a number,"
+                    "not '{0}'".format(type(val))
+                )
 
     def __repr__(self):
         """
         Without the L suffix
         """
         value = super(newint, self).__repr__()
-        assert value[-1] == 'L'
+        assert value[-1] == "L"
         return value[:-1]
 
     def __add__(self, other):
@@ -230,36 +231,41 @@ class newint(with_metaclass(BaseNewInt, long)):
     def __lshift__(self, other):
         if not isint(other):
             raise TypeError(
-                "unsupported operand type(s) for <<: '%s' and '%s'" %
-                (type(self).__name__, type(other).__name__))
+                "unsupported operand type(s) for <<: '%s' and '%s'"
+                % (type(self).__name__, type(other).__name__)
+            )
         return newint(super(newint, self).__lshift__(other))
 
     def __rshift__(self, other):
         if not isint(other):
             raise TypeError(
-                "unsupported operand type(s) for >>: '%s' and '%s'" %
-                (type(self).__name__, type(other).__name__))
+                "unsupported operand type(s) for >>: '%s' and '%s'"
+                % (type(self).__name__, type(other).__name__)
+            )
         return newint(super(newint, self).__rshift__(other))
 
     def __and__(self, other):
         if not isint(other):
             raise TypeError(
-                "unsupported operand type(s) for &: '%s' and '%s'" %
-                (type(self).__name__, type(other).__name__))
+                "unsupported operand type(s) for &: '%s' and '%s'"
+                % (type(self).__name__, type(other).__name__)
+            )
         return newint(super(newint, self).__and__(other))
 
     def __or__(self, other):
         if not isint(other):
             raise TypeError(
-                "unsupported operand type(s) for |: '%s' and '%s'" %
-                (type(self).__name__, type(other).__name__))
+                "unsupported operand type(s) for |: '%s' and '%s'"
+                % (type(self).__name__, type(other).__name__)
+            )
         return newint(super(newint, self).__or__(other))
 
     def __xor__(self, other):
         if not isint(other):
             raise TypeError(
-                "unsupported operand type(s) for ^: '%s' and '%s'" %
-                (type(self).__name__, type(other).__name__))
+                "unsupported operand type(s) for ^: '%s' and '%s'"
+                % (type(self).__name__, type(other).__name__)
+            )
         return newint(super(newint, self).__xor__(other))
 
     def __neg__(self):
@@ -289,7 +295,7 @@ class newint(with_metaclass(BaseNewInt, long)):
     def __native__(self):
         return long(self)
 
-    def to_bytes(self, length, byteorder='big', signed=False):
+    def to_bytes(self, length, byteorder="big", signed=False):
         """
         Return an array of bytes representing an integer.
 
@@ -320,10 +326,10 @@ class newint(with_metaclass(BaseNewInt, long)):
             if self < 0:
                 raise OverflowError("can't convert negative int to unsigned")
             num = self
-        if byteorder not in ('little', 'big'):
+        if byteorder not in ("little", "big"):
             raise ValueError("byteorder must be either 'little' or 'big'")
-        h = b'%x' % num
-        s = newbytes((b'0'*(len(h) % 2) + h).zfill(length*2).decode('hex'))
+        h = b"%x" % num
+        s = newbytes((b"0" * (len(h) % 2) + h).zfill(length * 2).decode("hex"))
         if signed:
             high_set = s[0] & 0x80
             if self > 0 and high_set:
@@ -332,10 +338,10 @@ class newint(with_metaclass(BaseNewInt, long)):
                 raise OverflowError("int too small to convert")
         if len(s) > length:
             raise OverflowError("int too big to convert")
-        return s if byteorder == 'big' else s[::-1]
+        return s if byteorder == "big" else s[::-1]
 
     @classmethod
-    def from_bytes(cls, mybytes, byteorder='big', signed=False):
+    def from_bytes(cls, mybytes, byteorder="big", signed=False):
         """
         Return the integer represented by the given array of bytes.
 
@@ -352,7 +358,7 @@ class newint(with_metaclass(BaseNewInt, long)):
         The signed keyword-only argument indicates whether two's complement is
         used to represent the integer.
         """
-        if byteorder not in ('little', 'big'):
+        if byteorder not in ("little", "big"):
             raise ValueError("byteorder must be either 'little' or 'big'")
         if isinstance(mybytes, unicode):
             raise TypeError("cannot convert unicode objects to bytes")
@@ -360,14 +366,14 @@ class newint(with_metaclass(BaseNewInt, long)):
         # Test for this:
         elif isinstance(mybytes, Iterable):
             mybytes = newbytes(mybytes)
-        b = mybytes if byteorder == 'big' else mybytes[::-1]
+        b = mybytes if byteorder == "big" else mybytes[::-1]
         if len(b) == 0:
-            b = b'\x00'
+            b = b"\x00"
         # The encode() method has been disabled by newbytes, but Py2's
         # str has it:
-        num = int(native(b).encode('hex'), 16)
+        num = int(native(b).encode("hex"), 16)
         if signed and (b[0] & 0x80):
-            num = num - (2 ** (len(b)*8))
+            num = num - (2 ** (len(b) * 8))
         return cls(num)
 
 
@@ -378,4 +384,4 @@ class newint(with_metaclass(BaseNewInt, long)):
 #     return val
 
 
-__all__ = ['newint']
+__all__ = ["newint"]

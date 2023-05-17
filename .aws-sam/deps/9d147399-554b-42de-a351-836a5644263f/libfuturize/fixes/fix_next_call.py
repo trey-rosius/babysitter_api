@@ -27,12 +27,12 @@ class FixNextCall(fixer_base.BaseFix):
     global=global_stmt< 'global' any* 'next' any* >
     """
 
-    order = "pre" # Pre-order tree traversal
+    order = "pre"  # Pre-order tree traversal
 
     def start_tree(self, tree, filename):
         super(FixNextCall, self).start_tree(tree, filename)
 
-        n = find_binding('next', tree)
+        n = find_binding("next", tree)
         if n:
             self.warning(n, bind_warning)
             self.shadowed_next = True
@@ -66,7 +66,7 @@ class FixNextCall(fixer_base.BaseFix):
             #  so it's being done here.
             if is_assign_target(node):
                 head = results["head"]
-                if "".join([str(n) for n in head]).strip() == '__builtin__':
+                if "".join([str(n) for n in head]).strip() == "__builtin__":
                     self.warning(node, bind_warning)
                 return
             # Omit this:
@@ -78,6 +78,7 @@ class FixNextCall(fixer_base.BaseFix):
 
 ### The following functions help test if node is part of an assignment
 ###  target.
+
 
 def is_assign_target(node):
     assign = find_assign(node)
@@ -91,12 +92,14 @@ def is_assign_target(node):
             return True
     return False
 
+
 def find_assign(node):
     if node.type == syms.expr_stmt:
         return node
     if node.type == syms.simple_stmt or node.parent is None:
         return None
     return find_assign(node.parent)
+
 
 def is_subtree(root, node):
     if root == node:

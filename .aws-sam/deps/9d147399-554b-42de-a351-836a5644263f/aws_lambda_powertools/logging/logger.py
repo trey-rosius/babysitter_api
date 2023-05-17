@@ -177,7 +177,8 @@ class Logger(logging.Logger):  # lgtm [py/missing-call-to-init]
         **kwargs,
     ):
         self.service = resolve_env_var_choice(
-            choice=service, env=os.getenv(constants.SERVICE_NAME_ENV, "service_undefined")
+            choice=service,
+            env=os.getenv(constants.SERVICE_NAME_ENV, "service_undefined"),
         )
         self.sampling_rate = resolve_env_var_choice(
             choice=sampling_rate, env=os.getenv(constants.LOGGER_LOG_SAMPLING_RATE)
@@ -189,7 +190,10 @@ class Logger(logging.Logger):  # lgtm [py/missing-call-to-init]
         self._is_deduplication_disabled = resolve_truthy_env_var_choice(
             env=os.getenv(constants.LOGGER_LOG_DEDUPLICATION_ENV, "false")
         )
-        self._default_log_keys = {"service": self.service, "sampling_rate": self.sampling_rate}
+        self._default_log_keys = {
+            "service": self.service,
+            "sampling_rate": self.sampling_rate,
+        }
         self._logger = self._get_logger()
 
         self._init_logger(**kwargs)
@@ -228,7 +232,9 @@ class Logger(logging.Logger):  # lgtm [py/missing-call-to-init]
         # but we explicitly add a filter for log deduplication.
         # This flag disables this protection when you explicit want logs to be duplicated (#262)
         if not self._is_deduplication_disabled:
-            logger.debug("Adding filter in root logger to suppress child logger records to bubble up")
+            logger.debug(
+                "Adding filter in root logger to suppress child logger records to bubble up"
+            )
             for handler in logging.root.handlers:
                 # It'll add a filter to suppress any child logger from self.service
                 # Example: `Logger(service="order")`, where service is Order
@@ -459,7 +465,9 @@ def set_package_logger(
         log formatter, "%(asctime)s %(name)s [%(levelname)s] %(message)s" by default
     """
     if formatter is None:
-        formatter = logging.Formatter("%(asctime)s %(name)s [%(levelname)s] %(message)s")
+        formatter = logging.Formatter(
+            "%(asctime)s %(name)s [%(levelname)s] %(message)s"
+        )
 
     if stream is None:
         stream = sys.stdout

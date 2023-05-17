@@ -3,15 +3,20 @@ from bottle import request, response, SimpleTemplate
 from aws_xray_sdk.core.lambda_launcher import check_in_lambda, LambdaContext
 from aws_xray_sdk.core.models import http
 from aws_xray_sdk.core.utils import stacktrace
-from aws_xray_sdk.ext.util import calculate_sampling_decision, \
-    calculate_segment_name, construct_xray_header, prepare_response_header
+from aws_xray_sdk.ext.util import (
+    calculate_sampling_decision,
+    calculate_segment_name,
+    construct_xray_header,
+    prepare_response_header,
+)
 
 
 class XRayMiddleware(object):
     """
     Middleware that wraps each incoming request to a segment.
     """
-    name = 'xray'
+
+    name = "xray"
     api = 2
 
     def __init__(self, recorder):
@@ -27,21 +32,22 @@ class XRayMiddleware(object):
         """
         Apply middleware directly to each route callback.
         """
+
         def wrapper(*a, **ka):
             headers = request.headers
             xray_header = construct_xray_header(headers)
             name = calculate_segment_name(request.urlparts[1], self._recorder)
 
             sampling_req = {
-               'host': request.urlparts[1],
-               'method': request.method,
-               'path': request.path,
-               'service': name,
+                "host": request.urlparts[1],
+                "method": request.method,
+                "path": request.path,
+                "service": name,
             }
             sampling_decision = calculate_sampling_decision(
-               trace_header=xray_header,
-               recorder=self._recorder,
-               sampling_req=sampling_req,
+                trace_header=xray_header,
+                recorder=self._recorder,
+                sampling_req=sampling_req,
             )
 
             if self._in_lambda_ctx:
@@ -57,9 +63,11 @@ class XRayMiddleware(object):
             segment.save_origin_trace_header(xray_header)
             segment.put_http_meta(http.URL, request.url)
             segment.put_http_meta(http.METHOD, request.method)
-            segment.put_http_meta(http.USER_AGENT, headers.get('User-Agent'))
+            segment.put_http_meta(http.USER_AGENT, headers.get("User-Agent"))
 
-            client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
+            client_ip = request.environ.get(
+                "HTTP_X_FORWARDED_FOR"
+            ) or request.environ.get("REMOTE_ADDR")
             if client_ip:
                 segment.put_http_meta(http.CLIENT_IP, client_ip)
                 segment.put_http_meta(http.X_FORWARDED_FOR, True)
@@ -69,7 +77,7 @@ class XRayMiddleware(object):
             try:
                 rv = callback(*a, **ka)
             except Exception as resp:
-                segment.put_http_meta(http.STATUS, getattr(resp, 'status_code', 500))
+                segment.put_http_meta(http.STATUS, getattr(resp, "status_code", 500))
                 stack = stacktrace.get_stacktrace(limit=self._recorder._max_trace_back)
                 segment.add_exception(resp, stack)
                 if self._in_lambda_ctx:
@@ -85,7 +93,7 @@ class XRayMiddleware(object):
             resp_header_str = prepare_response_header(origin_header, segment)
             response.set_header(http.XRAY_HEADER, resp_header_str)
 
-            cont_len = response.headers.get('Content-Length')
+            cont_len = response.headers.get("Content-Length")
             if cont_len:
                 segment.put_http_meta(http.CONTENT_LENGTH, int(cont_len))
 
@@ -98,11 +106,12 @@ class XRayMiddleware(object):
 
         return wrapper
 
+
 def _patch_render(recorder):
 
     _render = SimpleTemplate.render
 
-    @recorder.capture('template_render')
+    @recorder.capture("template_render")
     def _traced_render(self, *args, **kwargs):
         if self.filename:
             recorder.current_subsegment().name = self.filename

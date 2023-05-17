@@ -6,21 +6,28 @@ from __future__ import division
 from __future__ import absolute_import
 from future.builtins import super
 
-from future.standard_library.email._policybase import (Policy, Compat32,
-                                                  compat32, _extend_docstrings)
+from future.standard_library.email._policybase import (
+    Policy,
+    Compat32,
+    compat32,
+    _extend_docstrings,
+)
 from future.standard_library.email.utils import _has_surrogates
-from future.standard_library.email.headerregistry import HeaderRegistry as HeaderRegistry
+from future.standard_library.email.headerregistry import (
+    HeaderRegistry as HeaderRegistry,
+)
 
 __all__ = [
-    'Compat32',
-    'compat32',
-    'Policy',
-    'EmailPolicy',
-    'default',
-    'strict',
-    'SMTP',
-    'HTTP',
-    ]
+    "Compat32",
+    "compat32",
+    "Policy",
+    "EmailPolicy",
+    "default",
+    "strict",
+    "SMTP",
+    "HTTP",
+]
+
 
 @_extend_docstrings
 class EmailPolicy(Policy):
@@ -65,14 +72,14 @@ class EmailPolicy(Policy):
                            completed before the extension is marked stable.)
     """
 
-    refold_source = 'long'
+    refold_source = "long"
     header_factory = HeaderRegistry()
 
     def __init__(self, **kw):
         # Ensure that each new instance gets a unique header factory
         # (as opposed to clones, which share the factory).
-        if 'header_factory' not in kw:
-            object.__setattr__(self, 'header_factory', HeaderRegistry())
+        if "header_factory" not in kw:
+            object.__setattr__(self, "header_factory", HeaderRegistry())
         super().__init__(**kw)
 
     def header_max_count(self, name):
@@ -102,9 +109,9 @@ class EmailPolicy(Policy):
         is the same as Compat32).
 
         """
-        name, value = sourcelines[0].split(':', 1)
-        value = value.lstrip(' \t') + ''.join(sourcelines[1:])
-        return (name, value.rstrip('\r\n'))
+        name, value = sourcelines[0].split(":", 1)
+        value = value.lstrip(" \t") + "".join(sourcelines[1:])
+        return (name, value.rstrip("\r\n"))
 
     def header_store_parse(self, name, value):
         """+
@@ -116,11 +123,13 @@ class EmailPolicy(Policy):
         CR or LF characters.
 
         """
-        if hasattr(value, 'name') and value.name.lower() == name.lower():
+        if hasattr(value, "name") and value.name.lower() == name.lower():
             return (name, value)
-        if isinstance(value, str) and len(value.splitlines())>1:
-            raise ValueError("Header values may not contain linefeed "
-                             "or carriage return characters")
+        if isinstance(value, str) and len(value.splitlines()) > 1:
+            raise ValueError(
+                "Header values may not contain linefeed "
+                "or carriage return characters"
+            )
         return (name, self.header_factory(name, value))
 
     def header_fetch_parse(self, name, value):
@@ -132,9 +141,9 @@ class EmailPolicy(Policy):
         into the unicode unknown-character glyph.
 
         """
-        if hasattr(value, 'name'):
+        if hasattr(value, "name"):
             return value
-        return self.header_factory(name, ''.join(value.splitlines()))
+        return self.header_factory(name, "".join(value.splitlines()))
 
     def fold(self, name, value):
         """+
@@ -168,26 +177,31 @@ class EmailPolicy(Policy):
         data consists of single byte characters or multibyte characters.
 
         """
-        folded = self._fold(name, value, refold_binary=self.cte_type=='7bit')
-        return folded.encode('ascii', 'surrogateescape')
+        folded = self._fold(name, value, refold_binary=self.cte_type == "7bit")
+        return folded.encode("ascii", "surrogateescape")
 
     def _fold(self, name, value, refold_binary=False):
-        if hasattr(value, 'name'):
+        if hasattr(value, "name"):
             return value.fold(policy=self)
-        maxlen = self.max_line_length if self.max_line_length else float('inf')
+        maxlen = self.max_line_length if self.max_line_length else float("inf")
         lines = value.splitlines()
-        refold = (self.refold_source == 'all' or
-                  self.refold_source == 'long' and
-                    (lines and len(lines[0])+len(name)+2 > maxlen or
-                     any(len(x) > maxlen for x in lines[1:])))
+        refold = (
+            self.refold_source == "all"
+            or self.refold_source == "long"
+            and (
+                lines
+                and len(lines[0]) + len(name) + 2 > maxlen
+                or any(len(x) > maxlen for x in lines[1:])
+            )
+        )
         if refold or refold_binary and _has_surrogates(value):
-            return self.header_factory(name, ''.join(lines)).fold(policy=self)
-        return name + ': ' + self.linesep.join(lines) + self.linesep
+            return self.header_factory(name, "".join(lines)).fold(policy=self)
+        return name + ": " + self.linesep.join(lines) + self.linesep
 
 
 default = EmailPolicy()
 # Make the default policy use the class default header_factory
 del default.header_factory
 strict = default.clone(raise_on_defect=True)
-SMTP = default.clone(linesep='\r\n')
-HTTP = default.clone(linesep='\r\n', max_line_length=None)
+SMTP = default.clone(linesep="\r\n")
+HTTP = default.clone(linesep="\r\n", max_line_length=None)

@@ -124,8 +124,7 @@ transfer.  For example:
 """
 from botocore.exceptions import ClientError
 from botocore.compat import six
-from s3transfer.exceptions import RetriesExceededError as \
-    S3TransferRetriesExceededError
+from s3transfer.exceptions import RetriesExceededError as S3TransferRetriesExceededError
 from s3transfer.manager import TransferConfig as S3TransferConfig
 from s3transfer.manager import TransferManager
 from s3transfer.futures import NonThreadedExecutor
@@ -162,8 +161,8 @@ def create_transfer_manager(client, config, osutil=None):
 
 class TransferConfig(S3TransferConfig):
     ALIAS = {
-        'max_concurrency': 'max_request_concurrency',
-        'max_io_queue': 'max_io_queue_size'
+        "max_concurrency": "max_request_concurrency",
+        "max_io_queue": "max_io_queue_size",
     }
 
     def __init__(
@@ -249,13 +248,13 @@ class S3Transfer(object):
     def __init__(self, client=None, config=None, osutil=None, manager=None):
         if not client and not manager:
             raise ValueError(
-                'Either a boto3.Client or s3transfer.manager.TransferManager '
-                'must be provided'
+                "Either a boto3.Client or s3transfer.manager.TransferManager "
+                "must be provided"
             )
         if manager and any([client, config, osutil]):
             raise ValueError(
-                'Manager cannot be provided with client, config, '
-                'nor osutil. These parameters are mutually exclusive.'
+                "Manager cannot be provided with client, config, "
+                "nor osutil. These parameters are mutually exclusive."
             )
         if config is None:
             config = TransferConfig()
@@ -266,8 +265,7 @@ class S3Transfer(object):
         else:
             self._manager = create_transfer_manager(client, config, osutil)
 
-    def upload_file(self, filename, bucket, key,
-                    callback=None, extra_args=None):
+    def upload_file(self, filename, bucket, key, callback=None, extra_args=None):
         """Upload a file to an S3 object.
 
         Variants have also been injected into S3 client, Bucket and Object.
@@ -278,11 +276,10 @@ class S3Transfer(object):
             :py:meth:`S3.Client.upload_fileobj`
         """
         if not isinstance(filename, six.string_types):
-            raise ValueError('Filename must be a string')
+            raise ValueError("Filename must be a string")
 
         subscribers = self._get_subscribers(callback)
-        future = self._manager.upload(
-            filename, bucket, key, extra_args, subscribers)
+        future = self._manager.upload(filename, bucket, key, extra_args, subscribers)
         try:
             future.result()
         # If a client error was raised, add the backwards compatibility layer
@@ -291,11 +288,10 @@ class S3Transfer(object):
         # client error.
         except ClientError as e:
             raise S3UploadFailedError(
-                "Failed to upload %s to %s: %s" % (
-                    filename, '/'.join([bucket, key]), e))
+                "Failed to upload %s to %s: %s" % (filename, "/".join([bucket, key]), e)
+            )
 
-    def download_file(self, bucket, key, filename, extra_args=None,
-                      callback=None):
+    def download_file(self, bucket, key, filename, extra_args=None, callback=None):
         """Download an S3 object to a file.
 
         Variants have also been injected into S3 client, Bucket and Object.
@@ -306,11 +302,10 @@ class S3Transfer(object):
             :py:meth:`S3.Client.download_fileobj`
         """
         if not isinstance(filename, six.string_types):
-            raise ValueError('Filename must be a string')
+            raise ValueError("Filename must be a string")
 
         subscribers = self._get_subscribers(callback)
-        future = self._manager.download(
-            bucket, key, filename, extra_args, subscribers)
+        future = self._manager.download(bucket, key, filename, extra_args, subscribers)
         try:
             future.result()
         # This is for backwards compatibility where when retries are
@@ -339,6 +334,7 @@ class ProgressCallbackInvoker(BaseSubscriber):
     :param callback: A callable that takes a single positional argument for
         how many bytes were transferred.
     """
+
     def __init__(self, callback):
         self._callback = callback
 

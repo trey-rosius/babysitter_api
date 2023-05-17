@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-__all__ = ['MIMEAudio']
+__all__ = ["MIMEAudio"]
 
 import sndhdr
 
@@ -16,11 +16,12 @@ from future.backports.email import encoders
 from future.backports.email.mime.nonmultipart import MIMENonMultipart
 
 
-_sndhdr_MIMEmap = {'au'  : 'basic',
-                   'wav' :'x-wav',
-                   'aiff':'x-aiff',
-                   'aifc':'x-aiff',
-                   }
+_sndhdr_MIMEmap = {
+    "au": "basic",
+    "wav": "x-wav",
+    "aiff": "x-aiff",
+    "aifc": "x-aiff",
+}
 
 # There are others in sndhdr that don't have MIME types. :(
 # Additional ones to be added to sndhdr? midi, mp3, realaudio, wma??
@@ -43,8 +44,9 @@ def _whatsnd(data):
 class MIMEAudio(MIMENonMultipart):
     """Class for generating audio/* MIME documents."""
 
-    def __init__(self, _audiodata, _subtype=None,
-                 _encoder=encoders.encode_base64, **_params):
+    def __init__(
+        self, _audiodata, _subtype=None, _encoder=encoders.encode_base64, **_params
+    ):
         """Create an audio/* type MIME document.
 
         _audiodata is a string containing the raw audio data.  If this data
@@ -68,7 +70,7 @@ class MIMEAudio(MIMENonMultipart):
         if _subtype is None:
             _subtype = _whatsnd(_audiodata)
         if _subtype is None:
-            raise TypeError('Could not find audio MIME subtype')
-        MIMENonMultipart.__init__(self, 'audio', _subtype, **_params)
+            raise TypeError("Could not find audio MIME subtype")
+        MIMENonMultipart.__init__(self, "audio", _subtype, **_params)
         self.set_payload(_audiodata)
         _encoder(self)

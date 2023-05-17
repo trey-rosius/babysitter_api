@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class XRayConfig(AppConfig):
-    name = 'aws_xray_sdk.ext.django'
+    name = "aws_xray_sdk.ext.django"
 
     def ready(self):
         """
@@ -24,7 +24,7 @@ class XRayConfig(AppConfig):
         So this function must be idempotent
         """
         if not settings.AWS_XRAY_TRACING_NAME:
-            raise SegmentNameMissingException('Segment name is required.')
+            raise SegmentNameMissingException("Segment name is required.")
 
         xray_recorder.configure(
             daemon_address=settings.AWS_XRAY_DAEMON_ADDRESS,
@@ -43,9 +43,15 @@ class XRayConfig(AppConfig):
         if settings.PATCH_MODULES:
             if settings.AUTO_PATCH_PARENT_SEGMENT_NAME is not None:
                 with xray_recorder.in_segment(settings.AUTO_PATCH_PARENT_SEGMENT_NAME):
-                    patch(settings.PATCH_MODULES, ignore_module_patterns=settings.IGNORE_MODULE_PATTERNS)
+                    patch(
+                        settings.PATCH_MODULES,
+                        ignore_module_patterns=settings.IGNORE_MODULE_PATTERNS,
+                    )
             else:
-                patch(settings.PATCH_MODULES, ignore_module_patterns=settings.IGNORE_MODULE_PATTERNS)
+                patch(
+                    settings.PATCH_MODULES,
+                    ignore_module_patterns=settings.IGNORE_MODULE_PATTERNS,
+                )
 
         # if turned on subsegment will be generated on
         # built-in database and template rendering
@@ -53,8 +59,8 @@ class XRayConfig(AppConfig):
             try:
                 patch_db()
             except Exception:
-                log.debug('failed to patch Django built-in database')
+                log.debug("failed to patch Django built-in database")
             try:
                 patch_template()
             except Exception:
-                log.debug('failed to patch Django built-in template engine')
+                log.debug("failed to patch Django built-in template engine")

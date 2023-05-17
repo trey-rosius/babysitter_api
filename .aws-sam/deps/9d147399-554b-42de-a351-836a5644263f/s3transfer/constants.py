@@ -18,13 +18,13 @@ MB = KB * KB
 GB = MB * KB
 
 ALLOWED_DOWNLOAD_ARGS = [
-    'VersionId',
-    'SSECustomerAlgorithm',
-    'SSECustomerKey',
-    'SSECustomerKeyMD5',
-    'RequestPayer',
-    'ExpectedBucketOwner',
+    "VersionId",
+    "SSECustomerAlgorithm",
+    "SSECustomerKey",
+    "SSECustomerKeyMD5",
+    "RequestPayer",
+    "ExpectedBucketOwner",
 ]
 
-USER_AGENT = 's3transfer/%s' % s3transfer.__version__
-PROCESS_USER_AGENT = '%s processpool' % USER_AGENT
+USER_AGENT = "s3transfer/%s" % s3transfer.__version__
+PROCESS_USER_AGENT = "%s processpool" % USER_AGENT

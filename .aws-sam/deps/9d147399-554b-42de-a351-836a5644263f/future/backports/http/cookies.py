@@ -138,15 +138,16 @@ from future.utils import PY2, as_native_str
 # Import our required modules
 #
 import re
+
 if PY2:
-    re.ASCII = 0    # for py2 compatibility
+    re.ASCII = 0  # for py2 compatibility
 import string
 
 __all__ = ["CookieError", "BaseCookie", "SimpleCookie"]
 
-_nulljoin = ''.join
-_semispacejoin = '; '.join
-_spacejoin = ' '.join
+_nulljoin = "".join
+_semispacejoin = "; ".join
+_spacejoin = " ".join
 
 #
 # Define an exception visible to External modules
@@ -166,71 +167,177 @@ class CookieError(Exception):
 #       _LegalChars       is the list of chars which don't require "'s
 #       _Translator       hash-table for fast quoting
 #
-_LegalChars       = string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~:"
-_Translator       = {
-    '\000' : '\\000',  '\001' : '\\001',  '\002' : '\\002',
-    '\003' : '\\003',  '\004' : '\\004',  '\005' : '\\005',
-    '\006' : '\\006',  '\007' : '\\007',  '\010' : '\\010',
-    '\011' : '\\011',  '\012' : '\\012',  '\013' : '\\013',
-    '\014' : '\\014',  '\015' : '\\015',  '\016' : '\\016',
-    '\017' : '\\017',  '\020' : '\\020',  '\021' : '\\021',
-    '\022' : '\\022',  '\023' : '\\023',  '\024' : '\\024',
-    '\025' : '\\025',  '\026' : '\\026',  '\027' : '\\027',
-    '\030' : '\\030',  '\031' : '\\031',  '\032' : '\\032',
-    '\033' : '\\033',  '\034' : '\\034',  '\035' : '\\035',
-    '\036' : '\\036',  '\037' : '\\037',
-
+_LegalChars = string.ascii_letters + string.digits + "!#$%&'*+-.^_`|~:"
+_Translator = {
+    "\000": "\\000",
+    "\001": "\\001",
+    "\002": "\\002",
+    "\003": "\\003",
+    "\004": "\\004",
+    "\005": "\\005",
+    "\006": "\\006",
+    "\007": "\\007",
+    "\010": "\\010",
+    "\011": "\\011",
+    "\012": "\\012",
+    "\013": "\\013",
+    "\014": "\\014",
+    "\015": "\\015",
+    "\016": "\\016",
+    "\017": "\\017",
+    "\020": "\\020",
+    "\021": "\\021",
+    "\022": "\\022",
+    "\023": "\\023",
+    "\024": "\\024",
+    "\025": "\\025",
+    "\026": "\\026",
+    "\027": "\\027",
+    "\030": "\\030",
+    "\031": "\\031",
+    "\032": "\\032",
+    "\033": "\\033",
+    "\034": "\\034",
+    "\035": "\\035",
+    "\036": "\\036",
+    "\037": "\\037",
     # Because of the way browsers really handle cookies (as opposed
     # to what the RFC says) we also encode , and ;
+    ",": "\\054",
+    ";": "\\073",
+    '"': '\\"',
+    "\\": "\\\\",
+    "\177": "\\177",
+    "\200": "\\200",
+    "\201": "\\201",
+    "\202": "\\202",
+    "\203": "\\203",
+    "\204": "\\204",
+    "\205": "\\205",
+    "\206": "\\206",
+    "\207": "\\207",
+    "\210": "\\210",
+    "\211": "\\211",
+    "\212": "\\212",
+    "\213": "\\213",
+    "\214": "\\214",
+    "\215": "\\215",
+    "\216": "\\216",
+    "\217": "\\217",
+    "\220": "\\220",
+    "\221": "\\221",
+    "\222": "\\222",
+    "\223": "\\223",
+    "\224": "\\224",
+    "\225": "\\225",
+    "\226": "\\226",
+    "\227": "\\227",
+    "\230": "\\230",
+    "\231": "\\231",
+    "\232": "\\232",
+    "\233": "\\233",
+    "\234": "\\234",
+    "\235": "\\235",
+    "\236": "\\236",
+    "\237": "\\237",
+    "\240": "\\240",
+    "\241": "\\241",
+    "\242": "\\242",
+    "\243": "\\243",
+    "\244": "\\244",
+    "\245": "\\245",
+    "\246": "\\246",
+    "\247": "\\247",
+    "\250": "\\250",
+    "\251": "\\251",
+    "\252": "\\252",
+    "\253": "\\253",
+    "\254": "\\254",
+    "\255": "\\255",
+    "\256": "\\256",
+    "\257": "\\257",
+    "\260": "\\260",
+    "\261": "\\261",
+    "\262": "\\262",
+    "\263": "\\263",
+    "\264": "\\264",
+    "\265": "\\265",
+    "\266": "\\266",
+    "\267": "\\267",
+    "\270": "\\270",
+    "\271": "\\271",
+    "\272": "\\272",
+    "\273": "\\273",
+    "\274": "\\274",
+    "\275": "\\275",
+    "\276": "\\276",
+    "\277": "\\277",
+    "\300": "\\300",
+    "\301": "\\301",
+    "\302": "\\302",
+    "\303": "\\303",
+    "\304": "\\304",
+    "\305": "\\305",
+    "\306": "\\306",
+    "\307": "\\307",
+    "\310": "\\310",
+    "\311": "\\311",
+    "\312": "\\312",
+    "\313": "\\313",
+    "\314": "\\314",
+    "\315": "\\315",
+    "\316": "\\316",
+    "\317": "\\317",
+    "\320": "\\320",
+    "\321": "\\321",
+    "\322": "\\322",
+    "\323": "\\323",
+    "\324": "\\324",
+    "\325": "\\325",
+    "\326": "\\326",
+    "\327": "\\327",
+    "\330": "\\330",
+    "\331": "\\331",
+    "\332": "\\332",
+    "\333": "\\333",
+    "\334": "\\334",
+    "\335": "\\335",
+    "\336": "\\336",
+    "\337": "\\337",
+    "\340": "\\340",
+    "\341": "\\341",
+    "\342": "\\342",
+    "\343": "\\343",
+    "\344": "\\344",
+    "\345": "\\345",
+    "\346": "\\346",
+    "\347": "\\347",
+    "\350": "\\350",
+    "\351": "\\351",
+    "\352": "\\352",
+    "\353": "\\353",
+    "\354": "\\354",
+    "\355": "\\355",
+    "\356": "\\356",
+    "\357": "\\357",
+    "\360": "\\360",
+    "\361": "\\361",
+    "\362": "\\362",
+    "\363": "\\363",
+    "\364": "\\364",
+    "\365": "\\365",
+    "\366": "\\366",
+    "\367": "\\367",
+    "\370": "\\370",
+    "\371": "\\371",
+    "\372": "\\372",
+    "\373": "\\373",
+    "\374": "\\374",
+    "\375": "\\375",
+    "\376": "\\376",
+    "\377": "\\377",
+}
 
-    ',' : '\\054', ';' : '\\073',
-
-    '"' : '\\"',       '\\' : '\\\\',
-
-    '\177' : '\\177',  '\200' : '\\200',  '\201' : '\\201',
-    '\202' : '\\202',  '\203' : '\\203',  '\204' : '\\204',
-    '\205' : '\\205',  '\206' : '\\206',  '\207' : '\\207',
-    '\210' : '\\210',  '\211' : '\\211',  '\212' : '\\212',
-    '\213' : '\\213',  '\214' : '\\214',  '\215' : '\\215',
-    '\216' : '\\216',  '\217' : '\\217',  '\220' : '\\220',
-    '\221' : '\\221',  '\222' : '\\222',  '\223' : '\\223',
-    '\224' : '\\224',  '\225' : '\\225',  '\226' : '\\226',
-    '\227' : '\\227',  '\230' : '\\230',  '\231' : '\\231',
-    '\232' : '\\232',  '\233' : '\\233',  '\234' : '\\234',
-    '\235' : '\\235',  '\236' : '\\236',  '\237' : '\\237',
-    '\240' : '\\240',  '\241' : '\\241',  '\242' : '\\242',
-    '\243' : '\\243',  '\244' : '\\244',  '\245' : '\\245',
-    '\246' : '\\246',  '\247' : '\\247',  '\250' : '\\250',
-    '\251' : '\\251',  '\252' : '\\252',  '\253' : '\\253',
-    '\254' : '\\254',  '\255' : '\\255',  '\256' : '\\256',
-    '\257' : '\\257',  '\260' : '\\260',  '\261' : '\\261',
-    '\262' : '\\262',  '\263' : '\\263',  '\264' : '\\264',
-    '\265' : '\\265',  '\266' : '\\266',  '\267' : '\\267',
-    '\270' : '\\270',  '\271' : '\\271',  '\272' : '\\272',
-    '\273' : '\\273',  '\274' : '\\274',  '\275' : '\\275',
-    '\276' : '\\276',  '\277' : '\\277',  '\300' : '\\300',
-    '\301' : '\\301',  '\302' : '\\302',  '\303' : '\\303',
-    '\304' : '\\304',  '\305' : '\\305',  '\306' : '\\306',
-    '\307' : '\\307',  '\310' : '\\310',  '\311' : '\\311',
-    '\312' : '\\312',  '\313' : '\\313',  '\314' : '\\314',
-    '\315' : '\\315',  '\316' : '\\316',  '\317' : '\\317',
-    '\320' : '\\320',  '\321' : '\\321',  '\322' : '\\322',
-    '\323' : '\\323',  '\324' : '\\324',  '\325' : '\\325',
-    '\326' : '\\326',  '\327' : '\\327',  '\330' : '\\330',
-    '\331' : '\\331',  '\332' : '\\332',  '\333' : '\\333',
-    '\334' : '\\334',  '\335' : '\\335',  '\336' : '\\336',
-    '\337' : '\\337',  '\340' : '\\340',  '\341' : '\\341',
-    '\342' : '\\342',  '\343' : '\\343',  '\344' : '\\344',
-    '\345' : '\\345',  '\346' : '\\346',  '\347' : '\\347',
-    '\350' : '\\350',  '\351' : '\\351',  '\352' : '\\352',
-    '\353' : '\\353',  '\354' : '\\354',  '\355' : '\\355',
-    '\356' : '\\356',  '\357' : '\\357',  '\360' : '\\360',
-    '\361' : '\\361',  '\362' : '\\362',  '\363' : '\\363',
-    '\364' : '\\364',  '\365' : '\\365',  '\366' : '\\366',
-    '\367' : '\\367',  '\370' : '\\370',  '\371' : '\\371',
-    '\372' : '\\372',  '\373' : '\\373',  '\374' : '\\374',
-    '\375' : '\\375',  '\376' : '\\376',  '\377' : '\\377'
-    }
 
 def _quote(str, LegalChars=_LegalChars):
     r"""Quote a string for use in a cookie header.
@@ -247,6 +354,7 @@ def _quote(str, LegalChars=_LegalChars):
 
 _OctalPatt = re.compile(r"\\[0-3][0-7][0-7]")
 _QuotePatt = re.compile(r"[\\].")
+
 
 def _unquote(mystr):
     # If there aren't any doublequotes,
@@ -272,7 +380,7 @@ def _unquote(mystr):
     while 0 <= i < n:
         o_match = _OctalPatt.search(mystr, i)
         q_match = _QuotePatt.search(mystr, i)
-        if not o_match and not q_match:              # Neither matched
+        if not o_match and not q_match:  # Neither matched
             res.append(mystr[i:])
             break
         # else:
@@ -281,15 +389,16 @@ def _unquote(mystr):
             j = o_match.start(0)
         if q_match:
             k = q_match.start(0)
-        if q_match and (not o_match or k < j):     # QuotePatt matched
+        if q_match and (not o_match or k < j):  # QuotePatt matched
             res.append(mystr[i:k])
-            res.append(mystr[k+1])
+            res.append(mystr[k + 1])
             i = k + 2
-        else:                                      # OctalPatt matched
+        else:  # OctalPatt matched
             res.append(mystr[i:j])
-            res.append(chr(int(mystr[j+1:j+4], 8)))
+            res.append(chr(int(mystr[j + 1 : j + 4], 8)))
             i = j + 4
     return _nulljoin(res)
+
 
 # The _getdate() routine is used to set the expiration time in the cookie's HTTP
 # header.  By default, _getdate() returns the current time in the appropriate
@@ -298,18 +407,39 @@ def _unquote(mystr):
 # ago".  The offset may be a floating point number.
 #
 
-_weekdayname = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+_weekdayname = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-_monthname = [None,
-              'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+_monthname = [
+    None,
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
+
 
 def _getdate(future=0, weekdayname=_weekdayname, monthname=_monthname):
     from time import gmtime, time
+
     now = time()
     year, month, day, hh, mm, ss, wd, y, z = gmtime(now + future)
-    return "%s, %02d %3s %4d %02d:%02d:%02d GMT" % \
-           (weekdayname[wd], day, monthname[month], year, hh, mm, ss)
+    return "%s, %02d %3s %4d %02d:%02d:%02d GMT" % (
+        weekdayname[wd],
+        day,
+        monthname[month],
+        year,
+        hh,
+        mm,
+        ss,
+    )
 
 
 class Morsel(dict):
@@ -321,6 +451,7 @@ class Morsel(dict):
     the network representation of the value.  This is most useful when Python
     objects are pickled for network transit.
     """
+
     # RFC 2109 lists these attributes as reserved:
     #   path       comment         domain
     #   max-age    secure      version
@@ -335,17 +466,17 @@ class Morsel(dict):
     # variant on the left to the appropriate traditional
     # formatting on the right.
     _reserved = {
-        "expires"  : "expires",
-        "path"     : "Path",
-        "comment"  : "Comment",
-        "domain"   : "Domain",
-        "max-age"  : "Max-Age",
-        "secure"   : "secure",
-        "httponly" : "httponly",
-        "version"  : "Version",
+        "expires": "expires",
+        "path": "Path",
+        "comment": "Comment",
+        "domain": "Domain",
+        "max-age": "Max-Age",
+        "secure": "secure",
+        "httponly": "httponly",
+        "version": "Version",
     }
 
-    _flags = set(['secure', 'httponly'])
+    _flags = set(["secure", "httponly"])
 
     def __init__(self):
         # Set defaults
@@ -385,11 +516,10 @@ class Morsel(dict):
     @as_native_str()
     def __repr__(self):
         if PY2 and isinstance(self.value, unicode):
-            val = str(self.value)    # make it a newstr to remove the u prefix
+            val = str(self.value)  # make it a newstr to remove the u prefix
         else:
             val = self.value
-        return '<%s: %s=%s>' % (self.__class__.__name__,
-                                str(self.key), repr(val))
+        return "<%s: %s=%s>" % (self.__class__.__name__, str(self.key), repr(val))
 
     def js_output(self, attrs=None):
         # Print javascript
@@ -399,7 +529,9 @@ class Morsel(dict):
         document.cookie = \"%s\";
         // end hiding -->
         </script>
-        """ % (self.OutputString(attrs).replace('"', r'\"'))
+        """ % (
+            self.OutputString(attrs).replace('"', r"\"")
+        )
 
     def OutputString(self, attrs=None):
         # Build up our result
@@ -443,11 +575,14 @@ class Morsel(dict):
 # result, the parsing rules here are less strict.
 #
 
-_LegalCharsPatt  = r"[\w\d!#%&'~_`><@,:/\$\*\+\-\.\^\|\)\(\?\}\{\=]"
-_CookiePattern = re.compile(r"""
+_LegalCharsPatt = r"[\w\d!#%&'~_`><@,:/\$\*\+\-\.\^\|\)\(\?\}\{\=]"
+_CookiePattern = re.compile(
+    r"""
     (?x)                           # This is a verbose pattern
     (?P<key>                       # Start of group 'key'
-    """ + _LegalCharsPatt + r"""+?   # Any word of at least one letter
+    """
+    + _LegalCharsPatt
+    + r"""+?   # Any word of at least one letter
     )                              # End of group 'key'
     (                              # Optional group: there may not be a value.
     \s*=\s*                          # Equal Sign
@@ -456,12 +591,16 @@ _CookiePattern = re.compile(r"""
     |                                  # or
     \w{3},\s[\w\d\s-]{9,11}\s[\d:]{8}\sGMT  # Special case for "expires" attr
     |                                  # or
-    """ + _LegalCharsPatt + r"""*      # Any word or empty string
+    """
+    + _LegalCharsPatt
+    + r"""*      # Any word or empty string
     )                                # End of group 'val'
     )?                             # End of optional value group
     \s*                            # Any number of spaces.
     (\s+|;|$)                      # Ending either at space, semicolon, or EOS.
-    """, re.ASCII)                 # May be removed if safe.
+    """,
+    re.ASCII,
+)  # May be removed if safe.
 
 
 # At long last, here is the cookie class.  Using this class is almost just like
@@ -519,11 +658,11 @@ class BaseCookie(dict):
         items = sorted(self.items())
         for key, value in items:
             if PY2 and isinstance(value.value, unicode):
-                val = str(value.value)    # make it a newstr to remove the u prefix
+                val = str(value.value)  # make it a newstr to remove the u prefix
             else:
                 val = value.value
-            l.append('%s=%s' % (str(key), repr(val)))
-        return '<%s: %s>' % (self.__class__.__name__, _spacejoin(l))
+            l.append("%s=%s" % (str(key), repr(val)))
+        return "<%s: %s>" % (self.__class__.__name__, _spacejoin(l))
 
     def js_output(self, attrs=None):
         """Return a string suitable for JavaScript."""
@@ -548,9 +687,9 @@ class BaseCookie(dict):
         return
 
     def __parse_string(self, mystr, patt=_CookiePattern):
-        i = 0            # Our starting point
-        n = len(mystr)     # Length of string
-        M = None         # current morsel
+        i = 0  # Our starting point
+        n = len(mystr)  # Length of string
+        M = None  # current morsel
 
         while 0 <= i < n:
             # Start looking for a cookie
@@ -590,6 +729,7 @@ class SimpleCookie(BaseCookie):
     calls the builtin str() to convert the value to a string.  Values
     received from HTTP are kept as strings.
     """
+
     def value_decode(self, val):
         return _unquote(val), val
 

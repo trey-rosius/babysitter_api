@@ -2,7 +2,16 @@ import abc
 import numbers
 import traceback
 from contextlib import contextmanager
-from typing import Any, AsyncContextManager, ContextManager, List, NoReturn, Optional, Set, Union
+from typing import (
+    Any,
+    AsyncContextManager,
+    ContextManager,
+    List,
+    NoReturn,
+    Optional,
+    Set,
+    Union,
+)
 
 
 class BaseProvider(abc.ABC):
@@ -33,7 +42,9 @@ class BaseProvider(abc.ABC):
         """
 
     @abc.abstractmethod
-    def put_annotation(self, key: str, value: Union[str, numbers.Number, bool]) -> NoReturn:
+    def put_annotation(
+        self, key: str, value: Union[str, numbers.Number, bool]
+    ) -> NoReturn:
         """Annotate current active trace entity with a key-value pair.
 
         Note: Annotations will be indexed for later search query.
@@ -47,7 +58,9 @@ class BaseProvider(abc.ABC):
         """
 
     @abc.abstractmethod
-    def put_metadata(self, key: str, value: Any, namespace: str = "default") -> NoReturn:
+    def put_metadata(
+        self, key: str, value: Any, namespace: str = "default"
+    ) -> NoReturn:
         """Add metadata to the current active trace entity.
 
         Note: Metadata is not indexed but can be later retrieved by BatchGetTraces API.
@@ -100,7 +113,9 @@ class BaseSegment(abc.ABC):
         """Remove input subsegment from child subsegments."""
 
     @abc.abstractmethod
-    def put_annotation(self, key: str, value: Union[str, numbers.Number, bool]) -> NoReturn:
+    def put_annotation(
+        self, key: str, value: Union[str, numbers.Number, bool]
+    ) -> NoReturn:
         """Annotate segment or subsegment with a key-value pair.
 
         Note: Annotations will be indexed for later search query.
@@ -114,7 +129,9 @@ class BaseSegment(abc.ABC):
         """
 
     @abc.abstractmethod
-    def put_metadata(self, key: str, value: Any, namespace: str = "default") -> NoReturn:
+    def put_metadata(
+        self, key: str, value: Any, namespace: str = "default"
+    ) -> NoReturn:
         """Add metadata to segment or subsegment. Metadata is not indexed
         but can be later retrieved by BatchGetTraces API.
 
@@ -129,7 +146,12 @@ class BaseSegment(abc.ABC):
         """
 
     @abc.abstractmethod
-    def add_exception(self, exception: BaseException, stack: List[traceback.StackSummary], remote: bool = False):
+    def add_exception(
+        self,
+        exception: BaseException,
+        stack: List[traceback.StackSummary],
+        remote: bool = False,
+    ):
         """Add an exception to trace entities.
 
         Parameters

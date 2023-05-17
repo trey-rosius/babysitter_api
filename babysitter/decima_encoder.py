@@ -3,6 +3,8 @@ from decimal import Decimal
 from aws_lambda_powertools import Tracer
 
 tracer = Tracer()
+
+
 @tracer.capture_method
 def handle_decimal_type(obj):
     """

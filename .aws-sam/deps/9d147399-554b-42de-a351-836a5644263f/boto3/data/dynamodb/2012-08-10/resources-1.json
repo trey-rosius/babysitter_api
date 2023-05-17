@@ -43,7 +43,7 @@
   "resources": {
     "Table": {
       "identifiers": [
-        { 
+        {
           "name": "Name",
           "memberName": "TableName"
         }

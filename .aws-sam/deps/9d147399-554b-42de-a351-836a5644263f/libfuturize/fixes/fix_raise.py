@@ -59,7 +59,7 @@ class FixRaise(fixer_base.BaseFix):
                 # exc.children[1:-1] is the unparenthesized tuple
                 # exc.children[1].children[0] is the first element of the tuple
                 exc = exc.children[1].children[0].clone()
-            exc.prefix = u" "
+            exc.prefix = " "
 
         if "tb" in results:
             tb = results["tb"].clone()
@@ -75,9 +75,9 @@ class FixRaise(fixer_base.BaseFix):
             elif val.type in (token.NUMBER, token.STRING):
                 # Handle numeric and string literals specially, e.g.
                 # "raise Exception, 5" -> "raise Exception(5)".
-                val.prefix = u""
+                val.prefix = ""
                 exc = Call(exc, [val])
-            elif val.type == token.NAME and val.value == u"None":
+            elif val.type == token.NAME and val.value == "None":
                 # Handle None specially, e.g.
                 # "raise Exception, None" -> "raise Exception".
                 pass
@@ -89,19 +89,19 @@ class FixRaise(fixer_base.BaseFix):
                 # above). Otherwise, exc(val) should be called. We can only
                 # tell what to do at runtime, so defer to future.utils.raise_(),
                 # which handles all of these cases.
-                touch_import_top(u"future.utils", u"raise_", node)
-                exc.prefix = u""
+                touch_import_top("future.utils", "raise_", node)
+                exc.prefix = ""
                 args = [exc, Comma(), val]
                 if tb is not None:
                     args += [Comma(), tb]
-                return Call(Name(u"raise_"), args)
+                return Call(Name("raise_"), args)
 
         if tb is not None:
             tb.prefix = ""
-            exc_list = Attr(exc, Name('with_traceback')) + [ArgList([tb])]
+            exc_list = Attr(exc, Name("with_traceback")) + [ArgList([tb])]
         else:
             exc_list = [exc]
 
-        return pytree.Node(syms.raise_stmt,
-                           [Name(u"raise")] + exc_list,
-                           prefix=node.prefix)
+        return pytree.Node(
+            syms.raise_stmt, [Name("raise")] + exc_list, prefix=node.prefix
+        )

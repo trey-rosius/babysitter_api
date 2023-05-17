@@ -9,6 +9,7 @@ class DefaultDynamicNaming(object):
     it returns the fallback name. The host name usually comes from the incoming
     request's headers.
     """
+
     def __init__(self, pattern, fallback):
         """
         :param str pattern: the regex-like pattern to be compared against.

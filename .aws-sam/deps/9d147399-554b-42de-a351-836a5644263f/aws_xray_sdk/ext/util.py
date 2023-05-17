@@ -12,8 +12,8 @@ else:  # Python 2 and below
     from urlparse import urlparse
 
 
-first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-all_cap_re = re.compile('([a-z0-9])([A-Z])')
+first_cap_re = re.compile("(.)([A-Z][a-z]+)")
+all_cap_re = re.compile("([a-z0-9])([A-Z])")
 UNKNOWN_HOSTNAME = "UNKNOWN HOST"
 
 
@@ -30,7 +30,7 @@ def inject_trace_header(headers, entity):
     if not entity:
         return
 
-    if hasattr(entity, 'type') and entity.type == 'subsegment':
+    if hasattr(entity, "type") and entity.type == "subsegment":
         header = entity.parent_segment.get_origin_trace_header()
     else:
         header = entity.get_origin_trace_header()
@@ -57,7 +57,7 @@ def calculate_sampling_decision(trace_header, recorder, sampling_req):
     in the recorder. If not enbaled it returns 1. Otherwise it uses user
     defined sampling rules to decide.
     """
-    if trace_header.sampled is not None and trace_header.sampled != '?':
+    if trace_header.sampled is not None and trace_header.sampled != "?":
         return trace_header.sampled
     elif not recorder.sampling:
         return 1
@@ -97,9 +97,8 @@ def prepare_response_header(origin_header, segment):
     Prepare a trace header to be inserted into response
     based on original header and the request segment.
     """
-    if origin_header and origin_header.sampled == '?':
-        new_header = TraceHeader(root=segment.trace_id,
-                                 sampled=segment.sampled)
+    if origin_header and origin_header.sampled == "?":
+        new_header = TraceHeader(root=segment.trace_id, sampled=segment.sampled)
     else:
         new_header = TraceHeader(root=segment.trace_id)
 
@@ -110,9 +109,9 @@ def to_snake_case(name):
     """
     Convert the input string to snake-cased string.
     """
-    s1 = first_cap_re.sub(r'\1_\2', name)
+    s1 = first_cap_re.sub(r"\1_\2", name)
     # handle acronym words
-    return all_cap_re.sub(r'\1_\2', s1).lower()
+    return all_cap_re.sub(r"\1_\2", s1).lower()
 
 
 # ? is not a valid entity, and we don't want things after the ? for the segment name
@@ -122,7 +121,7 @@ def strip_url(url):
     :param url: url to strip
     :return: validated url string
     """
-    return url.partition('?')[0] if url else url
+    return url.partition("?")[0] if url else url
 
 
 def get_hostname(url):
@@ -132,7 +131,9 @@ def get_hostname(url):
     hostname = url_parse.hostname
     if hostname is None:
         return UNKNOWN_HOSTNAME
-    return hostname if hostname else url  # If hostname is none, we return the regular URL; indication of malformed url
+    return (
+        hostname if hostname else url
+    )  # If hostname is none, we return the regular URL; indication of malformed url
 
 
 def unwrap(obj, attr):
@@ -142,5 +143,5 @@ def unwrap(obj, attr):
     :param attr: attribute on `obj` to unwrap
     """
     f = getattr(obj, attr, None)
-    if f and isinstance(f, wrapt.ObjectProxy) and hasattr(f, '__wrapped__'):
+    if f and isinstance(f, wrapt.ObjectProxy) and hasattr(f, "__wrapped__"):
         setattr(obj, attr, f.__wrapped__)

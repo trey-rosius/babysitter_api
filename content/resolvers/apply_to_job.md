@@ -1,5 +1,5 @@
 #### Apply to Job
-After viewing a list of available jobs, the next step is applying to that job.This endpoint is 
+After viewing a list of available jobs, the next step is applying to that job.This endpoint is
 reserved for nannies only.
 ```
 applyToJob(application:CreateJobApplicationInput!):JobApplication!
@@ -15,7 +15,7 @@ SK = JOB#<JobId>#APPLICATION#<applicationId>
 
 ```
 
-Here's the complete code 
+Here's the complete code
 ```
 from aws_lambda_powertools import Logger,Tracer
 import boto3

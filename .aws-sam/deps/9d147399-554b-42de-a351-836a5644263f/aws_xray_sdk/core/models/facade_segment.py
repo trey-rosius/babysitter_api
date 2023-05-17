@@ -2,7 +2,7 @@ from .segment import Segment
 from ..exceptions.exceptions import FacadeSegmentMutationException
 
 
-MUTATION_UNSUPPORTED_MESSAGE = 'FacadeSegments cannot be mutated.'
+MUTATION_UNSUPPORTED_MESSAGE = "FacadeSegments cannot be mutated."
 
 
 class FacadeSegment(Segment):
@@ -14,6 +14,7 @@ class FacadeSegment(Segment):
     before Lambda worker finishes initializatioin, all the child
     subsegments will be discarded.
     """
+
     def __init__(self, name, entityid, traceid, sampled):
 
         self.initializing = self._is_initializing(
@@ -47,7 +48,7 @@ class FacadeSegment(Segment):
         """
         raise FacadeSegmentMutationException(MUTATION_UNSUPPORTED_MESSAGE)
 
-    def put_metadata(self, key, value, namespace='default'):
+    def put_metadata(self, key, value, namespace="default"):
         """
         Unsupported operation. Will raise an exception.
         """

@@ -24,6 +24,7 @@ class LazyLoadedDocstring(str):
     help(). Note that all docstring classes **must** subclass from
     this class. It cannot be used directly as a docstring.
     """
+
     def __init__(self, *args, **kwargs):
         """
         The args and kwargs are the same as the underlying document
@@ -41,8 +42,8 @@ class LazyLoadedDocstring(str):
 
     def _write_docstring(self, *args, **kwargs):
         raise NotImplementedError(
-            '_write_docstring is not implemented. Please subclass from '
-            'this class and provide your own _write_docstring method'
+            "_write_docstring is not implemented. Please subclass from "
+            "this class and provide your own _write_docstring method"
         )
 
     def expandtabs(self, tabsize=8):
@@ -72,13 +73,11 @@ class LazyLoadedDocstring(str):
         return self._docstring
 
     def _create_docstring(self):
-        docstring_structure = DocumentStructure('docstring', target='html')
+        docstring_structure = DocumentStructure("docstring", target="html")
         # Call the document method function with the args and kwargs
         # passed to the class.
-        self._write_docstring(
-            docstring_structure, *self._gen_args,
-            **self._gen_kwargs)
-        return docstring_structure.flush_structure().decode('utf-8')
+        self._write_docstring(docstring_structure, *self._gen_args, **self._gen_kwargs)
+        return docstring_structure.flush_structure().decode("utf-8")
 
 
 class ClientMethodDocstring(LazyLoadedDocstring):

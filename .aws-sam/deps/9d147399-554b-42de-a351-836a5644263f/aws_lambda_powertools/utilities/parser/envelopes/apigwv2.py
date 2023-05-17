@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 class ApiGatewayV2Envelope(BaseEnvelope):
     """API Gateway V2 envelope to extract data within body key"""
 
-    def parse(self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]) -> Optional[Model]:
+    def parse(
+        self, data: Optional[Union[Dict[str, Any], Any]], model: Type[Model]
+    ) -> Optional[Model]:
         """Parses data found with model provided
 
         Parameters
@@ -26,7 +28,9 @@ class ApiGatewayV2Envelope(BaseEnvelope):
         Any
             Parsed detail payload with model provided
         """
-        logger.debug(f"Parsing incoming data with Api Gateway model V2 {APIGatewayProxyEventV2Model}")
+        logger.debug(
+            f"Parsing incoming data with Api Gateway model V2 {APIGatewayProxyEventV2Model}"
+        )
         parsed_envelope = APIGatewayProxyEventV2Model.parse_obj(data)
         logger.debug(f"Parsing event payload in `detail` with {model}")
         return self._parse(data=parsed_envelope.body, model=model)

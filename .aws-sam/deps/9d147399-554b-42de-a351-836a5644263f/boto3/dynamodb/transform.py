@@ -34,96 +34,107 @@ class DynamoDBHighLevelResource(object):
         # Apply handler that creates a copy of the user provided dynamodb
         # item such that it can be modified.
         self.meta.client.meta.events.register(
-            'provide-client-params.dynamodb',
+            "provide-client-params.dynamodb",
             copy_dynamodb_params,
-            unique_id='dynamodb-create-params-copy'
+            unique_id="dynamodb-create-params-copy",
         )
 
         self._injector = TransformationInjector()
         # Apply the handler that generates condition expressions including
         # placeholders.
         self.meta.client.meta.events.register(
-            'before-parameter-build.dynamodb',
+            "before-parameter-build.dynamodb",
             self._injector.inject_condition_expressions,
-            unique_id='dynamodb-condition-expression')
+            unique_id="dynamodb-condition-expression",
+        )
 
         # Apply the handler that serializes the request from python
         # types to dynamodb types.
         self.meta.client.meta.events.register(
-            'before-parameter-build.dynamodb',
+            "before-parameter-build.dynamodb",
             self._injector.inject_attribute_value_input,
-            unique_id='dynamodb-attr-value-input')
+            unique_id="dynamodb-attr-value-input",
+        )
 
         # Apply the handler that deserializes the response from dynamodb
         # types to python types.
         self.meta.client.meta.events.register(
-            'after-call.dynamodb',
+            "after-call.dynamodb",
             self._injector.inject_attribute_value_output,
-            unique_id='dynamodb-attr-value-output')
+            unique_id="dynamodb-attr-value-output",
+        )
 
         # Apply the documentation customizations to account for
         # the transformations.
         attr_value_shape_docs = DocumentModifiedShape(
-            'AttributeValue',
-            new_type='valid DynamoDB type',
+            "AttributeValue",
+            new_type="valid DynamoDB type",
             new_description=(
-                '- The value of the attribute. The valid value types are '
-                'listed in the '
-                ':ref:`DynamoDB Reference Guide<ref_valid_dynamodb_types>`.'
+                "- The value of the attribute. The valid value types are "
+                "listed in the "
+                ":ref:`DynamoDB Reference Guide<ref_valid_dynamodb_types>`."
             ),
             new_example_value=(
-                '\'string\'|123|Binary(b\'bytes\')|True|None|set([\'string\'])'
-                '|set([123])|set([Binary(b\'bytes\')])|[]|{}')
+                "'string'|123|Binary(b'bytes')|True|None|set(['string'])"
+                "|set([123])|set([Binary(b'bytes')])|[]|{}"
+            ),
         )
 
         key_expression_shape_docs = DocumentModifiedShape(
-            'KeyExpression',
+            "KeyExpression",
             new_type=(
-                'condition from :py:class:`boto3.dynamodb.conditions.Key` '
-                'method'
+                "condition from :py:class:`boto3.dynamodb.conditions.Key` " "method"
             ),
             new_description=(
-                'The condition(s) a key(s) must meet. Valid conditions are '
-                'listed in the '
-                ':ref:`DynamoDB Reference Guide<ref_dynamodb_conditions>`.'
+                "The condition(s) a key(s) must meet. Valid conditions are "
+                "listed in the "
+                ":ref:`DynamoDB Reference Guide<ref_dynamodb_conditions>`."
             ),
-            new_example_value='Key(\'mykey\').eq(\'myvalue\')'
+            new_example_value="Key('mykey').eq('myvalue')",
         )
 
         con_expression_shape_docs = DocumentModifiedShape(
-            'ConditionExpression',
+            "ConditionExpression",
             new_type=(
-                'condition from :py:class:`boto3.dynamodb.conditions.Attr` '
-                'method'
+                "condition from :py:class:`boto3.dynamodb.conditions.Attr` " "method"
             ),
             new_description=(
-                'The condition(s) an attribute(s) must meet. Valid conditions '
-                'are listed in the '
-                ':ref:`DynamoDB Reference Guide<ref_dynamodb_conditions>`.'
+                "The condition(s) an attribute(s) must meet. Valid conditions "
+                "are listed in the "
+                ":ref:`DynamoDB Reference Guide<ref_dynamodb_conditions>`."
             ),
-            new_example_value='Attr(\'myattribute\').eq(\'myvalue\')'
+            new_example_value="Attr('myattribute').eq('myvalue')",
         )
 
         self.meta.client.meta.events.register(
-            'docs.*.dynamodb.*.complete-section',
+            "docs.*.dynamodb.*.complete-section",
             attr_value_shape_docs.replace_documentation_for_matching_shape,
-            unique_id='dynamodb-attr-value-docs')
+            unique_id="dynamodb-attr-value-docs",
+        )
 
         self.meta.client.meta.events.register(
-            'docs.*.dynamodb.*.complete-section',
+            "docs.*.dynamodb.*.complete-section",
             key_expression_shape_docs.replace_documentation_for_matching_shape,
-            unique_id='dynamodb-key-expression-docs')
+            unique_id="dynamodb-key-expression-docs",
+        )
 
         self.meta.client.meta.events.register(
-            'docs.*.dynamodb.*.complete-section',
+            "docs.*.dynamodb.*.complete-section",
             con_expression_shape_docs.replace_documentation_for_matching_shape,
-            unique_id='dynamodb-cond-expression-docs')
+            unique_id="dynamodb-cond-expression-docs",
+        )
 
 
 class TransformationInjector(object):
     """Injects the transformations into the user provided parameters."""
-    def __init__(self, transformer=None, condition_builder=None,
-                 serializer=None, deserializer=None):
+
+    def __init__(
+        self,
+        transformer=None,
+        condition_builder=None,
+        serializer=None,
+        deserializer=None,
+    ):
         self._transformer = transformer
         if transformer is None:
             self._transformer = ParameterTransformer()
@@ -156,25 +167,25 @@ class TransformationInjector(object):
             self._condition_builder,
             placeholder_names=generated_names,
             placeholder_values=generated_values,
-            is_key_condition=False
+            is_key_condition=False,
         )
         self._transformer.transform(
-            params, model.input_shape, transformation,
-            'ConditionExpression')
+            params, model.input_shape, transformation, "ConditionExpression"
+        )
 
         # Create and apply the Key Condition Expression transformation.
         transformation = ConditionExpressionTransformation(
             self._condition_builder,
             placeholder_names=generated_names,
             placeholder_values=generated_values,
-            is_key_condition=True
+            is_key_condition=True,
         )
         self._transformer.transform(
-            params, model.input_shape, transformation,
-            'KeyExpression')
+            params, model.input_shape, transformation, "KeyExpression"
+        )
 
-        expr_attr_names_input = 'ExpressionAttributeNames'
-        expr_attr_values_input = 'ExpressionAttributeValues'
+        expr_attr_names_input = "ExpressionAttributeNames"
+        expr_attr_values_input = "ExpressionAttributeValues"
 
         # Now that all of the condition expression transformation are done,
         # update the placeholder dictionaries in the request.
@@ -193,15 +204,17 @@ class TransformationInjector(object):
     def inject_attribute_value_input(self, params, model, **kwargs):
         """Injects DynamoDB serialization into parameter input"""
         self._transformer.transform(
-            params, model.input_shape, self._serializer.serialize,
-            'AttributeValue')
+            params, model.input_shape, self._serializer.serialize, "AttributeValue"
+        )
 
     def inject_attribute_value_output(self, parsed, model, **kwargs):
         """Injects DynamoDB deserialization into responses"""
         if model.output_shape is not None:
             self._transformer.transform(
-                parsed, model.output_shape, self._deserializer.deserialize,
-                'AttributeValue'
+                parsed,
+                model.output_shape,
+                self._deserializer.deserialize,
+                "AttributeValue",
             )
 
 
@@ -211,8 +224,14 @@ class ConditionExpressionTransformation(object):
     The ``ParameterTransformer`` class can call this class directly
     to transform the condition expressions in the parameters provided.
     """
-    def __init__(self, condition_builder, placeholder_names,
-                 placeholder_values, is_key_condition=False):
+
+    def __init__(
+        self,
+        condition_builder,
+        placeholder_names,
+        placeholder_values,
+        is_key_condition=False,
+    ):
         self._condition_builder = condition_builder
         self._placeholder_names = placeholder_names
         self._placeholder_values = placeholder_values
@@ -223,12 +242,13 @@ class ConditionExpressionTransformation(object):
             # Create a conditional expression string with placeholders
             # for the provided condition.
             built_expression = self._condition_builder.build_expression(
-                value, is_key_condition=self._is_key_condition)
+                value, is_key_condition=self._is_key_condition
+            )
 
-            self._placeholder_names.update(
-                built_expression.attribute_name_placeholders)
+            self._placeholder_names.update(built_expression.attribute_name_placeholders)
             self._placeholder_values.update(
-                built_expression.attribute_value_placeholders)
+                built_expression.attribute_value_placeholders
+            )
 
             return built_expression.condition_expression
         # Use the user provided value if it is not a ConditonBase object.
@@ -250,18 +270,16 @@ class ParameterTransformer(object):
         :param target_shape: The name of the shape to apply the
             transformation to
         """
-        self._transform_parameters(
-            model, params, transformation, target_shape)
+        self._transform_parameters(model, params, transformation, target_shape)
 
-    def _transform_parameters(self, model, params, transformation,
-                              target_shape):
+    def _transform_parameters(self, model, params, transformation, target_shape):
         type_name = model.type_name
-        if type_name in ['structure', 'map', 'list']:
-            getattr(self, '_transform_%s' % type_name)(
-                model, params, transformation, target_shape)
+        if type_name in ["structure", "map", "list"]:
+            getattr(self, "_transform_%s" % type_name)(
+                model, params, transformation, target_shape
+            )
 
-    def _transform_structure(self, model, params, transformation,
-                             target_shape):
+    def _transform_structure(self, model, params, transformation, target_shape):
         if not isinstance(params, collections_abc.Mapping):
             return
         for param in params:
@@ -272,8 +290,8 @@ class ParameterTransformer(object):
                     params[param] = transformation(params[param])
                 else:
                     self._transform_parameters(
-                        member_model, params[param], transformation,
-                        target_shape)
+                        member_model, params[param], transformation, target_shape
+                    )
 
     def _transform_map(self, model, params, transformation, target_shape):
         if not isinstance(params, collections_abc.Mapping):
@@ -285,7 +303,8 @@ class ParameterTransformer(object):
                 params[key] = transformation(value)
             else:
                 self._transform_parameters(
-                    value_model, params[key], transformation, target_shape)
+                    value_model, params[key], transformation, target_shape
+                )
 
     def _transform_list(self, model, params, transformation, target_shape):
         if not isinstance(params, collections_abc.MutableSequence):
@@ -297,4 +316,5 @@ class ParameterTransformer(object):
                 params[i] = transformation(item)
             else:
                 self._transform_parameters(
-                    member_model, params[i], transformation, target_shape)
+                    member_model, params[i], transformation, target_shape
+                )

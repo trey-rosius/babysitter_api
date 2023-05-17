@@ -53,33 +53,36 @@ import functools
 from string import ascii_letters, digits
 from future.backports.email import errors
 
-__all__ = ['decode_q',
-           'encode_q',
-           'decode_b',
-           'encode_b',
-           'len_q',
-           'len_b',
-           'decode',
-           'encode',
-           ]
+__all__ = [
+    "decode_q",
+    "encode_q",
+    "decode_b",
+    "encode_b",
+    "len_q",
+    "len_b",
+    "decode",
+    "encode",
+]
 
 #
 # Quoted Printable
 #
 
 # regex based decoder.
-_q_byte_subber = functools.partial(re.compile(br'=([a-fA-F0-9]{2})').sub,
-        lambda m: bytes([int(m.group(1), 16)]))
+_q_byte_subber = functools.partial(
+    re.compile(rb"=([a-fA-F0-9]{2})").sub, lambda m: bytes([int(m.group(1), 16)])
+)
+
 
 def decode_q(encoded):
-    encoded = bytes(encoded.replace(b'_', b' '))
+    encoded = bytes(encoded.replace(b"_", b" "))
     return _q_byte_subber(encoded), []
 
 
 # dict mapping bytes to their encoded form
 class _QByteMap(dict):
 
-    safe = bytes(b'-!*+/' + ascii_letters.encode('ascii') + digits.encode('ascii'))
+    safe = bytes(b"-!*+/" + ascii_letters.encode("ascii") + digits.encode("ascii"))
 
     def __missing__(self, key):
         if key in self.safe:
@@ -88,13 +91,16 @@ class _QByteMap(dict):
             self[key] = "={:02X}".format(key)
         return self[key]
 
+
 _q_byte_map = _QByteMap()
 
 # In headers spaces are mapped to '_'.
-_q_byte_map[ord(' ')] = '_'
+_q_byte_map[ord(" ")] = "_"
+
 
 def encode_q(bstring):
-    return str(''.join(_q_byte_map[x] for x in bytes(bstring)))
+    return str("".join(_q_byte_map[x] for x in bytes(bstring)))
+
 
 def len_q(bstring):
     return sum(len(_q_byte_map[x]) for x in bytes(bstring))
@@ -104,18 +110,19 @@ def len_q(bstring):
 # Base64
 #
 
+
 def decode_b(encoded):
     defects = []
     pad_err = len(encoded) % 4
     if pad_err:
         defects.append(errors.InvalidBase64PaddingDefect())
-        padded_encoded = encoded + b'==='[:4-pad_err]
+        padded_encoded = encoded + b"==="[: 4 - pad_err]
     else:
         padded_encoded = encoded
     try:
         # The validate kwarg to b64decode is not supported in Py2.x
-        if not re.match(b'^[A-Za-z0-9+/]*={0,2}$', padded_encoded):
-            raise binascii.Error('Non-base64 digit found')
+        if not re.match(b"^[A-Za-z0-9+/]*={0,2}$", padded_encoded):
+            raise binascii.Error("Non-base64 digit found")
         return base64.b64decode(padded_encoded), defects
     except binascii.Error:
         # Since we had correct padding, this must an invalid char error.
@@ -125,16 +132,18 @@ def decode_b(encoded):
         # try various padding lengths until something works.
         for i in 0, 1, 2, 3:
             try:
-                return base64.b64decode(encoded+b'='*i), defects
-            except (binascii.Error, TypeError):    # Py2 raises a TypeError
-                if i==0:
+                return base64.b64decode(encoded + b"=" * i), defects
+            except (binascii.Error, TypeError):  # Py2 raises a TypeError
+                if i == 0:
                     defects.append(errors.InvalidBase64PaddingDefect())
         else:
             # This should never happen.
             raise AssertionError("unexpected binascii.Error")
 
+
 def encode_b(bstring):
-    return base64.b64encode(bstring).decode('ascii')
+    return base64.b64encode(bstring).decode("ascii")
+
 
 def len_b(bstring):
     groups_of_3, leftover = divmod(len(bstring), 3)
@@ -143,9 +152,10 @@ def len_b(bstring):
 
 
 _cte_decoders = {
-    'q': decode_q,
-    'b': decode_b,
-    }
+    "q": decode_q,
+    "b": decode_b,
+}
+
 
 def decode(ew):
     """Decode encoded word and return (string, charset, lang, defects) tuple.
@@ -168,38 +178,47 @@ def decode(ew):
     which is rarely if ever encountered, is the empty string.
 
     """
-    _, charset, cte, cte_string, _ = str(ew).split('?')
-    charset, _, lang = charset.partition('*')
+    _, charset, cte, cte_string, _ = str(ew).split("?")
+    charset, _, lang = charset.partition("*")
     cte = cte.lower()
     # Recover the original bytes and do CTE decoding.
-    bstring = cte_string.encode('ascii', 'surrogateescape')
+    bstring = cte_string.encode("ascii", "surrogateescape")
     bstring, defects = _cte_decoders[cte](bstring)
     # Turn the CTE decoded bytes into unicode.
     try:
         string = bstring.decode(charset)
     except UnicodeError:
-        defects.append(errors.UndecodableBytesDefect("Encoded word "
-            "contains bytes not decodable using {} charset".format(charset)))
-        string = bstring.decode(charset, 'surrogateescape')
+        defects.append(
+            errors.UndecodableBytesDefect(
+                "Encoded word "
+                "contains bytes not decodable using {} charset".format(charset)
+            )
+        )
+        string = bstring.decode(charset, "surrogateescape")
     except LookupError:
-        string = bstring.decode('ascii', 'surrogateescape')
-        if charset.lower() != 'unknown-8bit':
-            defects.append(errors.CharsetError("Unknown charset {} "
-                "in encoded word; decoded as unknown bytes".format(charset)))
+        string = bstring.decode("ascii", "surrogateescape")
+        if charset.lower() != "unknown-8bit":
+            defects.append(
+                errors.CharsetError(
+                    "Unknown charset {} "
+                    "in encoded word; decoded as unknown bytes".format(charset)
+                )
+            )
     return string, charset, lang, defects
 
 
 _cte_encoders = {
-    'q': encode_q,
-    'b': encode_b,
-    }
+    "q": encode_q,
+    "b": encode_b,
+}
 
 _cte_encode_length = {
-    'q': len_q,
-    'b': len_b,
-    }
+    "q": len_q,
+    "b": len_b,
+}
 
-def encode(string, charset='utf-8', encoding=None, lang=''):
+
+def encode(string, charset="utf-8", encoding=None, lang=""):
     """Encode string using the CTE encoding that produces the shorter result.
 
     Produces an RFC 2047/2243 encoded word of the form:
@@ -217,16 +236,16 @@ def encode(string, charset='utf-8', encoding=None, lang=''):
 
     """
     string = str(string)
-    if charset == 'unknown-8bit':
-        bstring = string.encode('ascii', 'surrogateescape')
+    if charset == "unknown-8bit":
+        bstring = string.encode("ascii", "surrogateescape")
     else:
         bstring = string.encode(charset)
     if encoding is None:
-        qlen = _cte_encode_length['q'](bstring)
-        blen = _cte_encode_length['b'](bstring)
+        qlen = _cte_encode_length["q"](bstring)
+        blen = _cte_encode_length["b"](bstring)
         # Bias toward q.  5 is arbitrary.
-        encoding = 'q' if qlen - blen < 5 else 'b'
+        encoding = "q" if qlen - blen < 5 else "b"
     encoded = _cte_encoders[encoding](bstring)
     if lang:
-        lang = '*' + lang
+        lang = "*" + lang
     return "=?{0}{1}?{2}?{3}?=".format(charset, lang, encoding, encoded)

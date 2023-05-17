@@ -8,5 +8,7 @@ else:
     try:
         from Tkdnd import *
     except ImportError:
-        raise ImportError('The Tkdnd module is missing. Does your Py2 '
-                          'installation include tkinter?')
+        raise ImportError(
+            "The Tkdnd module is missing. Does your Py2 "
+            "installation include tkinter?"
+        )

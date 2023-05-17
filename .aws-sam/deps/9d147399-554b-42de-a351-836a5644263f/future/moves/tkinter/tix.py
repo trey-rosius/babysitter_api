@@ -8,5 +8,6 @@ else:
     try:
         from Tix import *
     except ImportError:
-        raise ImportError('The Tix module is missing. Does your Py2 '
-                          'installation include tkinter?')
+        raise ImportError(
+            "The Tix module is missing. Does your Py2 " "installation include tkinter?"
+        )

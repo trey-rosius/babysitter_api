@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
-__all__ = ['Parser', 'HeaderParser', 'BytesParser', 'BytesHeaderParser']
+__all__ = ["Parser", "HeaderParser", "BytesParser", "BytesHeaderParser"]
 
 import warnings
 from io import StringIO, TextIOWrapper
@@ -39,8 +39,11 @@ class Parser(object):
         backward compatibility.
 
         """
-        if 'policy' in _3to2kwargs: policy = _3to2kwargs['policy']; del _3to2kwargs['policy']
-        else: policy = compat32
+        if "policy" in _3to2kwargs:
+            policy = _3to2kwargs["policy"]
+            del _3to2kwargs["policy"]
+        else:
+            policy = compat32
         self._class = _class
         self.policy = policy
 
@@ -73,7 +76,6 @@ class Parser(object):
         return self.parse(StringIO(text), headersonly=headersonly)
 
 
-
 class HeaderParser(Parser):
     def parse(self, fp, headersonly=True):
         return Parser.parse(self, fp, True)
@@ -83,7 +85,6 @@ class HeaderParser(Parser):
 
 
 class BytesParser(object):
-
     def __init__(self, *args, **kw):
         """Parser of binary RFC 2822 and MIME email messages.
 
@@ -110,10 +111,9 @@ class BytesParser(object):
         parsing after reading the headers or not.  The default is False,
         meaning it parses the entire contents of the file.
         """
-        fp = TextIOWrapper(fp, encoding='ascii', errors='surrogateescape')
+        fp = TextIOWrapper(fp, encoding="ascii", errors="surrogateescape")
         with fp:
             return self.parser.parse(fp, headersonly)
-
 
     def parsebytes(self, text, headersonly=False):
         """Create a message structure from a byte string.
@@ -123,7 +123,7 @@ class BytesParser(object):
         not.  The default is False, meaning it parses the entire contents of
         the file.
         """
-        text = text.decode('ASCII', errors='surrogateescape')
+        text = text.decode("ASCII", errors="surrogateescape")
         return self.parser.parsestr(text, headersonly)
 
 

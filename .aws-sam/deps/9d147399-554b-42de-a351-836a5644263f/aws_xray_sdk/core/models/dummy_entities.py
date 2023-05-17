@@ -15,12 +15,14 @@ class DummySegment(Segment):
     dummy segments is not recommended.
     """
 
-    def __init__(self, name='dummy'):
-        no_op_id = os.getenv('AWS_XRAY_NOOP_ID')
-        if no_op_id and no_op_id.lower() == 'false':
+    def __init__(self, name="dummy"):
+        no_op_id = os.getenv("AWS_XRAY_NOOP_ID")
+        if no_op_id and no_op_id.lower() == "false":
             super(DummySegment, self).__init__(name=name, traceid=TraceId().to_id())
         else:
-            super(DummySegment, self).__init__(name=name, traceid=NoOpTraceId().to_id(), entityid='0000000000000000')
+            super(DummySegment, self).__init__(
+                name=name, traceid=NoOpTraceId().to_id(), entityid="0000000000000000"
+            )
         self.sampled = False
 
     def set_aws(self, aws_meta):
@@ -41,7 +43,7 @@ class DummySegment(Segment):
         """
         pass
 
-    def put_metadata(self, key, value, namespace='default'):
+    def put_metadata(self, key, value, namespace="default"):
         """
         No-op
         """
@@ -86,13 +88,13 @@ class DummySubsegment(Subsegment):
     be sent to the X-Ray daemon.
     """
 
-    def __init__(self, segment, name='dummy'):
-        super(DummySubsegment, self).__init__(name, 'dummy', segment)
-        no_op_id = os.getenv('AWS_XRAY_NOOP_ID')
-        if no_op_id and no_op_id.lower() == 'false':
+    def __init__(self, segment, name="dummy"):
+        super(DummySubsegment, self).__init__(name, "dummy", segment)
+        no_op_id = os.getenv("AWS_XRAY_NOOP_ID")
+        if no_op_id and no_op_id.lower() == "false":
             super(Subsegment, self).__init__(name)
         else:
-            super(Subsegment, self).__init__(name, entity_id='0000000000000000')
+            super(Subsegment, self).__init__(name, entity_id="0000000000000000")
         self.sampled = False
 
     def set_aws(self, aws_meta):
@@ -113,7 +115,7 @@ class DummySubsegment(Subsegment):
         """
         pass
 
-    def put_metadata(self, key, value, namespace='default'):
+    def put_metadata(self, key, value, namespace="default"):
         """
         No-op
         """

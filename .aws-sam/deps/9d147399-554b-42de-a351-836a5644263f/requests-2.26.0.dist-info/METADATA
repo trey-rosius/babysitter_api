@@ -116,5 +116,3 @@ git config --global fetch.fsck.badTimezone ignore
 ---
 
 [![Kenneth Reitz](https://raw.githubusercontent.com/psf/requests/master/ext/kr.png)](https://kennethreitz.org) [![Python Software Foundation](https://raw.githubusercontent.com/psf/requests/master/ext/psf.png)](https://www.python.org/psf)
-
-

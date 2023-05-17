@@ -8,5 +8,7 @@ else:
     try:
         from FileDialog import *
     except ImportError:
-        raise ImportError('The FileDialog module is missing. Does your Py2 '
-                          'installation include tkinter?')
+        raise ImportError(
+            "The FileDialog module is missing. Does your Py2 "
+            "installation include tkinter?"
+        )

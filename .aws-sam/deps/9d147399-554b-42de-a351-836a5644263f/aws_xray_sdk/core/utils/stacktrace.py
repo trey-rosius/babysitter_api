@@ -47,5 +47,5 @@ def get_stacktrace(limit=None):
             stack = stack[-limit:]
         else:
             # limit < 0: include the first `abs(limit)` items
-            stack = stack[:abs(limit)]
+            stack = stack[: abs(limit)]
     return stack

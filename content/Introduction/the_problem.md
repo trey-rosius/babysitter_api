@@ -2,11 +2,11 @@
 
 ## The Problem
 
-So COVID came along and made Remote work possible. Yay!!!. Now we can work in our pyjamas, from our bedrooms,sipping coffee from that large Mug we got for special moments like these. 
+So COVID came along and made Remote work possible. Yay!!!. Now we can work in our pyjamas, from our bedrooms,sipping coffee from that large Mug we got for special moments like these.
 I don't know about you, but to me, working like this is a dream come true.
 <br />
 <br />
-But as the saying goes, 
+But as the saying goes,
 > When you pray for the rain, you've got to deal with the mud too
 
 Working from home ain't all sunshine and merry making.
@@ -29,11 +29,11 @@ There has to be a solution to this 🤔. Yeahhhh... Get a nanny.But then,other i
   <br />
   And a ton of other concerns.
 
-BUT!!!!! 
+BUT!!!!!
 <br />
-What if there's an online service, just for stuff like this ? 
+What if there's an online service, just for stuff like this ?
 - Where you can meet people willing to carryout nanny duties?
-- You can post job offers 
+- You can post job offers
 - See Nanny ratings based on previous jobs they've completed.
 - Connect with other parents.
 - Book a nanny

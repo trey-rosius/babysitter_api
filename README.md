@@ -23,7 +23,7 @@ content
       |- datasources.md
   |-  Resolvers
       |- create_user.md
-      |- update_user.md    
+      |- update_user.md
       |- get_user.md
       |- create_job.md
       |- list_all_jobs.md
@@ -31,12 +31,5 @@ content
       |- book_a_nanny.md
  |-   Conclusion
       |- conclusion.md
-           
+
 ```
-
-
-
-
-
-
-

@@ -27,51 +27,47 @@ class CopySubmissionTask(SubmissionTask):
     """Task for submitting tasks to execute a copy"""
 
     EXTRA_ARGS_TO_HEAD_ARGS_MAPPING = {
-        'CopySourceIfMatch': 'IfMatch',
-        'CopySourceIfModifiedSince': 'IfModifiedSince',
-        'CopySourceIfNoneMatch': 'IfNoneMatch',
-        'CopySourceIfUnmodifiedSince': 'IfUnmodifiedSince',
-        'CopySourceSSECustomerKey': 'SSECustomerKey',
-        'CopySourceSSECustomerAlgorithm': 'SSECustomerAlgorithm',
-        'CopySourceSSECustomerKeyMD5': 'SSECustomerKeyMD5',
-        'RequestPayer': 'RequestPayer',
-        'ExpectedBucketOwner': 'ExpectedBucketOwner'
+        "CopySourceIfMatch": "IfMatch",
+        "CopySourceIfModifiedSince": "IfModifiedSince",
+        "CopySourceIfNoneMatch": "IfNoneMatch",
+        "CopySourceIfUnmodifiedSince": "IfUnmodifiedSince",
+        "CopySourceSSECustomerKey": "SSECustomerKey",
+        "CopySourceSSECustomerAlgorithm": "SSECustomerAlgorithm",
+        "CopySourceSSECustomerKeyMD5": "SSECustomerKeyMD5",
+        "RequestPayer": "RequestPayer",
+        "ExpectedBucketOwner": "ExpectedBucketOwner",
     }
 
     UPLOAD_PART_COPY_ARGS = [
-        'CopySourceIfMatch',
-        'CopySourceIfModifiedSince',
-        'CopySourceIfNoneMatch',
-        'CopySourceIfUnmodifiedSince',
-        'CopySourceSSECustomerKey',
-        'CopySourceSSECustomerAlgorithm',
-        'CopySourceSSECustomerKeyMD5',
-        'SSECustomerKey',
-        'SSECustomerAlgorithm',
-        'SSECustomerKeyMD5',
-        'RequestPayer',
-        'ExpectedBucketOwner'
+        "CopySourceIfMatch",
+        "CopySourceIfModifiedSince",
+        "CopySourceIfNoneMatch",
+        "CopySourceIfUnmodifiedSince",
+        "CopySourceSSECustomerKey",
+        "CopySourceSSECustomerAlgorithm",
+        "CopySourceSSECustomerKeyMD5",
+        "SSECustomerKey",
+        "SSECustomerAlgorithm",
+        "SSECustomerKeyMD5",
+        "RequestPayer",
+        "ExpectedBucketOwner",
     ]
 
     CREATE_MULTIPART_ARGS_BLACKLIST = [
-        'CopySourceIfMatch',
-        'CopySourceIfModifiedSince',
-        'CopySourceIfNoneMatch',
-        'CopySourceIfUnmodifiedSince',
-        'CopySourceSSECustomerKey',
-        'CopySourceSSECustomerAlgorithm',
-        'CopySourceSSECustomerKeyMD5',
-        'MetadataDirective',
-        'TaggingDirective',
+        "CopySourceIfMatch",
+        "CopySourceIfModifiedSince",
+        "CopySourceIfNoneMatch",
+        "CopySourceIfUnmodifiedSince",
+        "CopySourceSSECustomerKey",
+        "CopySourceSSECustomerAlgorithm",
+        "CopySourceSSECustomerKeyMD5",
+        "MetadataDirective",
+        "TaggingDirective",
     ]
 
-    COMPLETE_MULTIPART_ARGS = [
-        'RequestPayer',
-        'ExpectedBucketOwner'
-    ]
+    COMPLETE_MULTIPART_ARGS = ["RequestPayer", "ExpectedBucketOwner"]
 
-    def _submit(self, client, config, osutil, request_executor,
-                transfer_future):
+    def _submit(self, client, config, osutil, request_executor, transfer_future):
         """
         :param client: The client associated with the transfer manager
 
@@ -98,9 +94,9 @@ class CopySubmissionTask(SubmissionTask):
             # of the client, they may have to provide the file size themselves
             # with a completely new client.
             call_args = transfer_future.meta.call_args
-            head_object_request = \
-                self._get_head_object_request_from_copy_source(
-                    call_args.copy_source)
+            head_object_request = self._get_head_object_request_from_copy_source(
+                call_args.copy_source
+            )
             extra_args = call_args.extra_args
 
             # Map any values that may be used in the head object that is
@@ -108,28 +104,30 @@ class CopySubmissionTask(SubmissionTask):
             for param, value in extra_args.items():
                 if param in self.EXTRA_ARGS_TO_HEAD_ARGS_MAPPING:
                     head_object_request[
-                        self.EXTRA_ARGS_TO_HEAD_ARGS_MAPPING[param]] = value
+                        self.EXTRA_ARGS_TO_HEAD_ARGS_MAPPING[param]
+                    ] = value
 
-            response = call_args.source_client.head_object(
-                **head_object_request)
-            transfer_future.meta.provide_transfer_size(
-                response['ContentLength'])
+            response = call_args.source_client.head_object(**head_object_request)
+            transfer_future.meta.provide_transfer_size(response["ContentLength"])
 
         # If it is greater than threshold do a multipart copy, otherwise
         # do a regular copy object.
         if transfer_future.meta.size < config.multipart_threshold:
             self._submit_copy_request(
-                client, config, osutil, request_executor, transfer_future)
+                client, config, osutil, request_executor, transfer_future
+            )
         else:
             self._submit_multipart_request(
-                client, config, osutil, request_executor, transfer_future)
+                client, config, osutil, request_executor, transfer_future
+            )
 
-    def _submit_copy_request(self, client, config, osutil, request_executor,
-                             transfer_future):
+    def _submit_copy_request(
+        self, client, config, osutil, request_executor, transfer_future
+    ):
         call_args = transfer_future.meta.call_args
 
         # Get the needed progress callbacks for the task
-        progress_callbacks = get_callbacks(transfer_future, 'progress')
+        progress_callbacks = get_callbacks(transfer_future, "progress")
 
         # Submit the request of a single copy.
         self._transfer_coordinator.submit(
@@ -137,20 +135,21 @@ class CopySubmissionTask(SubmissionTask):
             CopyObjectTask(
                 transfer_coordinator=self._transfer_coordinator,
                 main_kwargs={
-                    'client': client,
-                    'copy_source': call_args.copy_source,
-                    'bucket': call_args.bucket,
-                    'key': call_args.key,
-                    'extra_args': call_args.extra_args,
-                    'callbacks': progress_callbacks,
-                    'size': transfer_future.meta.size
+                    "client": client,
+                    "copy_source": call_args.copy_source,
+                    "bucket": call_args.bucket,
+                    "key": call_args.key,
+                    "extra_args": call_args.extra_args,
+                    "callbacks": progress_callbacks,
+                    "size": transfer_future.meta.size,
                 },
-                is_final=True
-            )
+                is_final=True,
+            ),
         )
 
-    def _submit_multipart_request(self, client, config, osutil,
-                                  request_executor, transfer_future):
+    def _submit_multipart_request(
+        self, client, config, osutil, request_executor, transfer_future
+    ):
         call_args = transfer_future.meta.call_args
 
         # Submit the request to create a multipart upload and make sure it
@@ -165,39 +164,37 @@ class CopySubmissionTask(SubmissionTask):
             CreateMultipartUploadTask(
                 transfer_coordinator=self._transfer_coordinator,
                 main_kwargs={
-                    'client': client,
-                    'bucket': call_args.bucket,
-                    'key': call_args.key,
-                    'extra_args': create_multipart_extra_args,
-                }
-            )
+                    "client": client,
+                    "bucket": call_args.bucket,
+                    "key": call_args.key,
+                    "extra_args": create_multipart_extra_args,
+                },
+            ),
         )
 
         # Determine how many parts are needed based on filesize and
         # desired chunksize.
         part_size = config.multipart_chunksize
         adjuster = ChunksizeAdjuster()
-        part_size = adjuster.adjust_chunksize(
-            part_size, transfer_future.meta.size)
-        num_parts = int(
-            math.ceil(transfer_future.meta.size / float(part_size)))
+        part_size = adjuster.adjust_chunksize(part_size, transfer_future.meta.size)
+        num_parts = int(math.ceil(transfer_future.meta.size / float(part_size)))
 
         # Submit requests to upload the parts of the file.
         part_futures = []
-        progress_callbacks = get_callbacks(transfer_future, 'progress')
+        progress_callbacks = get_callbacks(transfer_future, "progress")
 
         for part_number in range(1, num_parts + 1):
-            extra_part_args = self._extra_upload_part_args(
-                call_args.extra_args)
+            extra_part_args = self._extra_upload_part_args(call_args.extra_args)
             # The part number for upload part starts at 1 while the
             # range parameter starts at zero, so just subtract 1 off of
             # the part number
-            extra_part_args['CopySourceRange'] = calculate_range_parameter(
-                part_size, part_number-1, num_parts, transfer_future.meta.size)
+            extra_part_args["CopySourceRange"] = calculate_range_parameter(
+                part_size, part_number - 1, num_parts, transfer_future.meta.size
+            )
             # Get the size of the part copy as well for the progress
             # callbacks.
             size = self._get_transfer_size(
-                part_size, part_number-1, num_parts, transfer_future.meta.size
+                part_size, part_number - 1, num_parts, transfer_future.meta.size
             )
             part_futures.append(
                 self._transfer_coordinator.submit(
@@ -205,41 +202,40 @@ class CopySubmissionTask(SubmissionTask):
                     CopyPartTask(
                         transfer_coordinator=self._transfer_coordinator,
                         main_kwargs={
-                            'client': client,
-                            'copy_source': call_args.copy_source,
-                            'bucket': call_args.bucket,
-                            'key': call_args.key,
-                            'part_number': part_number,
-                            'extra_args': extra_part_args,
-                            'callbacks': progress_callbacks,
-                            'size': size
+                            "client": client,
+                            "copy_source": call_args.copy_source,
+                            "bucket": call_args.bucket,
+                            "key": call_args.key,
+                            "part_number": part_number,
+                            "extra_args": extra_part_args,
+                            "callbacks": progress_callbacks,
+                            "size": size,
                         },
-                        pending_main_kwargs={
-                            'upload_id': create_multipart_future
-                        }
-                    )
+                        pending_main_kwargs={"upload_id": create_multipart_future},
+                    ),
                 )
             )
 
         complete_multipart_extra_args = self._extra_complete_multipart_args(
-            call_args.extra_args)
+            call_args.extra_args
+        )
         # Submit the request to complete the multipart upload.
         self._transfer_coordinator.submit(
             request_executor,
             CompleteMultipartUploadTask(
                 transfer_coordinator=self._transfer_coordinator,
                 main_kwargs={
-                    'client': client,
-                    'bucket': call_args.bucket,
-                    'key': call_args.key,
-                    'extra_args': complete_multipart_extra_args,
+                    "client": client,
+                    "bucket": call_args.bucket,
+                    "key": call_args.key,
+                    "extra_args": complete_multipart_extra_args,
                 },
                 pending_main_kwargs={
-                    'upload_id': create_multipart_future,
-                    'parts': part_futures
+                    "upload_id": create_multipart_future,
+                    "parts": part_futures,
                 },
-                is_final=True
-            )
+                is_final=True,
+            ),
         )
 
     def _get_head_object_request_from_copy_source(self, copy_source):
@@ -247,10 +243,9 @@ class CopySubmissionTask(SubmissionTask):
             return copy.copy(copy_source)
         else:
             raise TypeError(
-                'Expecting dictionary formatted: '
+                "Expecting dictionary formatted: "
                 '{"Bucket": bucket_name, "Key": key} '
-                'but got %s or type %s.'
-                % (copy_source, type(copy_source))
+                "but got %s or type %s." % (copy_source, type(copy_source))
             )
 
     def _extra_upload_part_args(self, extra_args):
@@ -261,8 +256,7 @@ class CopySubmissionTask(SubmissionTask):
     def _extra_complete_multipart_args(self, extra_args):
         return get_filtered_dict(extra_args, self.COMPLETE_MULTIPART_ARGS)
 
-    def _get_transfer_size(self, part_size, part_index, num_parts,
-                           total_transfer_size):
+    def _get_transfer_size(self, part_size, part_index, num_parts, total_transfer_size):
         if part_index == num_parts - 1:
             # The last part may be different in size then the rest of the
             # parts.
@@ -272,8 +266,8 @@ class CopySubmissionTask(SubmissionTask):
 
 class CopyObjectTask(Task):
     """Task to do a nonmultipart copy"""
-    def _main(self, client, copy_source, bucket, key, extra_args, callbacks,
-              size):
+
+    def _main(self, client, copy_source, bucket, key, extra_args, callbacks, size):
         """
         :param client: The client to use when calling PutObject
         :param copy_source: The CopySource parameter to use
@@ -286,16 +280,26 @@ class CopyObjectTask(Task):
             the callbacks
 
         """
-        client.copy_object(
-            CopySource=copy_source, Bucket=bucket, Key=key, **extra_args)
+        client.copy_object(CopySource=copy_source, Bucket=bucket, Key=key, **extra_args)
         for callback in callbacks:
             callback(bytes_transferred=size)
 
 
 class CopyPartTask(Task):
     """Task to upload a part in a multipart copy"""
-    def _main(self, client, copy_source, bucket, key, upload_id, part_number,
-              extra_args, callbacks, size):
+
+    def _main(
+        self,
+        client,
+        copy_source,
+        bucket,
+        key,
+        upload_id,
+        part_number,
+        extra_args,
+        callbacks,
+        size,
+    ):
         """
         :param client: The client to use when calling PutObject
         :param copy_source: The CopySource parameter to use
@@ -319,9 +323,14 @@ class CopyPartTask(Task):
             the multipart upload.
         """
         response = client.upload_part_copy(
-            CopySource=copy_source, Bucket=bucket, Key=key,
-            UploadId=upload_id, PartNumber=part_number, **extra_args)
+            CopySource=copy_source,
+            Bucket=bucket,
+            Key=key,
+            UploadId=upload_id,
+            PartNumber=part_number,
+            **extra_args
+        )
         for callback in callbacks:
             callback(bytes_transferred=size)
-        etag = response['CopyPartResult']['ETag']
-        return {'ETag': etag, 'PartNumber': part_number}
+        etag = response["CopyPartResult"]["ETag"]
+        return {"ETag": etag, "PartNumber": part_number}

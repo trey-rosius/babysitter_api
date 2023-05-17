@@ -3,6 +3,7 @@ def indent(func):
     Decorator for allowing to use method as normal method or with
     context manager for auto-indenting code blocks.
     """
+
     def wrapper(self, line, *args, optimize=True, **kwds):
         last_line = self._indent_last_line
         line = func(self, line, *args, **kwds)
@@ -12,6 +13,7 @@ def indent(func):
             self._code.pop()
         self._indent_last_line = line
         return Indent(self, line)
+
     return wrapper
 
 

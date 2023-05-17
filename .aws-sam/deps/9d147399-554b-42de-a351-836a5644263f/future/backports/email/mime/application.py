@@ -16,8 +16,9 @@ __all__ = ["MIMEApplication"]
 class MIMEApplication(MIMENonMultipart):
     """Class for generating application/* MIME documents."""
 
-    def __init__(self, _data, _subtype='octet-stream',
-                 _encoder=encoders.encode_base64, **_params):
+    def __init__(
+        self, _data, _subtype="octet-stream", _encoder=encoders.encode_base64, **_params
+    ):
         """Create an application/* type MIME document.
 
         _data is a string containing the raw application data.
@@ -33,7 +34,7 @@ class MIMEApplication(MIMENonMultipart):
         header.
         """
         if _subtype is None:
-            raise TypeError('Invalid application MIME subtype')
-        MIMENonMultipart.__init__(self, 'application', _subtype, **_params)
+            raise TypeError("Invalid application MIME subtype")
+        MIMENonMultipart.__init__(self, "application", _subtype, **_params)
         self.set_payload(_data)
         _encoder(self)

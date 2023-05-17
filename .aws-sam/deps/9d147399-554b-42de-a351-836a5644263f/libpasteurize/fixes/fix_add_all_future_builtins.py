@@ -28,7 +28,7 @@ class FixAddAllFutureBuiltins(fixer_base.BaseFix):
         # import_str = """(ascii, bytes, chr, dict, filter, hex, input,
         #                      int, list, map, next, object, oct, open, pow,
         #                      range, round, str, super, zip)"""
-        touch_import_top(u'builtins', '*', node)
+        touch_import_top("builtins", "*", node)
 
         # builtins = """ascii bytes chr dict filter hex input
         #                      int list map next object oct open pow
