@@ -10,7 +10,7 @@ from resolvers.applications.apply_to_job import apply_to_job as applyToJobs
 logger = Logger(child=True)
 router = Router()
 
-
+# save to dynamodb
 @router.resolver(type_name="Mutation", field_name="applyToJob")
 def apply_to_job(application=None):
     if application is None:

@@ -18,4 +18,4 @@ Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 
 #### Solutions Architecture
 
-![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_arch_api.png)
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/book_nanny.png)

@@ -42,6 +42,6 @@ def list_applications_per_job(jobId: str = ""):
 
     except ClientError as err:
         logger.debug(
-            f"Error occured when getting applications per job{err.response['Error']}"
+            f"Error occurred when getting applications per job{err.response['Error']}"
         )
         raise err

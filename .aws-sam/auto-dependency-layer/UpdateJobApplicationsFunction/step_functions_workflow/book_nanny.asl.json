@@ -1,0 +1,124 @@
+{
+  "Comment": "This Workflow is responsible for booking a nanny",
+  "StartAt": "Get All Job Applications",
+  "States": {
+    "Get All Job Applications": {
+      "Type": "Task",
+      "Parameters": {
+        "TableName": "${DDBTable}",
+        "IndexName": "jobApplications",
+        "ScanIndexForward": "False",
+        "KeyConditionExpression": "GSI1PK = :GSI1PK",
+        "ExpressionAttributeValues": {
+          ":GSI1PK": {
+            "S.$": "States.Format('JOB#{}',$.input.jobId)"
+          }
+        },
+        "ReturnConsumedCapacity": "TOTAL"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+      "Next": "TransactWriteItems",
+      "ResultPath": "$.getItems"
+    },
+    "TransactWriteItems": {
+      "Type": "Task",
+      "Parameters": {
+        "TransactItems": [
+          {
+            "Update": {
+              "TableName": "${DDBTable}",
+              "Key": {
+                "PK": {
+                  "S.$": "States.Format('USER#{}',$.input.username)"
+                },
+                "SK": {
+                  "S.$": "States.Format('JOB#{}',$.input.jobId)"
+                }
+              },
+              "ConditionExpression": "username = :username",
+              "UpdateExpression": "SET jobStatus = :jobStatus",
+              "ExpressionAttributeValues": {
+                ":username": {
+                  "S.$": "$.input.username"
+                },
+                ":jobStatus": {
+                  "S": "CLOSED"
+                }
+              },
+              "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            }
+          },
+          {
+            "Update": {
+              "TableName": "${DDBTable}",
+              "Key": {
+                "PK": {
+                  "S.$": "States.Format('JOB#{}APPLICATION#{}',$.input.jobId,$.input.applicationId)"
+                },
+                "SK": {
+                  "S.$": "States.Format('JOB#{}APPLICATION#{}',$.input.jobId,$.input.applicationId)"
+                }
+              },
+              "UpdateExpression": "SET jobApplicationStatus= :jobApplicationStatus",
+              "ExpressionAttributeValues": {
+                ":jobApplicationStatus": {
+                  "S.$": "$.input.applicationStatus"
+                }
+              },
+              "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            }
+          }
+        ]
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:transactWriteItems",
+      "Next": "Pass",
+      "ResultPath": null
+    },
+    "Pass": {
+      "Type": "Pass",
+      "Next": "Map",
+      "Parameters": {
+        "items.$": "$..getItems.Items[1:]"
+      }
+    },
+    "Map": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Choice",
+        "States": {
+          "Choice": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Not": {
+                  "Variable": "$.id.S",
+                  "StringEqualsPath": "$$.Execution.Input.input.applicationId"
+                },
+                "Next": "SQS SendMessage"
+              }
+            ],
+            "Default": "Send Accepted Applicant a message"
+          },
+          "Send Accepted Applicant a message": {
+            "Type": "Pass",
+            "End": true
+          },
+          "SQS SendMessage": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sqs:sendMessage",
+            "Parameters": {
+              "MessageBody.$": "$",
+              "QueueUrl": "${SQSURL}"
+            },
+            "End": true
+          }
+        }
+      },
+      "End": true,
+      "ItemsPath": "$.items"
+    }
+  }
+}
