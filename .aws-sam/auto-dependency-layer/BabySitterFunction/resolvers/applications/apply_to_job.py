@@ -14,7 +14,9 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 # https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
 @tracer.capture_method
-def apply_to_job(application: dict = {}):
+def apply_to_job(application=None):
+    if application is None:
+        application = {}
     item = {
         "id": scalar_types_utils.make_id(),
         "jobId": application["jobId"],

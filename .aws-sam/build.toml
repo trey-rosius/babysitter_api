@@ -6,7 +6,7 @@ codeuri = "/Users/rosius/Documents/babysitter_api/babysitter"
 runtime = "python3.8"
 architecture = "x86_64"
 handler = "app.lambda_handler"
-manifest_hash = ""
+manifest_hash = "b7fd6fe1f6c3e79ea61d3016d74d7882"
 packagetype = "Zip"
 functions = ["BabySitterFunction", "UpdateJobApplicationsFunction", "AddUserToGroupFunction"]
 

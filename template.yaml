@@ -14,6 +14,7 @@ Globals:
       Variables:
         TABLE_NAME: !Ref DynamoDBBabySitterTable
         UPDATE_JOB_APPLICATIONS_SQS_QUEUE: !Ref UpdateJobApplicationsSQSQueue
+        STATE_MACHINE_ARN: !Ref BookNannyStateMachine
         LOG_LEVEL: DEBUG
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
@@ -148,8 +149,15 @@ Resources:
             Action: "lambda:invokeFunction"
             Resource:
               - !GetAtt BabySitterFunction.Arn
+          - Effect: "Allow"
+            Action: "states:StartExecution"
+            Resource:
+              - !GetAtt BookNannyStateMachine.Arn
+
       Roles:
         - !Ref AppSyncServiceRole
+        - !Ref AddBabysitterRole
+
   LambdaLoggingPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -377,6 +385,24 @@ Resources:
         maxReceiveCount: 5
   UpdateJobApplicationsSQSDLQ:
     Type: AWS::SQS::Queue
+  BookNannyStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: babysitter/step_functions_workflow/book_nanny.asl.json
+      DefinitionSubstitutions:
+        DDBTable: !Ref DynamoDBBabySitterTable
+        SQSURL: !Ref UpdateJobApplicationsSQSQueue
+
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - DynamoDBWritePolicy:
+            TableName: !Ref DynamoDBBabySitterTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref DynamoDBBabySitterTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt UpdateJobApplicationsSQSQueue.Arn
+
+
+
   ###################
   # TABLE
   ##################

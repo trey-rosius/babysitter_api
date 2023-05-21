@@ -1,5 +1,5 @@
 requests
-aws-lambda-powertools==2.15.0
+aws-lambda-powertools[all]
 boto3
 flake8
 pre-commit
