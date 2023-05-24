@@ -1,4 +1,6 @@
 #### GraphQL Schema
+
+Here's the GraphQL Schema for the application.
 ```graphql
 schema {
             query:Query

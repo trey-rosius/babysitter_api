@@ -1,14 +1,20 @@
 #### Create user
-The first resolver we'll create for our api is  `create_user`. It is the gateway into our app.
+The first resolver we'll create for our api is  `create_user`. It is the gateway into the app.
 We want users to be able to create an account.
+
 For a user account to be unique, we apply a unique constraint on 2 attributes
 - username
 - email
-No 2 users can have same username and email. We'll use a conditional expression to ensure uniqueness,then use 2 put request inside a dynamodb transaction api.
+
+No 2 users can have same username and email. We'll use a conditional expression to ensure uniqueness,then use 2 put request inside a dynamodb transaction request.
 <br />
 
-DynamoDb transactions provide developers with atomicity, consistency, isolation, and durability (ACID) across tables. It processes requests in batches. If one request in the batch
-fails, the whole batch fails. The batch succeeds, when all requests succeed and that's exactly the use case we want.
+DynamoDb transactions provide developers with atomicity, consistency, isolation, and durability (ACID) across tables. It processes requests in batches.
+
+If one request in the batch
+fails, the entire batch fails.
+
+The batch succeeds, when all requests succeed and that's exactly the use case we want.
 <br />
 
 Inside the `resolvers` function, create a folder called `users` and inside of users folder, create a file called `create_user_account.py` and type in the following code.
@@ -225,7 +231,7 @@ In the above code, we initialize the router and logger classes. Because our app 
 separate files and ease maintenance.
 <br />
 
-We use `@router.resolver()` decorator to make our functions match graphQL types and fields.
+We use `@router.resolver()` decorator to make functions match graphQL types and fields.
 <br />
 
 We now have to import this class(`create.py`) in `app.py` lambda function.
@@ -273,15 +279,21 @@ Also, the `DataSourceName` that points to our Lambda Datasource.
 <br />
 
 In-order to run this app the SAM Accelerate way, we use the command
+
 `sam sync --stack-name babysitter_api`
+
 The `sam sync` command with no options deploys or updates all infrastructure and code like the `sam deploy` command.
 <br />
+
 However, unlike `sam deploy`, `sam sync` bypasses the AWS CloudFormation changeset process.
 <br />
+
 First, `sam sync` builds the code using the `sam build` command and then the application is synchronized to the cloud.
 <br />
+
 Once your application successfully deploys, log into the aws console, search and open up cognito from the search bar.
 <br />
+
  ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/a.png)
 <br />
 

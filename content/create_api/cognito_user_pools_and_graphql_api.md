@@ -1,3 +1,5 @@
+### Create Cognito UserPool and UserPool Client
+
 Under Resources, let's create our cognito user pool and user pool client. We'll use AWS Cognito to
 authenticate and secure our Graphql endpoints
 
@@ -87,6 +89,8 @@ Delete the hello world function and type in this one
 
 ```
 This function is our direct lambda resolver. It'll serve as the gateway to all the endpoints of our api.
+It's a  `LambdaLith`
+
 We need permissions in-order to get tracer and logger functioning properly. That's why there's a
 ```
     DependsOn:

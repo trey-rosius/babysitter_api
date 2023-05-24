@@ -1,11 +1,14 @@
 ## AWS IAM (Identity and Access Management) Policies
-When i started learning how to build serverless applications. I almost went nuts wrapping my head
+When i started learning how to build serverless applications. I almost went nuts wrapping my
 head around AWS IAM.
 <br />
-A ton of serverless tutorials out there rarely talk about IAM and just dive into creating API's.
+
+A ton of serverless tutorials out there rarely talk about IAM and just dive into creating APIs.
 <br />
-I think we should make a difference and cast some proper light on this concept.
+
+I think we should make a difference and cast some proper light on this topic.
 <br />
+
 #### What are IAM Policies
 AWS services are born with zero permissions. You manage access in AWS by creating policies and attaching them to IAM identities (users, groups of users, or roles) or AWS resources.
 <br />
@@ -60,11 +63,14 @@ In this case, it's our DynamoDB table and all it's respective Global Secondary I
 - Roles: Attaching the above policy to a role(AWS Identity), grants them access to perform operations on
  said Resource(DynamoDB)
 <br />
+
 `!Ref` is a cloud formation intrinsic function that returns the value of the specified resource.
 <br />
 
 We create an `AssumeRolePolicyDocument` and attach it to our lambda function that'll define all the permissions
-it requires for it's execution.
+it requires for its execution.
+<br />
+
 Remember that, it's the same role we've attached the DynamoDB policy to.
 <br />
 

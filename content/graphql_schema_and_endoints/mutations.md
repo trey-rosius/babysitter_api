@@ -1,4 +1,7 @@
 #### Mutations
+Mutations are used to modify content on the server-side.
+Here are the mutations for the api.
+
 ```
         type Mutation {
             createUser(user:CreateUserInput!):User!
@@ -24,7 +27,8 @@
 ```
 A user has to be authenticated before carrying out any `Mutation`.
 <br />
-Users are separated into 3 user groups
+
+Users are separated into 3 groups
 - Admin
 - Parent
 - Nanny
@@ -32,10 +36,11 @@ Users are separated into 3 user groups
 Some Mutations can only be executed by Users of a particular group, while other
 Mutations can be executed by Users of any group.
 <br />
-<br />
+
 For example, in the Mutation below, only an admin can change a User's account
 status. Maybe from `UNVERIFIED` TO `VERIFIED` or vice versa
 <br />
+
 Here's the account status enum
 ```
         enum UserAccountStatus {

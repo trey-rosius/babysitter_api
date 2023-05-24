@@ -1,7 +1,5 @@
 ## Proposed Solution
 
-This Repo would contain all the code for the babysitter serverless GraphQL API.
-
 ## ENTITIES
 - [x] User
 - [x] Job
@@ -27,7 +25,7 @@ This Repo would contain all the code for the babysitter serverless GraphQL API.
 - etc
 
 #### Applications
- - Somebody offering Nanny duties should be able to apply
+ - Nannies should be able to apply
  to a job posted by a Parent.
 
 #### Rate/Feedback

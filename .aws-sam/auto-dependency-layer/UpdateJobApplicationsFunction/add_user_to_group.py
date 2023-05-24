@@ -6,7 +6,7 @@ import boto3
 
 client = boto3.client("cognito-idp")
 
-tracer = Tracer(service="add_user_to_group")
+tracer = Tracer(service="add_user_to_a_group")
 logger = Logger(service="add_user_to_group")
 
 

@@ -1,5 +1,5 @@
 #### Queries
-Same User Group concept apply to queries.
+Used entirely for data fetching.
 ```
   type Query {
             getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools

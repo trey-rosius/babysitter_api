@@ -1,18 +1,17 @@
 #### DynamoDB Table
+We'll be using a single table design structure to model the database.
 Our dynamodb table stores all data related to the application.
 <br />
-Here's an illustration of the relationship between entities.
+If you don't know what single table design means, then this is a perfect moment to check out
+the [DynamoDB Book](https://www.dynamodbbook.com/) by Alex Debrie.
 
-![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/babysitter_entity.png)
+After reading that book, you'll never go wrong with DynamoDB.
 
-- There's a one to many relationship between User and Job. So a User(Parent) is allowed to create multiple jobs.
-- There's also a one to many relationship between a Job and Application.
+Let's proceed.
 
-#### Primary Key Design
+### User Entity Primary Key Design
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/primary_key_design.png)
 
-The User entity is actually unique on 2 attributes( username + email address)
+The User entity is unique on 2 attributes( username + email address) and we'll see why, soon.
 <br />
-
-That's why we have 2 PK and SK for User entity in the above table.
 <br>

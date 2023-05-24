@@ -4,7 +4,7 @@ schema {
         }
 
         type Query {
-            getUser(username: String!): User!  @aws_api_key @aws_cognito_user_pools
+            getUser(username: String!): User!  @aws_api_key
             listUser:[User]! @aws_cognito_user_pools(cognito_groups: ["admin","parent"])
             listAllJobs(jobStatus:String!):[Job]! @aws_cognito_user_pools(cognito_groups:["admin","nanny"])
             listJobsPerParent:User! @aws_cognito_user_pools(cognito_groups:["admin","parent"])
@@ -28,7 +28,8 @@ schema {
             applyToJob(application:CreateJobApplicationInput!):JobApplication!
             @aws_cognito_user_pools(cognito_groups: ["nanny"])
             bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
-            @aws_cognito_user_pools(cognito_groups: ["parent"])
+            @aws_api_key @aws_cognito_user_pools(cognito_groups: ["parent"])
+
         }
 
         type User @aws_cognito_user_pools {

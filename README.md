@@ -41,3 +41,35 @@ content
       |- conclusion.md
 
 ```
+
+Load testing results of the book_nanny endpoint, when using step functions versus using lambda.
+Step functions did the task within half the time it took for lambda to get it done
+
+## Express Step Functions Workflow
+
+```
+Requests      [total, rate,  throughput]
+               3000,  50.02, 49.75
+              ------------------------------------
+Duration      [total, attack, wait]
+              1m0s,   59.98s, 327.514ms
+              --------------------------------------
+Latencies     [min,      mean,      50,        90,        95,        99,       max]
+              260.937ms, 373.937ms, 343.769ms, 480.176ms, 544.639ms, 928.78ms, 1.555s
+              ----------------------------------------------------------------------
+```
+
+## Lambda Function
+
+```
+Requests      [total, rate,  throughput]
+               3000,  50.02, 49.26
+              --------------------------------------------------------------------
+Duration      [total, attack,  wait]
+               1m1s,  59.976s, 930.822ms
+              -------------------------------------------------------------------
+Latencies     [min,       mean,      50,        90,       95,        99,     max]
+               267.713ms, 549.823ms, 457.517ms, 606.87ms, 720.902ms, 2.723s, 3.432s
+              ---------------------------------------------------------------------
+
+```
