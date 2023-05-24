@@ -7,13 +7,13 @@ Open up the `requirements.txt` file located at `babysitter_api/babysitter/` and 
 <br />
 
 ```
-aws-lambda-powertools==1.23.0
+aws-lambda-powertools[all]
 boto3
 ```
 `aws-lambda-powertools` is a suite of utilities for AWS Lambda functions to ease adopting best practices such as tracing, structured logging, custom metrics, and more.
 <br />
 
-`boto3` is th AWS SDK for python, which can be use to create,configure and manage AWS services.
+`boto3` is the AWS SDK for python, which can be used to create,configure and manage AWS services.
 <br />
 
 Open up your terminal from that directory and run the below command to install the libraries.

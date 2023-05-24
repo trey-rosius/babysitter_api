@@ -72,6 +72,4 @@ def applyToJob(application: dict = {}):
 ```
 <br />
 
-At this point, we are simply repeating steps over and over and over again and i know it's getting boring.
-<br />
 Let's look at one of the most important features of the app and close this series.

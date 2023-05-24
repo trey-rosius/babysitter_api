@@ -1,6 +1,6 @@
-####Datasource
+#### Datasource
 
-The lambda function we created above would be used as our Datasource.Here's how we define it's `Resources`
+The lambda function we created above would be used as the Datasource.Here's how we define it's `Resources`
 ```
   ###################
   # Lambda Direct Data Source and Resolver
@@ -19,9 +19,11 @@ The lambda function we created above would be used as our Datasource.Here's how 
 ```
 The `ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn` sets up a trust relationship between this datasource and appsync.
 <br />
+
 `LambdaFunctionArn: !GetAtt BabySitterFunction.Arn` points this datasource to the Lambda function we wish to use.
 <br />
-Before we begin creating our resolvers, let's create our DynamoDb table.Still under `Resources`
+
+Before we begin creating resolvers, let's create the DynamoDb table.Still under `Resources`
 ```
  DynamoDBBabySitterTable:
     Type: AWS::DynamoDB::Table

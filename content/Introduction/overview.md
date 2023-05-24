@@ -1,7 +1,13 @@
 ## Overview
-This api is built as a serverless graphql api, using [Serverless Application
-Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code, [AWS AppSync](https://aws.amazon.com/appsync/) for serverless GraphQL, [AWS Cognito](https://aws.amazon.com/cognito/) for authentication, python 3.8 as the runtime language, [AWS Lambda](https://aws.amazon.com/lambda/) for direct lambda resolvers,
-[Simple Queue Service(SQS)](https://aws.amazon.com/sqs/) for executing requests asynchronously, [AWS DynamoDB](https://aws.amazon.com/dynamodb/) for storing data.
+This api is built as a serverless graphql api, using
+- [Serverless Application Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
+- [AWS AppSync](https://aws.amazon.com/appsync/) for serverless GraphQL,
+- [AWS Cognito](https://aws.amazon.com/cognito/) for authentication,
+- python 3.8 as the runtime language,
+- [AWS Lambda](https://aws.amazon.com/lambda/) for direct lambda resolvers,
+- [Simple Queue Service(SQS)](https://aws.amazon.com/sqs/) for executing requests asynchronously,
+- [AWS DynamoDB](https://aws.amazon.com/dynamodb/) for storing data,
+- [AWS Step Functions](https://aws.amazon.com/step-functions/) for orchestrating workflows.
 
 ### Access Patterns
 - Create/Read/Update/Delete User account(Parent,Nanny)

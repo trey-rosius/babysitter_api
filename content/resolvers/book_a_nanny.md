@@ -1,18 +1,44 @@
 #### Booking a nanny
-In this section, we'll be using [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) to decouple and scale our application.
+In this section, we'll be using [AWS Step Functions](https://aws.amazon.com/step-functions/) to orchestrate the booking process and  [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) to decouple and scale the application.
+<br />
+> The first version of the api didn't use step functions for the booking process.
+> Everything was done with custom code in a lambda function.
+>
+>After reviewing the api 2 yrs later, I decided to
+> refactor the lambda function code into a step functions workflow.
+>
+>Choosing automation over custom logic.
+>
+>This led to a huge performance boost.
+>
+> As a matter of fact, the workflow took half the time the lambda function took to do the job.
+>
+Here's the full conversation on linked
+[Performance Results Are In](https://www.linkedin.com/feed/update/urn:li:activity:7066700086679863296/?commentUrn=urn%3Ali%3Acomment%3A(activity%3A7066700086679863296%2C7066766726595559424)&dashCommentUrn=urn%3Ali%3Afsd_comment%3A(7066766726595559424%2Curn%3Ali%3Aactivity%3A7066700086679863296)&dashReplyUrn=urn%3Ali%3Afsd_comment%3A(7067120504096051201%2Curn%3Ali%3Aactivity%3A7066700086679863296)&replyUrn=urn%3Ali%3Acomment%3A(activity%3A7066700086679863296%2C7067120504096051201))
+
+I used vegeta to run 50 transactions per second for 60 seconds on both the lambda function code and the refactored express step functions workflow.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/performance.png)
+
+
+
+AWS Step Functions is a low code visual workflow service that orchestrates other AWS services and supports common workflow patterns that simplify the implementation of common tasks so developers can focus on higher-value business logic.
+
+Here's a great step functions article to get you started [Building Apps With Step Functions](https://phatrabbitapps.com/building-apps-with-step-functions).
+
+
+Amazon SQS is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
 <br />
 
-[Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
-<br />
 
-Using SQS, you can send, store, and receive messages between software components at any volume, without losing messages or requiring other services to be available
+Using SQS, you can send, store, and receive messages between AWS Services at any volume, without losing messages or requiring other services to be available
 <br />
 
 Read more about Amazon SQS from the official website above.
 <br />
 
 When a parent creates a job, nannies can apply for that job. The parent would then be able to accept the application
-for whoever they see fit for the job.
+for whomever they see fit for the job.
 
 <br />
 
@@ -26,6 +52,10 @@ Here's a breakdown of how our code would work
 - Put the rest of the job applications into an SQS queue, which would update the job application status from
 PENDING to DECLINED asynchronously.
 <br />
+
+This is primary candidate for a step functions workflow.We'll use an Express workflow, since our
+use case would be short-lived and instantaneous.
+
 
 For added functionality, it'll be good to send a push notification and an email to the applicant whose application was
 `accepted`. But this functionality isn't within the scope of this tutorial.
@@ -67,10 +97,11 @@ Dead Letter Queues (DLQ) are source queues for messages that couldn't be process
 If you want to re-process all messages in DLQ, that's where the `RedrivePolicy` comes in.
 <br />
 
-We set `maxReceiveCount` to 5, to recieve 5 messages at a time.
+We set `maxReceiveCount` to 5, to receive 5 messages at a time.
 
 Next, we have to write a function, based on the breakdown we outlined above,
 Here's how the code looks like.
+
 You can find it in `resolvers/jobs/book_nanny.py`
 
 ```

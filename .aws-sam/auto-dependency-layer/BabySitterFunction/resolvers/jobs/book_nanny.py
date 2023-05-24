@@ -1,8 +1,13 @@
 from aws_lambda_powertools import Logger, Tracer
-from aws_lambda_powertools.utilities.data_classes.appsync import scalar_types_utils
 import boto3
 import os
 import json
+
+from boto3.dynamodb.conditions import Key
+
+from decima_encoder import handle_decimal_type
+
+from botocore.exceptions import ClientError
 
 logger = Logger(service="book_nanny")
 tracer = Tracer(service="book_nanny")
@@ -11,8 +16,8 @@ client = boto3.client("dynamodb")
 # resource library
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
-STATE_MACHINE_ARN = os.environ.get("STATE_MACHINE_ARN")
-step_function_client = boto3.client("stepfunctions")
+sqs = boto3.resource("sqs")
+queue = sqs.Queue(os.environ["UPDATE_JOB_APPLICATIONS_SQS_QUEUE"])
 
 
 def book_nanny(
@@ -21,23 +26,88 @@ def book_nanny(
     applicationId: str = "",
     applicationStatus: str = "",
 ):
-    logger.info({f"Parameters {jobId, applicationId, applicationStatus}"})
+    logger.info({f"The Parameters {jobId, applicationId, applicationStatus}"})
     # first step involves getting all applications for the said job
-    input_json = {
-        "input": {
-            "username": username,
-            "jobId": jobId,
-            "applicationId": applicationId,
-            "applicationStatus": applicationStatus,
-        }
-    }
-    input_string = json.dumps(input_json)
-
-    logger.debug("input string is".format(input_string))
-
-    step_function_client.start_execution(
-        stateMachineArn=STATE_MACHINE_ARN,
-        name=scalar_types_utils.make_id(),
-        input=input_string,
+    response_items = table.query(
+        IndexName="jobApplications",
+        KeyConditionExpression=Key("GSI1PK").eq(f"JOB#{jobId}"),
+        ScanIndexForward=False,
     )
-    return True
+    logger.info(f'response is {response_items["Items"]}')
+
+    logger.debug({"application response is": response_items["Items"][1:]})
+    try:
+
+        response = client.transact_write_items(
+            TransactItems=[
+                {
+                    "Update": {
+                        "TableName": os.environ["TABLE_NAME"],
+                        "Key": {
+                            "PK": {"S": f"USER#{username}"},
+                            "SK": {"S": f"JOB#{jobId}"},
+                        },
+                        "ConditionExpression": "username = :username",
+                        "UpdateExpression": "SET jobStatus = :jobStatus",
+                        "ExpressionAttributeValues": {
+                            ":username": {"S": username},
+                            ":jobStatus": {"S": "CLOSED"},
+                        },
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD",
+                    }
+                },
+                {
+                    "Update": {
+                        "TableName": os.environ["TABLE_NAME"],
+                        "Key": {
+                            "PK": {"S": f"JOB#{jobId}#APPLICATION#{applicationId}"},
+                            "SK": {"S": f"JOB#{jobId}#APPLICATION#{applicationId}"},
+                        },
+                        "UpdateExpression": "SET jobApplicationStatus= :jobApplicationStatus",
+                        "ExpressionAttributeValues": {
+                            ":jobApplicationStatus": {"S": applicationStatus},
+                        },
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD",
+                    }
+                },
+            ],
+            ReturnConsumedCapacity="TOTAL",
+            ReturnItemCollectionMetrics="SIZE",
+        )
+        logger.debug(f"transaction response is {response}")
+        """
+        create a for loop and send all queue messages
+        """
+        for item in response_items["Items"][1:]:
+            logger.debug(
+                "sending messages to sqs {}".format(
+                    json.dumps(item, default=handle_decimal_type)
+                )
+            )
+            if item["id"] != applicationId:
+                queue.send_message(
+                    MessageBody=json.dumps(item, default=handle_decimal_type)
+                )
+            else:
+                logger.info(
+                    "Accepted applicationId. So we don't have to put it into SQS"
+                )
+                # you can send a notification or an email to the accepted user here
+
+        return True
+
+    except ClientError as err:
+        logger.debug(f"Error occurred during transact write{err.response}")
+        logger.debug(f"Error occurred during transact write{err}")
+        logger.debug(f"Error occurred during transact write{err.response['Error']}")
+        if err.response["Error"]["Code"] == "TransactionCanceledException":
+            if (
+                err.response["CancellationReasons"][0]["Code"]
+                == "ConditionalCheckFailed"
+            ):
+                errObj = Exception("You aren't authorized to make this update")
+
+                raise errObj
+
+        else:
+            raise err
