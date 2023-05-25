@@ -70,6 +70,8 @@ Let's get started.
 <br />
 
 ## Designing the step functions workflow
+Here's how the final design looks like
+
 
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/step_functions_workflow.png)
 
@@ -88,8 +90,69 @@ up and running in no time.
 Let's get started.
 
 Sign in to your aws console, search and open up step functions.
-![Alt text](/Users/rosius/Documents/babysitter_api/assets/create_sf.png)
 
+Click on the rectangular orange button which says `create state machine`
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/create_sf.png)
+
+Select express step functions and click next.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/select_sf_type.png)
+
+The first step is to query all applications for a particular job using the `jobApplications` GSI.
+
+On the visual editor, search for dynamodb query and pull it onto the canvas.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/add_query.png)
+
+In the `API paramter` text area, add the following code to query dynamodb.
+
+```
+{
+  "TableName": "${DDBTable}",
+  "IndexName": "jobApplications",
+  "ScanIndexForward": "False",
+  "KeyConditionExpression": "GSI1PK = :GSI1PK",
+  "ExpressionAttributeValues": {
+    ":GSI1PK": {
+      "S.$": "States.Format('JOB#{}',$.input.jobId)"
+    }
+  },
+  "ReturnConsumedCapacity": "TOTAL"
+}
+
+```
+For the table name, we used a variable, because we'll be dynamically adding that later, through Infrastructure as Code.
+
+We also use an intrinsic function `States.Format('JOB#{}',$.input.jobId)` to combine a string with the jobId.
+
+If there are 20 applications for this job in DynamoDb, this query would return 21 items.
+
+The Job plus the applications.
+
+Navigate to the output tab
+
+
+```
+  "Get All Job Applications": {
+      "Type": "Task",
+      "Parameters": {
+        "TableName": "${DDBTable}",
+        "IndexName": "jobApplications",
+        "ScanIndexForward": "False",
+        "KeyConditionExpression": "GSI1PK = :GSI1PK",
+        "ExpressionAttributeValues": {
+          ":GSI1PK": {
+            "S.$": "States.Format('JOB#{}',$.input.jobId)"
+          }
+        },
+        "ReturnConsumedCapacity": "TOTAL"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+      "Next": "TransactWriteItems",
+      "ResultPath": "$.getItems"
+    },
+```
 
 
 In Iac(Infrastructure as Code), the first step is to create/configure a SQS Queue and a Dead Letter queue  like so
