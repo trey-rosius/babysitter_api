@@ -1,6 +1,23 @@
 #### Booking a nanny
 In this section, we'll be using [AWS Step Functions](https://aws.amazon.com/step-functions/) to orchestrate the booking process and  [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) to decouple and scale the application.
 <br />
+
+AWS Step Functions is a low code visual workflow service that orchestrates other AWS services and supports common workflow patterns that simplify the implementation of common tasks so developers can focus on higher-value business logic.
+
+Here's a great step functions article to get you started [Building Apps With Step Functions](https://phatrabbitapps.com/building-apps-with-step-functions).
+
+Amazon SQS is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
+<br />
+
+
+Using SQS, you can send, store, and receive messages between AWS Services at any volume, without losing messages or requiring other services to be available
+<br />
+
+Read more about Amazon SQS from the official website above.
+<br />
+
+Before we proceed, here's a recap on how this endpoint was written before
+
 > The first version of the api didn't use step functions for the booking process.
 > Everything was done with custom code in a lambda function.
 >
@@ -21,33 +38,22 @@ I used vegeta to run 50 transactions per second for 60 seconds on both the lambd
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/performance.png)
 
 
+Let's Proceed.
 
-AWS Step Functions is a low code visual workflow service that orchestrates other AWS services and supports common workflow patterns that simplify the implementation of common tasks so developers can focus on higher-value business logic.
-
-Here's a great step functions article to get you started [Building Apps With Step Functions](https://phatrabbitapps.com/building-apps-with-step-functions).
-
-
-Amazon SQS is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
-<br />
-
-
-Using SQS, you can send, store, and receive messages between AWS Services at any volume, without losing messages or requiring other services to be available
-<br />
-
-Read more about Amazon SQS from the official website above.
-<br />
-
-When a parent creates a job, nannies can apply for that job. The parent would then be able to accept the application
+When a parent creates a job, nannies can apply for that job. The parent would then be able to accept(book a nanny) the application
 for whomever they see fit for the job.
 
 <br />
 
-Booking a nanny entails, firstly, accepting the nanny's job application(changing application status), declining all other job applications, so that
-the other applicants know they weren't selected, and then closing the job, so that it won't be available anymore for applying to.
+Booking a nanny entails,
+- Getting all applications for the job in particular.
+- accepting one of the job application(changing application status),
+- declining all other job applications,
+- closing the job, so that it won't be available anymore for applying to.
 <br />
 
 Here's a breakdown of how our code would work
-- Get all applications for a job.
+- Get all applications for a job with a dynamodb Query and GSI.
 - Update Job Status from OPEN to CLOSED and application status for accepted applicant from PENDING to ACCEPTED
 - Put the rest of the job applications into an SQS queue, which would update the job application status from
 PENDING to DECLINED asynchronously.
@@ -56,13 +62,98 @@ PENDING to DECLINED asynchronously.
 This is primary candidate for a step functions workflow.We'll use an Express workflow, since our
 use case would be short-lived and instantaneous.
 
-
 For added functionality, it'll be good to send a push notification and an email to the applicant whose application was
 `accepted`. But this functionality isn't within the scope of this tutorial.
 <br />
 
 Let's get started.
 <br />
+
+## Designing the step functions workflow
+Here's how the final design looks like
+
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/step_functions_workflow.png)
+
+There are 2 ways to build a step functions workflow.
+1) Using the ASL(Amazon States Language)
+2) Using the AWS Step functions workflow visual design editor.
+
+I recommend you go with 2. The visual editor makes your life with step functions a lot easier.
+
+If you are new to step functions or the visual editor, these are a couple of articles to get you
+up and running in no time.
+
+- [Building Apps With Step Functions](https://phatrabbitapps.com/building-apps-with-step-functions)
+- [The AWS Step Functions Workshop](https://catalog.workshops.aws/stepfunctions/en-US)
+
+Let's get started.
+
+Sign in to your aws console, search and open up step functions.
+
+Click on the rectangular orange button which says `create state machine`
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/create_sf.png)
+
+Select express step functions and click next.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/select_sf_type.png)
+
+The first step is to query all applications for a particular job using the `jobApplications` GSI.
+
+On the visual editor, search for dynamodb query and pull it onto the canvas.
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/add_query.png)
+
+In the `API paramter` text area, add the following code to query dynamodb.
+
+```
+{
+  "TableName": "${DDBTable}",
+  "IndexName": "jobApplications",
+  "ScanIndexForward": "False",
+  "KeyConditionExpression": "GSI1PK = :GSI1PK",
+  "ExpressionAttributeValues": {
+    ":GSI1PK": {
+      "S.$": "States.Format('JOB#{}',$.input.jobId)"
+    }
+  },
+  "ReturnConsumedCapacity": "TOTAL"
+}
+
+```
+For the table name, we used a variable, because we'll be dynamically adding that later, through Infrastructure as Code.
+
+We also use an intrinsic function `States.Format('JOB#{}',$.input.jobId)` to combine a string with the jobId.
+
+If there are 20 applications for this job in DynamoDb, this query would return 21 items.
+
+The Job plus the applications.
+
+Navigate to the output tab
+
+
+```
+  "Get All Job Applications": {
+      "Type": "Task",
+      "Parameters": {
+        "TableName": "${DDBTable}",
+        "IndexName": "jobApplications",
+        "ScanIndexForward": "False",
+        "KeyConditionExpression": "GSI1PK = :GSI1PK",
+        "ExpressionAttributeValues": {
+          ":GSI1PK": {
+            "S.$": "States.Format('JOB#{}',$.input.jobId)"
+          }
+        },
+        "ReturnConsumedCapacity": "TOTAL"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+      "Next": "TransactWriteItems",
+      "ResultPath": "$.getItems"
+    },
+```
+
 
 In Iac(Infrastructure as Code), the first step is to create/configure a SQS Queue and a Dead Letter queue  like so
 
@@ -99,122 +190,7 @@ If you want to re-process all messages in DLQ, that's where the `RedrivePolicy` 
 
 We set `maxReceiveCount` to 5, to receive 5 messages at a time.
 
-Next, we have to write a function, based on the breakdown we outlined above,
-Here's how the code looks like.
-
-You can find it in `resolvers/jobs/book_nanny.py`
-
-```
-
-from aws_lambda_powertools import Logger, Tracer
-import boto3
-import os
-import json
-
-from boto3.dynamodb.conditions import Key
-
-from decima_encoder import handle_decimal_type
-
-from botocore.exceptions import ClientError
-
-logger = Logger(service="book_nanny")
-tracer = Tracer(service="book_nanny")
-# client library
-client = boto3.client('dynamodb')
-# resource library
-dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table(os.environ["TABLE_NAME"])
-sqs = boto3.resource("sqs")
-queue = sqs.Queue(os.environ["UPDATE_JOB_APPLICATIONS_SQS_QUEUE"])
-
-
-def book_nanny(username: str = "", jobId: str = "", applicationId: str = "", applicationStatus: str = ""):
-    logger.info({f"Parameters {jobId, applicationId, applicationStatus}"})
-    # first step involves getting all applications for  the said job
-    response_items = table.query(
-        IndexName="jobApplications",
-        KeyConditionExpression=Key('GSI1PK').eq(f'JOB#{jobId}'),
-        ScanIndexForward=False
-
-    )
-    logger.info(f'response is {response_items["Items"]}')
-
-    logger.debug({"application response is": response_items['Items'][1:]})
-    try:
-
-        response = client.transact_write_items(
-            TransactItems=[{
-                'Update': {
-                    'TableName': os.environ["TABLE_NAME"],
-                    "Key": {
-                        "PK": {
-                            "S": f'USER#{username}'
-                        },
-                        "SK": {
-                            "S": f'JOB#{jobId}'
-                        },
-                    },
-                    "ConditionExpression": "username = :username",
-                    "UpdateExpression": "SET jobStatus = :jobStatus",
-                    "ExpressionAttributeValues": {
-                        ":username": {'S': username},
-                        ":jobStatus": {'S': 'CLOSED'}
-                    },
-                    'ReturnValuesOnConditionCheckFailure': 'ALL_OLD'
-                }
-
-            }, {
-                'Update': {
-                    'TableName': os.environ["TABLE_NAME"],
-                    "Key": {
-                        "PK": {
-                            "S": f"JOB#{jobId}#APPLICATION#{applicationId}"
-                        },
-                        "SK": {
-                            "S": f"JOB#{jobId}#APPLICATION#{applicationId}"
-                        },
-                    },
-                    "UpdateExpression": "SET jobApplicationStatus= :jobApplicationStatus",
-                    "ExpressionAttributeValues": {
-                        ":jobApplicationStatus": {'S': applicationStatus},
-
-                    },
-                    'ReturnValuesOnConditionCheckFailure': 'ALL_OLD'
-                }
-            }],
-            ReturnConsumedCapacity='TOTAL',
-            ReturnItemCollectionMetrics='SIZE'
-        )
-        logger.debug(f'transaction response is {response}')
-        '''
-        create a for loop and send all queue messages
-        '''
-        for item in response_items['Items'][1:]:
-            logger.debug('sending messages to sqs {}'.format(json.dumps(item, default=handle_decimal_type)))
-            if item['id'] != applicationId:
-                queue.send_message(MessageBody=json.dumps(item, default=handle_decimal_type))
-            else:
-                logger.info("Accepted applicationId. So we don't have to put it into SQS")
-                # you can send a notification or an email to the accepted user here
-
-        return True
-
-    except ClientError as err:
-        logger.debug(f"Error occurred during transact write{err.response}")
-        logger.debug(f"Error occurred during transact write{err}")
-        logger.debug(f"Error occurred during transact write{err.response['Error']}")
-        if err.response['Error']['Code'] == 'TransactionCanceledException':
-            if err.response['CancellationReasons'][0]['Code'] == 'ConditionalCheckFailed':
-                errObj = Exception("You aren't authorized to make this update")
-
-                raise errObj
-
-        else:
-            raise err
-
-
-```
-
+Next, open up
 <br />
 
 So, the code simply does this.
