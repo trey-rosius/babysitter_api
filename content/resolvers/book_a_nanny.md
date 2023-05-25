@@ -100,6 +100,26 @@ Select express step functions and click next.
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master//assets/select_sf_type.png)
 
 ## Step 1
+Here's the input to the step functions workflow
+
+```json
+{
+  "input": {
+    "username": "ro",
+    "jobId": "5b56e557-5f2a-4fbd-8a07-35bce9b6163a",
+    "applicationId": "3d859e26-d7ce-4208-a60a-3793e4869a22",
+    "applicationStatus": "ACCEPTED"
+  }
+}
+```
+- It has the `jobId` of the job we have to get applications for.
+- `applicationId` of the application we would accept for the job.
+- `applicationStatus` of the application.
+
+This input would remain in the context object of the step functions execution and we 
+can access it at any moment within the execution using `$$`.
+
+Let's proceed. 
 
 Query all applications for a particular job using the `jobApplications` GSI.
 
@@ -419,42 +439,58 @@ In the text area, add `"items.$": "$..getItems.Items[1:]"`.
 
 This JsonPath filters off the first item from the `getItems.Items` list and creates new list called `items`.
 
-If you are wondering how we got `getItems.Items` , please checkout the output from the transaction state.
+If you are wondering how we got `getItems.Items` , please check out the output from the transaction state.
 
 ## Step 3.2
+Now that we have a list of all application items, we need to iterate over them using map state.
 
+Inside the map state, we need to filter out the application we had already accepted.
 
+We do this, by comparing the application id of each item to the application id sent from the input step at 
+the start of the step functions workflow. 
 
+You might be wondering how we get the inputs sent from the start of the workflow. 
 
+The input is available in an `Execution.Input` object in the step functions context object. 
 
-
-
-
-
-
-```
-  "Get All Job Applications": {
-      "Type": "Task",
-      "Parameters": {
-        "TableName": "${DDBTable}",
-        "IndexName": "jobApplications",
-        "ScanIndexForward": "False",
-        "KeyConditionExpression": "GSI1PK = :GSI1PK",
-        "ExpressionAttributeValues": {
-          ":GSI1PK": {
-            "S.$": "States.Format('JOB#{}',$.input.jobId)"
-          }
-        },
-        "ReturnConsumedCapacity": "TOTAL"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
-      "Next": "TransactWriteItems",
-      "ResultPath": "$.getItems"
+```json
+{
+    "Execution": {
+        "Id": "String",
+        "Input": {},
+        "Name": "String",
+        "RoleArn": "String",
+        "StartTime": "Format: ISO 8601"
     },
+    "State": {
+        "EnteredTime": "Format: ISO 8601",
+        "Name": "String",
+        "RetryCount": Number
+    },
+    "StateMachine": {
+        "Id": "String",
+        "Name": "String"
+    },
+    "Task": {
+        "Token": "String"
+    }
+}
 ```
+Therefore, accessing the `applicationId` would be `"$$.Execution.Input.input.applicationId"`
 
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/assets/map.png)
 
-In Iac(Infrastructure as Code), the first step is to create/configure a SQS Queue and a Dead Letter queue  like so
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/assets/choice.png)
+
+![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/assets/sqs.png)
+
+Here's the link to the complete `asl.json` step functions file [book_nanny.asl.json](https://github.com/trey-rosius/babysitter_api/blob/master/babysitter/step_functions_workflow/book_nanny.asl.json.)
+
+At the SQS step, we added an ARN(Amazon resource name) for a queue, but didn't illustrate how we created that queue.
+
+So let's create the queue now.
+
+We have to create/configure a SQS Queue and a Dead Letter queue. Let's do that in `template.yaml`
 
 ```
   ###################
@@ -489,18 +525,9 @@ If you want to re-process all messages in DLQ, that's where the `RedrivePolicy` 
 
 We set `maxReceiveCount` to 5, to receive 5 messages at a time.
 
-Next, open up
-<br />
-
-So, the code simply does this.
-
-- Get all applications for a job.
-- Update Job Status from OPEN to CLOSED and application status for accepted applicant from PENDING to ACCEPTED
-- Put the rest of the job applications into an SQS queue, which would update the job application status from
-PENDING to DECLINED asynchronously.
-<br />
-
 We expect a function to receive all these messages from the SQS queue and process them.
+Process them, meaning change the status of the application from `PENDING` to `DECLINED.
+
 Let's configure this function in `template.yaml`
 <br />
 
@@ -650,6 +677,37 @@ def lambda_handler(event, context: LambdaContext):
 Here are the steps involved in processing messages from our SQS in the above code.
 1) Instantiate our dynamoDB resource, and also the BatchProcessor and choose EventType.SQS for the event type.
 2) Define the function to handle each batch record, and use SQSRecord type annotation for autocompletion.
-In our case, we updated each `jobApplicationStatus` to `DECLINED`
+In our case, we updated each application item's `jobApplicationStatus` field to `DECLINED`
 3) We use `batch_processor` decorator to kick off processing.
 4) Return the appropriate response contract to Lambda via .response() processor method
+
+## Adding State Machine resource to template.yaml
+
+In this step, we have to add the state machine resource plus all variables and permissions to template.yaml.
+
+```
+
+  BookNannyStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: babysitter/step_functions_workflow/book_nanny.asl.json
+      DefinitionSubstitutions:
+        DDBTable: !Ref DynamoDBBabySitterTable
+        SQSURL: !Ref UpdateJobApplicationsSQSQueue
+
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - DynamoDBWritePolicy:
+            TableName: !Ref DynamoDBBabySitterTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref DynamoDBBabySitterTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt UpdateJobApplicationsSQSQueue.Arn
+
+
+```
+
+We point the `DefinitionUri` to the `step_functions_workflow.asl.json` file.
+
+We substitute the dynamodb and sqs variables with those in our application. 
+
+And also give permissions to our state machine to access dynamodb and sqs queues.
