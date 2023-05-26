@@ -1,24 +1,12 @@
 #### Booking a nanny
-In this section, we'll be using [AWS Step Functions](https://aws.amazon.com/step-functions/) to orchestrate the booking process and  [Amazon Simple Queue Service (SQS)](https://aws.amazon.com/sqs/) to decouple and scale the application.
-<br />
+Booking a nanny entails accepting a job application and rejecting the rest.
 
-AWS Step Functions is a low code visual workflow service that orchestrates other AWS services and supports common workflow patterns that simplify the implementation of common tasks so developers can focus on higher-value business logic.
+We'll orchestrate the booking process using an Express Step Functions Workflow.
 
-Here's a great step functions article to get you started [Building Apps With Step Functions](https://phatrabbitapps.com/building-apps-with-step-functions).
-
-Amazon SQS is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
-<br />
-
-
-Using SQS, you can send, store, and receive messages between AWS Services at any volume, without losing messages or requiring other services to be available
-<br />
-
-Read more about Amazon SQS from the official website above.
-<br />
 
 Before we proceed, here's a recap on how this endpoint was written before
 
-> The first version of the api didn't use step functions for the booking process.
+> The first version of the endpoint didn't use step functions for the booking process.
 > Everything was done with custom code in a lambda function.
 >
 >After reviewing the api 2 yrs later, I decided to

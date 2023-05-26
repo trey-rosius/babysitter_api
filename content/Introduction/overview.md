@@ -1,5 +1,5 @@
 ## Overview
-This api is built as a serverless graphql api, using
+We'll use the following AWS services to build the GraphQl API.
 - [Serverless Application Module(SAM)](https://aws.amazon.com/serverless/sam/) for Infrastructure as Code,
 - [AWS AppSync](https://aws.amazon.com/appsync/) for serverless GraphQL,
 - [AWS Cognito](https://aws.amazon.com/cognito/) for authentication,
@@ -9,6 +9,7 @@ This api is built as a serverless graphql api, using
 - [AWS DynamoDB](https://aws.amazon.com/dynamodb/) for storing data,
 - [AWS Step Functions](https://aws.amazon.com/step-functions/) for orchestrating workflows.
 
+If you are new to these services, i strongly suggest you follow the links above to learn more about them.
 ### Access Patterns
 - Create/Read/Update/Delete User account(Parent,Nanny)
 - Update User Account Status(VERIFIED,UNVERIFIED,DEACTIVATED) by admin only
