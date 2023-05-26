@@ -37,6 +37,9 @@ content
       |- list_all_jobs.md
       |- apply_to_job.md
       |- book_a_nanny.md
+      |- designing_step_function_workflow.md
+      |- add_sqs_queue.md
+      |- add_state_machine_resource.md
  |-   Conclusion
       |- conclusion.md
 
