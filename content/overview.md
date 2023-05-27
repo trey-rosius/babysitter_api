@@ -1,4 +1,6 @@
 ![alt text](https://raw.githubusercontent.com/trey-rosius/babysitter_api/master/book_nanny.png)
+
+
 In this course, we'll learn how to use multiple AWS Services to build a Modern Scalable Event-Driven GraphQL API.
 
 This course isn't suitable for beginners
