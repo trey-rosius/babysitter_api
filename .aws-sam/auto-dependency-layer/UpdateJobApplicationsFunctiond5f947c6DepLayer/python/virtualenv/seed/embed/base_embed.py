@@ -3,14 +3,14 @@ from __future__ import annotations
 from abc import ABCMeta
 from pathlib import Path
 
-from ..seeder import Seeder
-from ..wheels import Version
+from virtualenv.seed.seeder import Seeder
+from virtualenv.seed.wheels import Version
 
 PERIODIC_UPDATE_ON_BY_DEFAULT = True
 
 
 class BaseEmbed(Seeder, metaclass=ABCMeta):
-    def __init__(self, options):
+    def __init__(self, options) -> None:
         super().__init__(options, enabled=options.no_seed is False)
 
         self.download = options.download
@@ -48,7 +48,7 @@ class BaseEmbed(Seeder, metaclass=ABCMeta):
         }
 
     @classmethod
-    def add_parser_arguments(cls, parser, interpreter, app_data):  # noqa: U100
+    def add_parser_arguments(cls, parser, interpreter, app_data):  # noqa: ARG003
         group = parser.add_mutually_exclusive_group()
         group.add_argument(
             "--no-download",
@@ -78,7 +78,7 @@ class BaseEmbed(Seeder, metaclass=ABCMeta):
                 "wheel",
                 "setuptools",
             }:
-                default = "none"
+                default = "none"  # noqa: PLW2901
             parser.add_argument(
                 f"--{distribution}",
                 dest=distribution,

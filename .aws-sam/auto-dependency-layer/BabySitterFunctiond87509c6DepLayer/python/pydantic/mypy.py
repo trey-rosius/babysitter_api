@@ -335,15 +335,11 @@ class PydanticModelTransformer:
         * stores the fields, config, and if the class is settings in the mypy metadata for access by subclasses
         """
         ctx = self._ctx
-        info = self._ctx.cls.info
+        info = ctx.cls.info
 
         self.adjust_validator_signatures()
         config = self.collect_config()
         fields = self.collect_fields(config)
-        for field in fields:
-            if info[field.name].type is None:
-                if not ctx.api.final_iteration:
-                    ctx.api.defer()
         is_settings = any(
             get_fullname(base) == BASESETTINGS_FULLNAME for base in info.mro[:-1]
         )
@@ -552,15 +548,32 @@ class PydanticModelTransformer:
         obj_type = ctx.api.named_type(f"{BUILTINS_NAME}.object")
         self_tvar_name = "_PydanticBaseModel"  # Make sure it does not conflict with other names in the class
         tvar_fullname = ctx.cls.fullname + "." + self_tvar_name
-        tvd = TypeVarDef(self_tvar_name, tvar_fullname, -1, [], obj_type)
-        self_tvar_expr = TypeVarExpr(self_tvar_name, tvar_fullname, [], obj_type)
+        if MYPY_VERSION_TUPLE >= (1, 4):
+            tvd = TypeVarType(
+                self_tvar_name,
+                tvar_fullname,
+                -1,
+                [],
+                obj_type,
+                AnyType(TypeOfAny.from_omitted_generics),  # type: ignore[arg-type]
+            )
+            self_tvar_expr = TypeVarExpr(
+                self_tvar_name,
+                tvar_fullname,
+                [],
+                obj_type,
+                AnyType(TypeOfAny.from_omitted_generics),  # type: ignore[arg-type]
+            )
+        else:
+            tvd = TypeVarDef(self_tvar_name, tvar_fullname, -1, [], obj_type)
+            self_tvar_expr = TypeVarExpr(self_tvar_name, tvar_fullname, [], obj_type)
         ctx.cls.info.names[self_tvar_name] = SymbolTableNode(MDEF, self_tvar_expr)
 
         # Backward-compatible with TypeVarDef from Mypy 0.910.
         if isinstance(tvd, TypeVarType):
             self_type = tvd
         else:
-            self_type = TypeVarType(tvd)  # type: ignore[call-arg]
+            self_type = TypeVarType(tvd)
 
         add_method(
             ctx,
@@ -660,7 +673,7 @@ class PydanticModelTransformer:
             # only required if default is Ellipsis (i.e., `field_name: Annotation = Field(...)`) or if default_factory
             # is specified.
             for arg, name in zip(expr.args, expr.arg_names):
-                # If name is None, then this arg is the default because it is the only positonal argument.
+                # If name is None, then this arg is the default because it is the only positional argument.
                 if name is None or name == "default":
                     return arg.__class__ is EllipsisExpr
                 if name == "default_factory":

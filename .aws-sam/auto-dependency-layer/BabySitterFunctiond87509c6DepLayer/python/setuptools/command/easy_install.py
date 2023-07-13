@@ -1613,48 +1613,80 @@ def get_exe_prefixes(exe_filename):
 class PthDistributions(Environment):
     """A .pth file with Distribution paths in it"""
 
-    dirty = False
-
     def __init__(self, filename, sitedirs=()):
         self.filename = filename
         self.sitedirs = list(map(normalize_path, sitedirs))
         self.basedir = normalize_path(os.path.dirname(self.filename))
-        self._load()
+        self.paths, self.dirty = self._load()
+        # keep a copy if someone manually updates the paths attribute on the instance
+        self._init_paths = self.paths[:]
         super().__init__([], None, None)
         for path in yield_lines(self.paths):
             list(map(self.add, find_distributions(path, True)))
 
-    def _load(self):
-        self.paths = []
-        saw_import = False
+    def _load_raw(self):
+        paths = []
+        dirty = saw_import = False
         seen = dict.fromkeys(self.sitedirs)
-        if os.path.isfile(self.filename):
-            f = open(self.filename, "rt")
-            for line in f:
-                if line.startswith("import"):
-                    saw_import = True
-                    continue
-                path = line.rstrip()
-                self.paths.append(path)
-                if not path.strip() or path.strip().startswith("#"):
-                    continue
-                # skip non-existent paths, in case somebody deleted a package
-                # manually, and duplicate paths as well
-                path = self.paths[-1] = normalize_path(os.path.join(self.basedir, path))
-                if not os.path.exists(path) or path in seen:
-                    self.paths.pop()  # skip it
-                    self.dirty = True  # we cleaned up, so we're dirty now :)
-                    continue
-                seen[path] = 1
-            f.close()
+        f = open(self.filename, "rt")
+        for line in f:
+            path = line.rstrip()
+            # still keep imports and empty/commented lines for formatting
+            paths.append(path)
+            if line.startswith(("import ", "from ")):
+                saw_import = True
+                continue
+            stripped_path = path.strip()
+            if not stripped_path or stripped_path.startswith("#"):
+                continue
+            # skip non-existent paths, in case somebody deleted a package
+            # manually, and duplicate paths as well
+            normalized_path = normalize_path(os.path.join(self.basedir, path))
+            if normalized_path in seen or not os.path.exists(normalized_path):
+                log.debug("cleaned up dirty or duplicated %r", path)
+                dirty = True
+                paths.pop()
+                continue
+            seen[normalized_path] = 1
+        f.close()
+        # remove any trailing empty/blank line
+        while paths and not paths[-1].strip():
+            paths.pop()
+            dirty = True
+        return paths, dirty or (paths and saw_import)
 
-        if self.paths and not saw_import:
-            self.dirty = True  # ensure anything we touch has import wrappers
-        while self.paths and not self.paths[-1].strip():
-            self.paths.pop()
+    def _load(self):
+        if os.path.isfile(self.filename):
+            return self._load_raw()
+        return [], False
 
     def save(self):
         """Write changed .pth file back to disk"""
+        # first reload the file
+        last_paths, last_dirty = self._load()
+        # and check that there are no difference with what we have.
+        # there can be difference if someone else has written to the file
+        # since we first loaded it.
+        # we don't want to lose the eventual new paths added since then.
+        for path in last_paths[:]:
+            if path not in self.paths:
+                self.paths.append(path)
+                log.info("detected new path %r", path)
+                last_dirty = True
+            else:
+                last_paths.remove(path)
+        # also, re-check that all paths are still valid before saving them
+        for path in self.paths[:]:
+            if path not in last_paths and not path.startswith(
+                ("import ", "from ", "#")
+            ):
+                absolute_path = os.path.join(self.basedir, path)
+                if not os.path.exists(absolute_path):
+                    self.paths.remove(path)
+                    log.info("removing now non-existent path %r", path)
+                    last_dirty = True
+
+        self.dirty |= last_dirty or self.paths != self._init_paths
         if not self.dirty:
             return
 
@@ -1663,17 +1695,16 @@ class PthDistributions(Environment):
             log.debug("Saving %s", self.filename)
             lines = self._wrap_lines(rel_paths)
             data = "\n".join(lines) + "\n"
-
             if os.path.islink(self.filename):
                 os.unlink(self.filename)
             with open(self.filename, "wt") as f:
                 f.write(data)
-
         elif os.path.exists(self.filename):
             log.debug("Deleting empty %s", self.filename)
             os.unlink(self.filename)
 
         self.dirty = False
+        self._init_paths[:] = self.paths[:]
 
     @staticmethod
     def _wrap_lines(lines):
@@ -2142,24 +2173,6 @@ class ScriptWriter:
     command_spec_class = CommandSpec
 
     @classmethod
-    def get_script_args(cls, dist, executable=None, wininst=False):
-        # for backward compatibility
-        EasyInstallDeprecationWarning.emit("Use get_args", due_date=(2023, 6, 1))
-        # This is a direct API call, it should be safe to remove soon.
-        writer = (WindowsScriptWriter if wininst else ScriptWriter).best()
-        header = cls.get_script_header("", executable, wininst)
-        return writer.get_args(dist, header)
-
-    @classmethod
-    def get_script_header(cls, script_text, executable=None, wininst=False):
-        # for backward compatibility
-        EasyInstallDeprecationWarning.emit("Use get_header", due_date=(2023, 6, 1))
-        # This is a direct API call, it should be safe to remove soon.
-        if wininst:
-            executable = "python.exe"
-        return cls.get_header(script_text, executable)
-
-    @classmethod
     def get_args(cls, dist, header=None):
         """
         Yield write_script() argument tuples for a distribution's
@@ -2187,13 +2200,6 @@ class ScriptWriter:
             raise ValueError("Path separators not allowed in script names")
 
     @classmethod
-    def get_writer(cls, force_windows):
-        # for backward compatibility
-        EasyInstallDeprecationWarning.emit("Use best", due_date=(2023, 6, 1))
-        # This is a direct API call, it should be safe to remove soon.
-        return WindowsScriptWriter.best() if force_windows else cls.best()
-
-    @classmethod
     def best(cls):
         """
         Select the best ScriptWriter for this environment.
@@ -2218,13 +2224,6 @@ class ScriptWriter:
 
 class WindowsScriptWriter(ScriptWriter):
     command_spec_class = WindowsCommandSpec
-
-    @classmethod
-    def get_writer(cls):
-        # for backward compatibility
-        EasyInstallDeprecationWarning.emit("Use best", due_date=(2023, 6, 1))
-        # This is a direct API call, it should be safe to remove soon.
-        return cls.best()
 
     @classmethod
     def best(cls):
@@ -2314,11 +2313,6 @@ class WindowsExecutableLauncherWriter(WindowsScriptWriter):
             yield (m_name, load_launcher_manifest(name), "t")
 
 
-# for backward-compatibility
-get_script_args = ScriptWriter.get_script_args
-get_script_header = ScriptWriter.get_script_header
-
-
 def get_win_launcher(type):
     """
     Load the Windows launcher (executable) suitable for launching a script.
@@ -2364,8 +2358,8 @@ class EasyInstallDeprecationWarning(SetuptoolsDeprecationWarning):
     _SUMMARY = "easy_install command is deprecated."
     _DETAILS = """
     Please avoid running ``setup.py`` and ``easy_install``.
-    Instead, use pypa/build, pypa/installer, pypa/build or
-    other standards-based tools.
+    Instead, use pypa/build, pypa/installer or other
+    standards-based tools.
     """
     _SEE_URL = "https://github.com/pypa/setuptools/issues/917"
     # _DUE_DATE not defined yet

@@ -28,7 +28,7 @@ schema {
             applyToJob(application:CreateJobApplicationInput!):JobApplication!
             @aws_cognito_user_pools(cognito_groups: ["nanny"])
             bookNanny(username:String!,jobId:String!,applicationId:String!, jobApplicationStatus:JobApplicationStatus!):Boolean
-            @aws_api_key @aws_cognito_user_pools(cognito_groups: ["parent"])
+            @aws_cognito_user_pools(cognito_groups: ["parent"])
 
         }
 

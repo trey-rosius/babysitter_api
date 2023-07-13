@@ -13,7 +13,7 @@ CreatorInfo = namedtuple(
 
 
 class CreatorSelector(ComponentBuilder):
-    def __init__(self, interpreter, parser):
+    def __init__(self, interpreter, parser) -> None:
         (
             creators,
             self.key_to_meta,
@@ -28,7 +28,8 @@ class CreatorSelector(ComponentBuilder):
         errors = defaultdict(list)
         for key, creator_class in cls.options("virtualenv.create").items():
             if key == "builtin":
-                raise RuntimeError("builtin creator is a reserved name")
+                msg = "builtin creator is a reserved name"
+                raise RuntimeError(msg)
             meta = creator_class.can_create(interpreter)
             if meta:
                 if meta.error:
@@ -55,8 +56,8 @@ class CreatorSelector(ComponentBuilder):
                     for k, v in errors.items()
                 ]
                 raise RuntimeError("\n".join(rows))
-            else:
-                raise RuntimeError(f"No virtualenv implementation for {interpreter}")
+            msg = f"No virtualenv implementation for {interpreter}"
+            raise RuntimeError(msg)
         return CreatorInfo(
             key_to_class=key_to_class,
             key_to_meta=key_to_meta,

@@ -2,3 +2,6 @@
 
 [sync_state]
 dependency_layer = true
+latest_infra_sync_time = "2023-06-20T20:53:40.307205"
+
+[resource_sync_states]

@@ -1,9 +1,10 @@
-"""Activate virtualenv for current interpreter:
+"""
+Activate virtualenv for current interpreter:
 
 Use exec(open(this_file).read(), {'__file__': this_file}).
 
 This can be used when you must use an existing Python interpreter, not the virtualenv bin/python.
-"""
+"""  # noqa: D415
 from __future__ import annotations
 
 import os
@@ -12,10 +13,9 @@ import sys
 
 try:
     abs_file = os.path.abspath(__file__)
-except NameError:
-    raise AssertionError(
-        "You must use exec(open(this_file).read(), {'__file__': this_file}))"
-    )
+except NameError as exc:
+    msg = "You must use exec(open(this_file).read(), {'__file__': this_file}))"
+    raise AssertionError(msg) from exc
 
 bin_dir = os.path.dirname(abs_file)
 base = bin_dir[
@@ -24,7 +24,7 @@ base = bin_dir[
 
 # prepend bin to PATH (this file is inside the bin directory)
 os.environ["PATH"] = os.pathsep.join(
-    [bin_dir] + os.environ.get("PATH", "").split(os.pathsep)
+    [bin_dir, *os.environ.get("PATH", "").split(os.pathsep)]
 )
 os.environ["VIRTUAL_ENV"] = base  # virtual env is right above bin directory
 

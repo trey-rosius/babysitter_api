@@ -9,3 +9,4 @@ region = "us-east-2"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
 confirm_changeset = false
+resolve_s3 = true

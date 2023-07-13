@@ -7,7 +7,7 @@
 # pylama:skip=1
 
 
-# *** PLEASE DO NOT MODIFY DIRECTLY: Automatically generated code ***
+# *** PLEASE DO NOT MODIFY DIRECTLY: Automatically generated code *** 
 
 
 VERSION = "2.16.3"

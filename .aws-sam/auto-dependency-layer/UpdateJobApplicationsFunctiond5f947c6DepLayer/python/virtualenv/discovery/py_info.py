@@ -1,5 +1,5 @@
 """
-The PythonInfo contains information about a concrete instance of a Python interpreter
+The PythonInfo contains information about a concrete instance of a Python interpreter.
 
 Note: this file is also used to query target interpreters, so can only use standard library methods
 """
@@ -25,7 +25,7 @@ VersionInfo = namedtuple(
 def _get_path_extensions():
     return list(
         OrderedDict.fromkeys(
-            [""] + os.environ.get("PATHEXT", "").lower().split(os.pathsep)
+            ["", *os.environ.get("PATHEXT", "").lower().split(os.pathsep)]
         )
     )
 
@@ -35,9 +35,9 @@ _CONF_VAR_RE = re.compile(r"\{\w+\}")
 
 
 class PythonInfo:
-    """Contains information for a Python interpreter"""
+    """Contains information for a Python interpreter."""
 
-    def __init__(self):
+    def __init__(self) -> None:  # noqa: PLR0915
         def abs_path(v):
             return (
                 None if v is None else os.path.abspath(v)
@@ -153,7 +153,7 @@ class PythonInfo:
         self._creators = None
 
     def _fast_get_system_executable(self):
-        """Try to get the system executable by just looking at properties"""
+        """Try to get the system executable by just looking at properties."""
         if self.real_prefix or (
             self.base_prefix is not None and self.base_prefix != self.prefix
         ):  # if this is a virtual environment
@@ -163,7 +163,7 @@ class PythonInfo:
                 )  # some platforms may set this to help us
                 if (
                     base_executable is not None
-                ):  # use the saved system executable if present
+                ):  # noqa: SIM102 # use the saved system executable if present
                     if (
                         sys.executable != base_executable
                     ):  # we know we're in a virtual environment, cannot be us
@@ -225,7 +225,9 @@ class PythonInfo:
             {"script_args": "--no-user-cfg"}
         )  # conf files not parsed so they do not hijack paths
         if hasattr(sys, "_framework"):
-            sys._framework = None  # disable macOS static paths for framework
+            sys._framework = (
+                None  # disable macOS static paths for framework  # noqa: SLF001
+            )
 
         with warnings.catch_warnings():  # disable warning for PEP-632
             warnings.simplefilter("ignore")
@@ -235,11 +237,10 @@ class PythonInfo:
             os.sep
         )  # paths generated are relative to prefix that contains the path sep, this makes it relative
         i.finalize_options()
-        result = {
+        return {
             key: (getattr(i, f"install_{key}")[1:]).lstrip(os.sep)
             for key in SCHEME_KEYS
         }
-        return result
 
     @property
     def version_str(self):
@@ -272,7 +273,7 @@ class PythonInfo:
             config_var = base
         return pattern.format(**config_var).replace("/", sep)
 
-    def creators(self, refresh=False):
+    def creators(self, refresh=False):  # noqa: FBT002
         if self._creators is None or refresh is True:
             from virtualenv.run.plugin.creators import CreatorSelector
 
@@ -312,17 +313,16 @@ class PythonInfo:
         return self.real_prefix or self.base_exec_prefix or self.exec_prefix
 
     def __unicode__(self):
-        content = repr(self)
-        return content
+        return repr(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{}({!r})".format(
             self.__class__.__name__,
             {k: v for k, v in self.__dict__.items() if not k.startswith("_")},
         )
 
-    def __str__(self):
-        content = "{}({})".format(
+    def __str__(self) -> str:
+        return "{}({})".format(
             self.__class__.__name__,
             ", ".join(
                 f"{k}={v}"
@@ -355,7 +355,6 @@ class PythonInfo:
                 if k is not None
             ),
         )
-        return content
 
     @property
     def spec(self):
@@ -373,8 +372,8 @@ class PythonInfo:
         clear(app_data)
         cls._cache_exe_discovery.clear()
 
-    def satisfies(self, spec, impl_must_match):
-        """check if a given specification can be satisfied by the this python interpreter instance"""
+    def satisfies(self, spec, impl_must_match):  # noqa: C901
+        """Check if a given specification can be satisfied by the this python interpreter instance."""
         if spec.path:
             if self.executable == os.path.abspath(spec.path):
                 return True  # if the path is a our own executable path we're done
@@ -389,12 +388,12 @@ class PythonInfo:
                 if basename != spec_path:
                     return False
 
-        if impl_must_match:
-            if (
-                spec.implementation is not None
-                and spec.implementation.lower() != self.implementation.lower()
-            ):
-                return False
+        if (
+            impl_must_match
+            and spec.implementation is not None
+            and spec.implementation.lower() != self.implementation.lower()
+        ):
+            return False
 
         if spec.architecture is not None and spec.architecture != self.architecture:
             return False
@@ -414,7 +413,7 @@ class PythonInfo:
         """
         This locates the current host interpreter information. This might be different than what we run into in case
         the host python has been upgraded from underneath us.
-        """
+        """  # noqa: D205
         if cls._current is None:
             cls._current = cls.from_exe(
                 sys.executable, app_data, raise_on_error=True, resolve_to_host=False
@@ -426,7 +425,7 @@ class PythonInfo:
         """
         This locates the current host interpreter information. This might be different than what we run into in case
         the host python has been upgraded from underneath us.
-        """
+        """  # noqa: D205
         if cls._current_system is None:
             cls._current_system = cls.from_exe(
                 sys.executable, app_data, raise_on_error=True, resolve_to_host=True
@@ -442,23 +441,23 @@ class PythonInfo:
             var: (getattr(self, var) if var not in ("_creators",) else None)
             for var in vars(self)
         }
-        # noinspection PyProtectedMember
+
         data["version_info"] = data[
             "version_info"
         ]._asdict()  # namedtuple to dictionary
         return data
 
     @classmethod
-    def from_exe(
+    def from_exe(  # noqa: PLR0913
         cls,
         exe,
         app_data=None,
-        raise_on_error=True,
-        ignore_cache=False,
-        resolve_to_host=True,
+        raise_on_error=True,  # noqa: FBT002
+        ignore_cache=False,  # noqa: FBT002
+        resolve_to_host=True,  # noqa: FBT002
         env=None,
     ):
-        """Given a path to an executable get the python information"""
+        """Given a path to an executable get the python information."""
         # this method is not used by itself, so here and called functions can import stuff locally
         from virtualenv.discovery.cached_py_info import from_exe
 
@@ -471,13 +470,15 @@ class PythonInfo:
             raise_on_error=raise_on_error,
             ignore_cache=ignore_cache,
         )
-        # noinspection PyProtectedMember
+
         if isinstance(proposed, PythonInfo) and resolve_to_host:
             try:
-                proposed = proposed._resolve_to_system(app_data, proposed)
-            except Exception as exception:
+                proposed = proposed._resolve_to_system(
+                    app_data, proposed
+                )  # noqa: SLF001
+            except Exception as exception:  # noqa: BLE001
                 if raise_on_error:
-                    raise exception
+                    raise
                 logging.info(
                     "ignore %s due cannot resolve system due to %r",
                     proposed.original_executable,
@@ -518,9 +519,10 @@ class PythonInfo:
                 logging.error(
                     "%d: prefix=%s, info=%r", len(prefixes) + 1, prefix, target
                 )
-                raise RuntimeError(
-                    "prefixes are causing a circle {}".format("|".join(prefixes.keys()))
+                msg = "prefixes are causing a circle {}".format(
+                    "|".join(prefixes.keys())
                 )
+                raise RuntimeError(msg)
             prefixes[prefix] = target
             target = target.discover_exe(app_data, prefix=prefix, exact=False)
         if target.executable != target.system_executable:
@@ -530,7 +532,7 @@ class PythonInfo:
 
     _cache_exe_discovery = {}
 
-    def discover_exe(self, app_data, prefix, exact=True, env=None):
+    def discover_exe(self, app_data, prefix, exact=True, env=None):  # noqa: FBT002
         key = prefix, exact
         if key in self._cache_exe_discovery and prefix:
             logging.debug(
@@ -567,7 +569,9 @@ class PythonInfo:
         )
         raise RuntimeError(msg)
 
-    def _check_exe(self, app_data, folder, name, exact, discovered, env):
+    def _check_exe(
+        self, app_data, folder, name, exact, discovered, env
+    ):  # noqa: PLR0913
         exe_path = os.path.join(folder, name)
         if not os.path.exists(exe_path):
             return None
@@ -615,17 +619,15 @@ class PythonInfo:
                 info.version_info.releaselevel == target.version_info.releaselevel,
                 info.version_info.serial == target.version_info.serial,
             ]
-            priority = sum(
+            return sum(
                 (1 << pos if match else 0)
                 for pos, match in enumerate(reversed(matches))
             )
-            return priority
 
         sorted_discovered = sorted(
             discovered, key=sort_by, reverse=True
         )  # sort by priority in decreasing order
-        most_likely = sorted_discovered[0]
-        return most_likely
+        return sorted_discovered[0]
 
     def _find_possible_folders(self, inside_folder):
         candidate_folder = OrderedDict()
@@ -634,7 +636,7 @@ class PythonInfo:
         executables[self.executable] = None
         executables[os.path.realpath(self.original_executable)] = None
         executables[self.original_executable] = None
-        for exe in executables.keys():
+        for exe in executables:
             base = os.path.dirname(exe)
             # following path pattern of the current
             if base.startswith(self.prefix):
@@ -643,7 +645,7 @@ class PythonInfo:
 
         # or at root level
         candidate_folder[inside_folder] = None
-        return [i for i in candidate_folder.keys() if os.path.exists(i)]
+        return [i for i in candidate_folder if os.path.exists(i)]
 
     def _find_possible_exe_names(self):
         name_candidate = OrderedDict()
@@ -680,7 +682,7 @@ class PythonInfo:
 
 if __name__ == "__main__":
     # dump a JSON representation of the current python
-    # noinspection PyProtectedMember
+
     argv = sys.argv[1:]
 
     if len(argv) >= 1:
@@ -697,5 +699,5 @@ if __name__ == "__main__":
 
     sys.argv = sys.argv[:1] + argv
 
-    info = PythonInfo()._to_json()
+    info = PythonInfo()._to_json()  # noqa: SLF001
     sys.stdout.write("".join((start_cookie[::-1], info, end_cookie[::-1])))

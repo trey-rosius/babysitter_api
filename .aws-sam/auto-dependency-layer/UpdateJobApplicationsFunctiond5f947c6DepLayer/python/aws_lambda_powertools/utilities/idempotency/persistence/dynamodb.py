@@ -10,7 +10,7 @@ from boto3.dynamodb.types import TypeDeserializer
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-from aws_lambda_powertools.shared import constants
+from aws_lambda_powertools.shared import constants, user_agent
 from aws_lambda_powertools.utilities.idempotency import BasePersistenceLayer
 from aws_lambda_powertools.utilities.idempotency.exceptions import (
     IdempotencyItemAlreadyExistsError,
@@ -97,6 +97,8 @@ class DynamoDBPersistenceLayer(BasePersistenceLayer):
             )
         else:
             self.client = boto3_client
+
+        user_agent.register_feature_to_client(client=self.client, feature="idempotency")
 
         if sort_key_attr == key_attr:
             raise ValueError(
