@@ -16,6 +16,7 @@ Globals:
         UPDATE_JOB_APPLICATIONS_SQS_QUEUE: !Ref UpdateJobApplicationsSQSQueue
         STATE_MACHINE_ARN: !Ref BookNannyStateMachine
         LOG_LEVEL: DEBUG
+        Runtime: python3.10
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
         POWERTOOLS_SERVICE_NAME: "babysitter_api_service"
@@ -51,8 +52,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: app.lambda_handler
-    # Role: !GetAtt AddBabysitterRole.Arn
-      Runtime: python3.8
       Description: Sample Lambda Powertools Direct Lambda Resolver
       Tags:
         SOLUTION: LambdaPowertoolsPython
@@ -71,7 +70,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: update_job_application.lambda_handler
-      Runtime: python3.8
       Description:  Lambda Powertools Direct Lambda Resolver
 
       Events:
@@ -102,7 +100,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: add_user_to_group.lambda_handler
-      Runtime: python3.8
       Description:  Lambda Powertools Direct Lambda Resolver
       Policies:
 
