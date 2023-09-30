@@ -46,10 +46,6 @@ Resources:
     Properties:
       CodeUri: BabySitterFunction
       Handler: app.lambda_handler
-      Role:
-        Fn::GetAtt:
-        - AddBabysitterRole
-        - Arn
       Runtime: python3.8
       Description: Sample Lambda Powertools Direct Lambda Resolver
       Tags:
@@ -58,6 +54,14 @@ Resources:
       - Fn::GetAtt:
         - AwsSamAutoDependencyLayerNestedStack
         - Outputs.BabySitterFunctiond87509c6DepLayer
+    Connectors:
+      DynamoDBRWConnector:
+        Properties:
+          Destination:
+            Id: DynamoDBBabySitterTable
+          Permissions:
+          - Read
+          - Write
     Metadata:
       SamResourceId: BabySitterFunction
   UpdateJobApplicationsFunction:
@@ -69,20 +73,6 @@ Resources:
       Handler: update_job_application.lambda_handler
       Runtime: python3.8
       Description: Lambda Powertools Direct Lambda Resolver
-      Policies:
-      - SQSPollerPolicy:
-          QueueName:
-            Fn::GetAtt:
-            - UpdateJobApplicationsSQSQueue
-            - QueueName
-      - Statement:
-        - Effect: Allow
-          Action:
-          - dynamodb:UpdateItem
-          Resource:
-          - Fn::GetAtt:
-            - DynamoDBBabySitterTable
-            - Arn
       Events:
         RetrieveFromSQS:
           Type: SQS
@@ -98,6 +88,19 @@ Resources:
       - Fn::GetAtt:
         - AwsSamAutoDependencyLayerNestedStack
         - Outputs.UpdateJobApplicationsFunctiond5f947c6DepLayer
+    Connectors:
+      DynamoDBWConnectors:
+        Properties:
+          Destination:
+            Id: DynamoDBBabySitterTable
+          Permissions:
+          - Write
+      SQSRConnectors:
+        Properties:
+          Destination:
+            Id: UpdateJobApplicationsSQSQueue
+          Permissions:
+          - Write
     Metadata:
       SamResourceId: UpdateJobApplicationsFunction
   AddUserToGroupFunction:
@@ -191,54 +194,6 @@ Resources:
           Resource: '*'
       Roles:
       - Ref: AddBabysitterRole
-  DynamoDBReadPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: DynamoDBReadPolicy
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Action:
-          - dynamodb:GetItem
-          - dynamodb:Query
-          Resource:
-          - Fn::GetAtt:
-            - DynamoDBBabySitterTable
-            - Arn
-          - Fn::Join:
-            - /
-            - - Fn::GetAtt:
-                - DynamoDBBabySitterTable
-                - Arn
-              - index/*
-      Roles:
-      - Ref: AddBabysitterRole
-  DynamoDBWritePolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: DynamoDBWritePolicy
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Action:
-          - dynamodb:PutItem
-          - dynamodb:UpdateItem
-          - dynamodb:ConditionCheckItem
-          - dynamodb:DeleteItem
-          Resource:
-          - Fn::GetAtt:
-            - DynamoDBBabySitterTable
-            - Arn
-          - Fn::Join:
-            - /
-            - - Fn::GetAtt:
-                - DynamoDBBabySitterTable
-                - Arn
-              - index/*
-      Roles:
-      - Ref: AddBabysitterRole
   AddBabysitterRole:
     Type: AWS::IAM::Role
     Properties:
@@ -257,7 +212,7 @@ Resources:
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
         - Effect: Allow
           Action:
@@ -370,7 +325,7 @@ Resources:
         Fn::GetAtt:
         - BabySitterFunctionDataSource
         - Name
-  CreeateJobResolver:
+  CreateJobResolver:
     Type: AWS::AppSync::Resolver
     Properties:
       ApiId:
@@ -482,18 +437,20 @@ Resources:
           Ref: DynamoDBBabySitterTable
         SQSURL:
           Ref: UpdateJobApplicationsSQSQueue
-      Policies:
-      - DynamoDBWritePolicy:
-          TableName:
-            Ref: DynamoDBBabySitterTable
-      - DynamoDBReadPolicy:
-          TableName:
-            Ref: DynamoDBBabySitterTable
-      - SQSSendMessagePolicy:
-          QueueName:
-            Fn::GetAtt:
-            - UpdateJobApplicationsSQSQueue
-            - Arn
+    Connectors:
+      SFDynamoDBConnectors:
+        Properties:
+          Destination:
+            Id: DynamoDBBabySitterTable
+          Permissions:
+          - Read
+          - Write
+      SFQConnectors:
+        Properties:
+          Destination:
+            Id: UpdateJobApplicationsSQSQueue
+          Permissions:
+          - Write
   DynamoDBBabySitterTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -565,6 +522,4 @@ Outputs:
       - Arn
   BabySitterAPI:
     Value:
-      Fn::GetAtt:
-      - BabySitterApi
-      - Arn
+      Ref: BabySitterApi

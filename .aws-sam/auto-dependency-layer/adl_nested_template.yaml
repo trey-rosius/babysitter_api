@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: AWS SAM CLI Nested Stack for Auto Dependency Layer Creation
 Metadata:
-  SamCliInfo: 1.66.0
+  SamCliInfo: 1.86.1
   key: AWS SAM CLI sync command
 Outputs:
   AddUserToGroupFunction339552e8DepLayer:

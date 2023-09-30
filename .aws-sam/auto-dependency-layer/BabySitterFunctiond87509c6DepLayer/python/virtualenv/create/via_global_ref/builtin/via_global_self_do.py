@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta
 
+from virtualenv.create.via_global_ref.api import ViaGlobalRefApi, ViaGlobalRefMeta
 from virtualenv.create.via_global_ref.builtin.ref import (
     ExePathRefToDest,
     RefMust,
@@ -9,12 +10,11 @@ from virtualenv.create.via_global_ref.builtin.ref import (
 )
 from virtualenv.util.path import ensure_dir
 
-from ..api import ViaGlobalRefApi, ViaGlobalRefMeta
 from .builtin_way import VirtualenvBuiltin
 
 
 class BuiltinViaGlobalRefMeta(ViaGlobalRefMeta):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.sources = []
 
@@ -22,7 +22,7 @@ class BuiltinViaGlobalRefMeta(ViaGlobalRefMeta):
 class ViaGlobalRefVirtualenvBuiltin(
     ViaGlobalRefApi, VirtualenvBuiltin, metaclass=ABCMeta
 ):
-    def __init__(self, options, interpreter):
+    def __init__(self, options, interpreter) -> None:
         super().__init__(options, interpreter)
         self._sources = getattr(
             options.meta, "sources", None
@@ -30,7 +30,7 @@ class ViaGlobalRefVirtualenvBuiltin(
 
     @classmethod
     def can_create(cls, interpreter):
-        """By default, all built-in methods assume that if we can describe it we can create it"""
+        """By default, all built-in methods assume that if we can describe it we can create it."""
         # first we must be able to describe it
         if not cls.can_describe(interpreter):
             return None
@@ -62,7 +62,7 @@ class ViaGlobalRefVirtualenvBuiltin(
             meta.sources.append(src)
 
     @classmethod
-    def setup_meta(cls, interpreter):  # noqa: U100
+    def setup_meta(cls, interpreter):  # noqa: ARG003
         return BuiltinViaGlobalRefMeta()
 
     @classmethod
@@ -76,7 +76,7 @@ class ViaGlobalRefVirtualenvBuiltin(
         return self.bin_dir / src.name
 
     @classmethod
-    def _executables(cls, interpreter):  # noqa: U100
+    def _executables(cls, interpreter):
         raise NotImplementedError
 
     def create(self):
@@ -115,8 +115,8 @@ class ViaGlobalRefVirtualenvBuiltin(
     def set_pyenv_cfg(self):
         """
         We directly inject the base prefix and base exec prefix to avoid site.py needing to discover these
-        from home (which usually is done within the interpreter itself)
-        """
+        from home (which usually is done within the interpreter itself).
+        """  # noqa: D205
         super().set_pyenv_cfg()
         self.pyenv_cfg["base-prefix"] = self.interpreter.system_prefix
         self.pyenv_cfg["base-exec-prefix"] = self.interpreter.system_exec_prefix

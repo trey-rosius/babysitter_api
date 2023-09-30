@@ -27,10 +27,10 @@ Requires-Dist: setuptools
 Node.js virtual environment
 ===========================
 
-``nodeenv`` (node.js virtual environment) is a tool to create
+``nodeenv`` (node.js virtual environment) is a tool to create 
 isolated node.js environments.
 
-It creates an environment that has its own installation directories,
+It creates an environment that has its own installation directories, 
 that doesn't share libraries with other node.js virtual environments.
 
 Also the new environment can be integrated with the environment which was built
@@ -80,7 +80,7 @@ pip_/easy_install_ inside any virtual environment built with virtualenv::
     (env) $ nodeenv --version
     0.6.5
 
-If you want to work with the latest version of the nodeenv you can
+If you want to work with the latest version of the nodeenv you can 
 install it from the github `repository`_::
 
     $ git clone https://github.com/ekalinin/nodeenv.git
@@ -153,7 +153,7 @@ Get available node.js versions::
     0.3.2   0.3.3   0.3.4   0.3.5   0.3.6   0.3.7   0.3.8
     0.4.1   0.4.2   0.4.3   0.4.4   0.4.5   0.4.6
 
-Install node.js "0.4.3" without ssl support with 4 parallel commands
+Install node.js "0.4.3" without ssl support with 4 parallel commands 
 for compilation and npm.js "0.3.17"::
 
     $ nodeenv --without-ssl --node=0.4.3 --npm=0.3.17 --with-npm --jobs=4 env-4.3
@@ -202,7 +202,7 @@ Create an environment from a requirements file::
 
     $ nodeenv --requirements=../prod-requirements.txt --jobs=4 env-copy
 
-Requirements files are plain text files that contain a list of packages
+Requirements files are plain text files that contain a list of packages 
 to be installed. These text files allow you to create repeatable installations.
 Requirements file example::
 
@@ -390,7 +390,7 @@ Version 0.13.3
 --------------
 - Fixed env creation with non-ASCII chars in path. See `# 49`_
 - Fixed logging with unicode chars. See `# 96`_
-- Skip new lines at the end of requirements.txt. See `# 122`_
+- Skip new lines at the end of requirements.txt. See `# 122`_ 
 - Fixed UnicodeDecodeError at build on non UTF-8 environment. See `# 124`_
 
 .. _# 49: https://github.com/ekalinin/nodeenv/issues/49
