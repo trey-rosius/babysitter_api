@@ -10,6 +10,7 @@ Globals:
   Function:
     Tracing: Active
     Timeout: 3
+    Runtime: python3.10
     Environment:
       Variables:
         TABLE_NAME: !Ref DynamoDBBabySitterTable
@@ -51,8 +52,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: app.lambda_handler
-    # Role: !GetAtt AddBabysitterRole.Arn
-      Runtime: python3.8
       Description: Sample Lambda Powertools Direct Lambda Resolver
       Tags:
         SOLUTION: LambdaPowertoolsPython
@@ -71,7 +70,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: update_job_application.lambda_handler
-      Runtime: python3.8
       Description:  Lambda Powertools Direct Lambda Resolver
 
       Events:
@@ -102,7 +100,6 @@ Resources:
     Properties:
       CodeUri: babysitter/
       Handler: add_user_to_group.lambda_handler
-      Runtime: python3.8
       Description:  Lambda Powertools Direct Lambda Resolver
       Policies:
 
