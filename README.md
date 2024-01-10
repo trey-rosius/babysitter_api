@@ -76,3 +76,65 @@ Latencies     [min,       mean,      50,        90,       95,        99,     max
               ---------------------------------------------------------------------
 
 ```
+
+## Local Development & Testing
+
+You can deploy the application on your local machine without needing an AWS account, using LocalStack. LocalStack is a cloud emulator that runs various AWS services on your local machine. It spins up a testing environment on your local machine that provides the same functionality and APIs as the real AWS cloud environment.
+
+To run the application locally, you need to setup the following prerequisites on your machine:
+
+- [LocalStack CLI](https://docs.localstack.cloud/getting-started/installation/)
+- [Docker](https://docs.docker.com/get-docker/)
+- [SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) & [`samlocal` script](https://github.com/localstack/aws-sam-cli-local)
+
+### Run LocalStack
+
+Before you can run the application locally, you need to start LocalStack. You can do this by running the following command:
+
+```bash
+export LOCALSTACK_AUTH_KEY=<YOUR_AUTH_KEY>
+localstack start -d
+```
+
+> If you don't have an auth key, you can get one by creating an account on [LocalStack Web Application](https://app.localstack.cloud/) and signing up for a [Hobby Plan](https://app.localstack.cloud/pricing).
+
+### Build the application
+
+You can build the SAM application by running the following command:
+
+```bash
+sam build --use-container  
+```
+
+### Deploy the application
+
+After successfully building the application, you can deploy it locally by running the following command:
+
+```bash
+samlocal deploy --resolve-s3
+```
+
+The `samlocal` script is a wrapper around the `sam` CLI that configures the endpoint URL parameter for each AWS service to point to the LocalStack container.
+
+After a successful deployment, you should see the following output:
+
+```bash
+CloudFormation outputs from deployed stack
+------------------------------------------------------------------------------------------------------------------------------
+Outputs                                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------
+Key                 BabySitterFunction                                                                                       
+Description         Baby Sitter Lambda Function ARN                                                                          
+Value               arn:aws:lambda:us-east-2:000000000000:function:babysitter-api-BabySitterFunction-408fbb55                
+
+Key                 UpdateJobApplicationsFunction                                                                            
+Description         Baby Sitter Lambda Function ARN                                                                          
+Value               arn:aws:lambda:us-east-2:000000000000:function:babysitter-api-UpdateJobApplicationsFun-5dc02b4b          
+
+Key                 BabySitterAPI                                                                                            
+Description         -                                                                                                        
+Value               arn:aws:appsync:us-east-2:000000000000:apis/3e0b4c6ec0004ba782701b6b2e                                   
+------------------------------------------------------------------------------------------------------------------------------
+
+Successfully created/updated stack - babysitter-api in us-east-2
+```

@@ -3,7 +3,6 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "babysitter-api"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-w7fazjv91dr3"
 s3_prefix = "babysitter-api"
 region = "us-east-2"
 capabilities = "CAPABILITY_IAM"
