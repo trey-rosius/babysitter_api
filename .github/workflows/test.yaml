@@ -1,0 +1,51 @@
+name: Deploy on LocalStack 
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  sam:
+    name: Setup infrastructure using SAM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Setup SAM
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Setup SAM-Local 
+        run: |
+          pip install aws-sam-cli-local
+          samlocal --help
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+          use-pro: 'true'
+
+      - name: Build the SAM application
+        run: |
+          sam build --use-container
+
+      - name: Deploy the SAM application
+        run: |
+          samlocal deploy --resolve-s3
+
+      - name: Assert the created resources
+        run: |
+          awslocal lambda list-functions --region us-east-2
+          awslocal appsync list-graphql-apis --region us-east-2
